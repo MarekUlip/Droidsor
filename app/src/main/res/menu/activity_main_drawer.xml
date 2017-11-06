@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/mobile_sensors"
+            android:icon="@drawable/ic_mobile_sensors"
+            android:title="Mobile Sensors" />
+        <item
+            android:id="@+id/ble_sensors"
+            android:icon="@drawable/ic_ble_sensorss"
+            android:title="BLE Sensors" />
+        <item
+            android:id="@+id/all_sensors"
+            android:icon="@drawable/ic_all_sensors"
+            android:title="All Sensors" />
+    </group>
+
+    <item android:title="Management">
+        <menu>
+            <item
+                android:id="@+id/nav_logging"
+                android:icon="@drawable/ic_settings"
+                android:title="Logging" />
+            <item
+                android:id="@+id/nav_logs"
+                android:icon="@drawable/ic_settings"
+                android:title="Saved Logs" />
+            <item
+                android:id="@+id/nav_log_profiles_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="Log Profile Settings" />
+        </menu>
+    </item>
+
+
+    <item android:title="Settings">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="Settings" />
+        </menu>
+    </item>
+
+</menu>
