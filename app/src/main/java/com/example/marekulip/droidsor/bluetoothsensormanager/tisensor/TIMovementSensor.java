@@ -5,7 +5,9 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorTypeResolver;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
+
+import java.util.List;
 
 /**
  * Created by Fredred on 21.10.2017.
@@ -27,13 +29,20 @@ public class TIMovementSensor extends GeneralTISensor{
     public boolean processNewData(BluetoothGattCharacteristic data, SensorDataPackage dataPackage) {
         if(data.getUuid().equals(dataCharacteristic.getUuid())){
             dataPackage.getDatas().add(new SensorData(TISensor.MOVEMENT_ACC.convert(data.getValue()),SensorData.getTime()));
-            dataPackage.getSensorTypes().add(SensorTypeResolver.EXT_MOV_ACC);
+            dataPackage.getSensorTypes().add(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType);
             dataPackage.getDatas().add(new SensorData(TISensor.MOVEMENT_GYRO.convert(data.getValue()),SensorData.getTime()));
-            dataPackage.getSensorTypes().add(SensorTypeResolver.EXT_MOV_GYRO);
+            dataPackage.getSensorTypes().add(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType);
             dataPackage.getDatas().add(new SensorData(TISensor.MOVEMENT_MAG.convert(data.getValue()),SensorData.getTime()));
-            dataPackage.getSensorTypes().add(SensorTypeResolver.EXT_MOV_MAG);
+            dataPackage.getSensorTypes().add(SensorsEnum.EXT_MOV_MAGNETIC.sensorType);
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void getSensorTypes(List<Integer> sensorTypes) {
+        sensorTypes.add(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType);
+        sensorTypes.add(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType);
+        sensorTypes.add(SensorsEnum.EXT_MOV_MAGNETIC.sensorType);
     }
 }

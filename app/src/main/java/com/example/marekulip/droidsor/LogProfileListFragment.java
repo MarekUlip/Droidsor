@@ -6,11 +6,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
@@ -21,6 +24,7 @@ import java.util.List;
 
 public class LogProfileListFragment extends ListFragment {
     //private OnFragmentInteractionListener mListener;
+    private SimpleCursorAdapter cursorAdapter;
 
     public LogProfileListFragment() {
     }
@@ -67,7 +71,7 @@ public class LogProfileListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
         this.getListView().setDividerHeight(2);
         registerForContextMenu(getListView());
-        setListAdapter(new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1,loadProfiles()));
+        //setListAdapter(new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1,loadProfiles()));
     }
 
     @Override
@@ -78,6 +82,36 @@ public class LogProfileListFragment extends ListFragment {
                 break;
         }
         return true;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        initCursorAdapter();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        destroyCursorAdapter();
+    }
+
+    private void initCursorAdapter(){
+        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        Cursor c = database.query(LogProfilesTable.TABLE_NAME,new String[]{LogProfilesTable._ID,LogProfilesTable.PROFILE_NAME},null,null,null,null,null);
+        cursorAdapter = new SimpleCursorAdapter(getContext(),android.R.layout.simple_list_item_1,c,new String[]{LogProfilesTable.PROFILE_NAME},new int[]{android.R.id.text1},0);
+        setListAdapter(cursorAdapter);
+    }
+
+    private void destroyCursorAdapter(){
+        cursorAdapter.getCursor().close();
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        Log.d("sdsd", "onListItemClick: "+id);
     }
 
     private List<String> loadProfiles(){//TODO refresh

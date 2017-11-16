@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorTypeResolver;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 /**
  * Created by Fredred on 21.10.2017.
@@ -21,7 +21,7 @@ public class TITemperatureSensor extends GeneralTISensor{
     public boolean processNewData(BluetoothGattCharacteristic data, SensorDataPackage dataPackage) {
         if(data.getUuid().equals(dataCharacteristic.getUuid())){
             dataPackage.getDatas().add(new SensorData(TISensor.IR_TEMPERATURE.convert(data.getValue()),SensorData.getTime()));
-            dataPackage.getSensorTypes().add(SensorTypeResolver.resolveSensor(data.getUuid()));
+            dataPackage.getSensorTypes().add(SensorsEnum.resolveSensor(data.getUuid()));
             return true;
         }
         return false;

@@ -23,6 +23,7 @@ import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
 import com.example.marekulip.droidsor.grapview.Entry;
 import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -111,7 +112,7 @@ public class LogsDetailFragment extends ListFragment {
         Log.d(TAG, "loadItems: "+lst.size());
 
         for(int i = 0;i< lst.size();i++){
-            items.add(new LogDetailItem("Sensor "+lst.get(i).sensorType,"measures",lst.get(i).entries,lst.get(i).sensorType));
+            items.add(new LogDetailItem(SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorName(getContext()),SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorUnitName(getContext()),lst.get(i).entries,lst.get(i).sensorType));//"Sensor "+lst.get(i).sensorType,"measures",lst.get(i).entries,lst.get(i).sensorType));
         }
     }
 

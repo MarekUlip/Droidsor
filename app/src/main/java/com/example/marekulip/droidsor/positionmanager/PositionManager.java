@@ -35,7 +35,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 public class PositionManager {
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION_FINE = 1;
-    public static final int REQUEST_CHECK_SETTINGS = 2;
+    public static final int REQUEST_CHECK_SETTINGS = 3;
 
     private FusedLocationProviderClient mFusedLocationClient;
     private SettingsClient mSettingsClient;
@@ -58,6 +58,7 @@ public class PositionManager {
         this.fastestInterval = fastestInterval;
         this.context = context;
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        mSettingsClient = LocationServices.getSettingsClient(context);
         createLocationCallback();
         createLocationRequest();
         buildLocationSettingsRequest();
@@ -133,7 +134,7 @@ public class PositionManager {
     }
 
     public void stopUpdates(){
-        //if(isPositionObtainable)
+        if(isPositionObtainable)
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
@@ -145,7 +146,6 @@ public class PositionManager {
     @SuppressWarnings("MissingPermission")
     public Location getLocation(){
         if(isPositionObtainable){
-
             return mLastLocation;
         }
         return null;

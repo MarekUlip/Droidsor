@@ -11,7 +11,12 @@ public class SensorItem {
     public String sensorValue;
 
     public SensorItem(String sensorName, String sensorValue){
+        this(sensorName,sensorValue,0);
+    }
+
+    public SensorItem(String sensorName, String sensorValue,int sensorType){
         this.sensorName = sensorName;
         this.sensorValue = sensorValue;
+        this.sensorType = sensorType;
     }
 }

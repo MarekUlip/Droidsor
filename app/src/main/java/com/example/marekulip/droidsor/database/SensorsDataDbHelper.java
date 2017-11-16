@@ -15,7 +15,7 @@ public class SensorsDataDbHelper extends SQLiteOpenHelper {
 
 
     private SensorsDataDbHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);//TODO make settings to external SD
     }
 
     public static SensorsDataDbHelper getInstance(Context context){

@@ -26,6 +26,7 @@ import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 import com.example.marekulip.droidsor.logs.LogsActivity;
+import com.example.marekulip.droidsor.positionmanager.PositionManager;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 
@@ -36,6 +37,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private static final int BT_DEVICE_REQUEST = 2;
     private SensorDataDispListFragment fragment;
     private SensorService mSensorService;
+    private PositionManager positionManager;
     private boolean isRecording = false;
 
     @Override
@@ -75,9 +77,10 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 super.onBackPressed();
             }
             else {
-                Intent intent = new Intent(this,SensorService.class);
+                //Intent intent = new Intent(this,SensorService.class);
                 mSensorService.stop(true);
-                unbindService(mServiceConnection);
+                //unbindService(mServiceConnection);
+                //disconnectFromService();
                 finish();
             }
         }
@@ -86,13 +89,30 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
+        //registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
+        connectToService();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        disconnectFromService();
+        //unregisterReceiver(mSensorServiceUpdateReceiver);
+    }
+
+    private void connectToService(){
+        Intent intent = new Intent(this,SensorService.class);
+        if(!isMyServiceRunning(SensorService.class)){
+            Log.d("NtRn", "onCreate: NotRunning");startService(intent);
+        }
+        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
+        registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
+    }
+
+    private void disconnectFromService(){
+        if(!mSensorService.isLogging())mSensorService.stopListeningSensors();
         unregisterReceiver(mSensorServiceUpdateReceiver);
+        unbindService(mServiceConnection);
     }
 
     @Override
@@ -118,6 +138,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_start_log) {
+            positionManager = new PositionManager(this);
+            positionManager.initPosManager(this);
             mSensorService.startLogging(getProfile());//TODO set up GPS
             isRecording = true;
             invalidateOptionsMenu();
@@ -134,10 +156,24 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == BT_DEVICE_REQUEST&&resultCode==RESULT_OK){
-            mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
-            fragment.showBLESensors();
-        }else fragment.showMobileSensors();
+        if(requestCode == BT_DEVICE_REQUEST){
+            if(resultCode==RESULT_OK) {
+                mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
+                mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
+                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            }else {
+                mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
+                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            }
+        } else if(requestCode == PositionManager.REQUEST_CHECK_SETTINGS){
+            if(resultCode==RESULT_OK) {
+                positionManager.initPosManager(this);
+            }
+        } else if(requestCode == PositionManager.MY_PERMISSIONS_REQUEST_LOCATION_FINE){
+            if(resultCode==RESULT_OK) {
+                positionManager.initPosManager(this);
+            }
+        }
     }
 
     private LogProfile getProfile(){
@@ -171,7 +207,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (SensorService.ACTION_DATA_AVAILABLE.equals(action)) {
-                //Log.d(TAG, "onReceive: Displaying data");
+                if(mSensorService.getDataPackages().isEmpty())return;
+                fragment.setNewData(mSensorService.getDataPackages());
+                //Log.d("Displ", "onReceive: Displaying data");
                 //displayData();
             }
         }
@@ -185,16 +223,16 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
         if (id == R.id.mobile_sensors) {
             mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
-            fragment.showMobileSensors();
+            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
         } else if (id == R.id.ble_sensors) {
             if(mSensorService.isBluetoothDeviceOn()){
                 mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
-                fragment.showBLESensors();
+                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
             }
             else startActivityForResult(new Intent(this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
         } else if (id == R.id.all_sensors) {
             mSensorService.setMode(SensorService.ALL_SENSORS_MODE);
-            fragment.showAllSensors();
+            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(this,LogsActivity.class));
         } else if(id == R.id.nav_log_profiles_settings){
@@ -211,6 +249,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mSensorService = ((SensorService.LocalBinder)service).getService();
             mSensorService.startListeningSensors();//TODO check if it is not already listening
+            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
         }
 
         @Override

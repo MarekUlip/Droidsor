@@ -6,8 +6,9 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 
 import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorTypeResolver;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -25,6 +26,7 @@ public abstract class GeneralTISensor {
     protected UUID dataUUID;
     protected UUID periodUUID;
     protected UUID serviceUUID;
+    protected int sensorType;
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
 
@@ -38,6 +40,7 @@ public abstract class GeneralTISensor {
         this.dataUUID = dataUUID;
         this.periodUUID = periodUUID;
         this.serviceUUID = serviceUUID;
+        sensorType = SensorsEnum.resolveSensor(dataUUID);
     }
 
     public boolean resolveService(BluetoothGattService service){
@@ -75,7 +78,11 @@ public abstract class GeneralTISensor {
 
     public abstract boolean processNewData(BluetoothGattCharacteristic data, SensorDataPackage dataPackage);
 
+    public void getSensorTypes(List<Integer> sensorTypes){
+        sensorTypes.add(sensorType);
+    }
+
     public int getSensorType(){
-        return SensorTypeResolver.resolveSensor(dataUUID);
+        return sensorType;
     }
 }

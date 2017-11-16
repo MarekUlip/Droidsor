@@ -43,11 +43,12 @@ public class SensorService extends Service {
     private SensorLogManager sensorLogManager;
     private BluetoothSensorManager bluetoothSensorManager;
     private AndroidSensorManager androidSensorManager;
-    private PositionManager positionManager;//TODO Manage intervals
+    private PositionManager positionManager;//TODO Manage intervals possibly add them when setting up profile
     private final IBinder mBinder = new LocalBinder();
     private int displayMode = ALL_SENSORS_MODE;
 
     private boolean isStopIntended = false;
+    private boolean isListening = false;
 
     private ArrayDeque<SensorDataPackage> dataPackages = new ArrayDeque<>();
     public SensorService() {
@@ -80,7 +81,8 @@ public class SensorService extends Service {
                 Location location = positionManager.getLocation();
                 for (int i = 0; i < dataPackage.getDatas().size(); i++) {
                     //dataPackage.getDatas().get(i).setLocationData(location.getLongitude(), location.getLatitude(), location.getAltitude());
-                    dataPackage.getDatas().get(i).setLocationData(0,0,0);
+                    if(location!= null)dataPackage.getDatas().get(i).setLocationData(location.getLongitude(),location.getLatitude(),location.getAltitude()); //TODO fix altitude
+                    else dataPackage.getDatas().get(i).setLocationData(0,0,0);
                     sensorLogManager.postNewData(dataPackage.getDatas().get(i), dataPackage.getSensorTypes().get(i));
                 }
             }
@@ -98,13 +100,19 @@ public class SensorService extends Service {
     }
 
     public void startListeningSensors(){
-        androidSensorManager.startListening();
-        bluetoothSensorManager.tryToReconnect();
+        if(!isListening){
+            androidSensorManager.startListening();
+            bluetoothSensorManager.tryToReconnect();
+            isListening = true;
+        }
     }
 
     public void stopListeningSensors(){
-        androidSensorManager.stopListening();
-        bluetoothSensorManager.disconnect();
+        if(isListening) {
+            androidSensorManager.stopListening();
+            bluetoothSensorManager.disconnect();
+            isListening = false;
+        }
     }
 
     /**
@@ -134,6 +142,7 @@ public class SensorService extends Service {
     }
 
     public void startLogging(LogProfile profile){
+        positionManager.startUpdates();//TODO resolve first missing locations
         List<Integer> androidSensorTypes = new ArrayList<>();
         List<Integer> androidSensorFrequencies = new ArrayList<>();
         List<Integer> bluetoothSensorTypes = new ArrayList<>();
@@ -153,7 +162,7 @@ public class SensorService extends Service {
         androidSensorManager.setSensorsToListen(androidSensorTypes,androidSensorFrequencies);
         androidSensorManager.startListening();//TODO Optimize
         //bluetoothSensorManager.
-        positionManager.startUpdates();//TODO resolve first missing locations
+
         androidSensorTypes.addAll(bluetoothSensorTypes);
         sensorLogManager.startLog(androidSensorTypes);
     }
@@ -161,6 +170,9 @@ public class SensorService extends Service {
     public void stopLogging(){
         positionManager.stopUpdates();
         sensorLogManager.endLog();
+        androidSensorManager.stopListening();
+        androidSensorManager.resetManager();
+        androidSensorManager.startListening();
     }
 
     public boolean isLogging(){
@@ -171,10 +183,20 @@ public class SensorService extends Service {
         return dataPackages;
     }
 
-    public List<Integer> getMonitoredSensorsTypes(){
+    public List<Integer> getMonitoredSensorsTypes(boolean ignoreMode){
         List<Integer> sensorTypes = new ArrayList<>();
-        androidSensorManager.giveMeYourSensorTypes(sensorTypes);
-        if(bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
+        if(ignoreMode || displayMode == ALL_SENSORS_MODE){
+            androidSensorManager.giveMeYourSensorTypes(sensorTypes);
+            if(bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
+        }
+        else {
+            if(displayMode == BLUETOOTH_SENSORS_MODE){
+                if(bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
+            }
+            else if(displayMode == MOBILE_SENSORS_MODE){
+                androidSensorManager.giveMeYourSensorTypes(sensorTypes);
+            }
+        }
         return sensorTypes;
     }
 

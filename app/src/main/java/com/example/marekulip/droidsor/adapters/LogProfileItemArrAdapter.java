@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.List;
 
@@ -28,6 +29,13 @@ import java.util.List;
 public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
 
     private List<LogProfileItem> items;
+    private int accelPosition;
+    private int magnetPosition;
+    private int orientPosition;
+    private ViewHolder accellViewHolder;
+    private ViewHolder magnetViewHolder;
+    private ViewHolder orientViewHolder;
+
 
     public LogProfileItemArrAdapter(@NonNull Context context, int resource, List<LogProfileItem> items) {
         super(context, resource, items);
@@ -60,12 +68,36 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 profile.setEnabled(b);
+                if(profile.getSensorType() == SensorsEnum.INTERNAL_ORIENTATION.sensorType){
+                    for(LogProfileItem p: items){
+                        if(p.getSensorType()==SensorsEnum.INTERNAL_ACCELEROMETER.sensorType){
+                            p.setEnabled(true);
+                        }
+                        else if(p.getSensorType()==SensorsEnum.INTERNAL_MAGNETOMETER.sensorType){
+                            p.setEnabled(true);
+                        }
+                    }
+                }else if(profile.getSensorType() == SensorsEnum.INTERNAL_ACCELEROMETER.sensorType){
+                    for(LogProfileItem p: items){
+                        if(p.getSensorType()==SensorsEnum.INTERNAL_ORIENTATION.sensorType){
+                            p.setEnabled(false);
+                            break;
+                        }
+                    }
+                }else if (profile.getSensorType() == SensorsEnum.INTERNAL_MAGNETOMETER.sensorType){
+                    for(LogProfileItem p: items){
+                        if(p.getSensorType()==SensorsEnum.INTERNAL_ORIENTATION.sensorType){
+                            p.setEnabled(false);
+                            break;
+                        }
+                    }
+                }
             }
         });
         viewHolder.enableChB.setChecked(profile.isEnabled());
         viewHolder.frequencyEditText.setText(String.valueOf(profile.getScanFrequency()+minimumValue));
         viewHolder.frequencySeekBar.setProgress(profile.getScanFrequency());
-        viewHolder.itemName.setText("Sensor "+profile.getSensorType());
+        viewHolder.itemName.setText(SensorsEnum.resolveEnum(profile.getSensorType()).getSensorName(getContext()));// "Sensor "+profile.getSensorType());
         return convertView;
     }
 

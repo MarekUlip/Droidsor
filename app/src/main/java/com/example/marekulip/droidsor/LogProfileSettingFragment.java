@@ -123,7 +123,7 @@ public class LogProfileSettingFragment extends ListFragment {
     };
 
     private void createLogProfileItemList(){
-        for(Integer i: mSensorService.getMonitoredSensorsTypes()){
+        for(Integer i: mSensorService.getMonitoredSensorsTypes(true)){
             items.add(new LogProfileItem(i));
         }
         //return logProfileItems;

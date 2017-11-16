@@ -30,6 +30,30 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="accelerometer">Accelerometer</string>
+    <string name="gyroscope">Gyroscope</string>
+    <string name="barometer">Barometer</string>
+    <string name="thermometer">Thermometer</string>
+    <string name="optical">Optical</string>
+    <string name="humidity">Humidity</string>
+    <string name="magnetometer">Magnetometer</string>
+    <string name="gravity">Gravity</string>
+    <string name="movement">Movement</string>
+    <string name="orientation">Orientation</string>
+
+    <string name="meter_per_sec_square_unit">m/s²</string>
+    <string name="celsius_degree_unit">°C</string>
+    <string name="humidity_unit">%rH</string>
+    <string name="barometer_unit">mBar</string>
+    <string name="optical_unit">Lux</string>
+    <string name="gyroscope_unit">rad/s</string>
+    <string name="magnetometer_unit">\u00B5T</string>
+    <string name="radian">rad</string>
+
+    <string name="internal">Internal</string>
+    <string name="external">External</string>
+
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
