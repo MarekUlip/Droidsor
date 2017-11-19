@@ -22,6 +22,8 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
+        android:textSize="18sp"
+        android:textColor="#000000"
         app:layout_constraintLeft_toRightOf="@+id/profile_item_enabled_cb"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -39,12 +41,25 @@
 
     <EditText
         android:id="@+id/profile_item_freq_et"
-        android:layout_width="73dp"
+        android:layout_width="75dp"
         android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
         android:ems="10"
         android:inputType="number"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/textView2"
+        app:layout_constraintTop_toBottomOf="@+id/profile_item_name_tv" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="21dp"
+        android:layout_height="41dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
+        android:textSize="14sp"
+        android:textColor="#000000"
+        android:text="@string/milliseconds"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/profile_item_name_tv" />
 </android.support.constraint.ConstraintLayout>

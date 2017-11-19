@@ -19,8 +19,9 @@ import java.util.TimerTask;
 
 public class SensorLogManager {
     private static final String TAG = "SensorLogManager";
-   // private List<SensorLog> logs = new ArrayList<>(); //TODO comment on release if more logs wont be necessary
+   // private List<SensorLog> logs = new ArrayList<>(); //comment on release if more logs wont be necessary
     private int countOfWrittenItems = 0;
+    private int logId = 0;
     private SensorLog log;
     private Context context;
     private SensorsDataDbHelper dbHelper;
@@ -63,7 +64,8 @@ public class SensorLogManager {
         }
         //SensorLog sensorLog = new SensorLog(this,(int)db.insert(SensorLogsTable.TABLE_NAME,null,cv),sensorsToListen);
         //logs.add(sensorLog);
-        log = new SensorLog(this,(int)db.insert(SensorLogsTable.TABLE_NAME,null,cv),sensorsToListen);
+        logId = (int)db.insert(SensorLogsTable.TABLE_NAME,null,cv);
+        log = new SensorLog(this,logId,sensorsToListen);
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -92,6 +94,9 @@ public class SensorLogManager {
         log.writeToDatabase(db);
         db.setTransactionSuccessful();
         db.endTransaction();
+        ContentValues cv = new ContentValues();
+        cv.put(SensorLogsTable.DATE_OF_END,System.currentTimeMillis());
+        db.update(SensorLogsTable.TABLE_NAME,cv,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(logId)});
         closeDatabase();
         log = null;
     }

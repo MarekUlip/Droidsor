@@ -45,7 +45,7 @@ public enum SensorsEnum {
 
 
     public int sensorType;
-    private int itemCount;
+    public int itemCount;
     private String sensorName = null;
     private int sensorNameRes;
     private String sensorUnitName = null;

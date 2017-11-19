@@ -10,9 +10,9 @@
         android:textSize="24sp"
         android:id="@+id/sensor_name"/>
 
-    <com.example.marekulip.droidsor.grapview.LineGraphView
+    <com.github.mikephil.charting.charts.LineChart
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="300dp"
         android:id="@+id/log_chart"/>
 
 </LinearLayout>

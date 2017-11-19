@@ -41,10 +41,10 @@ public class GPXExporter {
 
 
     public static void exportLogItems(List<SensorData> entries, String fileName, Context context){
-        DroidsorExporter.writeToFile(createGPXfromDatas(entries,fileName,context),fileName+".gpx",context);
+        DroidsorExporter.writeToFile(createGPXfromDatas(entries,context),fileName+".gpx",context);
     }
 
-    private static String createGPXfromDatas(List<SensorData> datas,String fileName,Context context){
+    private static String createGPXfromDatas(List<SensorData> datas,Context context){
         int size = datas.size();
         StringBuilder sb = new StringBuilder(loadBaseHTMLFromFile(context));
         //StringBuilder sbBody = new StringBuilder("");

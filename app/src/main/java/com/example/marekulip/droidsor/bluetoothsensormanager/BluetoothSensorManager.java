@@ -193,8 +193,7 @@ public class BluetoothSensorManager {
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             Log.d(TAG, "onDescriptorWrite: "+(descriptor.getValue() == BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)+" status = "+status);
-            getNextSensorNotificationGoing(); //TODO It might get glitchy... first enable notifications to all Services... then enable sensors. It is made this way so this function doesnt have to search for settings characteriscs.
-            //TODO First enable notifying then enable service... its weird but thats how they do it... havent tried it yet... Tried it now... it WORKS! Two days of crying finally paid off!
+            getNextSensorNotificationGoing(); //TODO First enable notifications to all Services... then enable sensors. It is made this way so this function doesnt have to search for settings characteriscs.
         }
 
         @Override

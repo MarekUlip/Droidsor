@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,11 +37,11 @@ public class BLESensorLocateActivity extends ListActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        getActionBar().setTitle(R.string.title_devices);
         mHanlder = new Handler();
 
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "Nope", Toast.LENGTH_SHORT).show();//TODO Add error messages
+            Toast.makeText(this, getString(R.string.ble_not_supported), Toast.LENGTH_SHORT).show();
             finish();
         }
 
@@ -48,7 +49,7 @@ public class BLESensorLocateActivity extends ListActivity{
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
         if (mBluetoothAdapter == null) {
-            Toast.makeText(this, "Noope", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.error_bluetooth_not_supported), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -70,6 +71,7 @@ public class BLESensorLocateActivity extends ListActivity{
         }
         return true;
     }
+
     //TODO make action bar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -123,7 +125,7 @@ public class BLESensorLocateActivity extends ListActivity{
         //intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
         intent.putExtra(SensorDataDisplayerActivity.DEVICE_ADDRESS, device.getAddress());
         if(mScanning){
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);//TODO deprecation
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
             mScanning = false;
         }
         setResult(RESULT_OK,intent);

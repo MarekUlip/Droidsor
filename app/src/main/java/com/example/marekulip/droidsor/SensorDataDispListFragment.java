@@ -87,14 +87,14 @@ public class SensorDataDispListFragment extends ListFragment {
         keyLooper:
         for(Integer i: map.keySet()){
             for(SensorItem item: items){
-                Log.d(TAG, "setNewData: "+item.sensorType);
+                //Log.d(TAG, "setNewData: "+item.sensorType);
                 if (item.sensorType == i){
-                    Log.d(TAG, "setNewData: Found id"+i);
+                    //Log.d(TAG, "setNewData: Found id"+i);
                     item.sensorValue = SensorsEnum.resolveEnum(i).getStringData(getContext(),map.get(i).values);
                     continue keyLooper;
                 }
             }
-            items.add(new SensorItem(SensorsEnum.resolveEnum(i).getSensorName(getContext()),SensorsEnum.resolveEnum(i).getStringData(getContext(),map.get(i).values),i));
+            //items.add(new SensorItem(SensorsEnum.resolveEnum(i).getSensorName(getContext()),SensorsEnum.resolveEnum(i).getStringData(getContext(),map.get(i).values),i));
         }
         adapter.notifyDataSetChanged();
     }

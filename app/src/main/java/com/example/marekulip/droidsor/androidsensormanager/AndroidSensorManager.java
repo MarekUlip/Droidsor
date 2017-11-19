@@ -55,7 +55,7 @@ public class AndroidSensorManager implements SensorEventListener{
         long time = System.currentTimeMillis();
         if(time - lastSensorsTime.get(sensorType) > listenFrequencies.get(sensorType,baseListenFrequency)){
             //Log.d("Start", "onSensorChanged: "+sensorEvent.sensor.getType());
-            lastSensorsTime.put(sensorType,time); //TODO save accel and magnetic values for use with orientation
+            lastSensorsTime.put(sensorType,time);
             SensorDataPackage dataPackage = new SensorDataPackage();
             SensorsEnum.resolveSensor(sensorEvent,dataPackage);
             sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE,dataPackage);
@@ -97,6 +97,7 @@ public class AndroidSensorManager implements SensorEventListener{
     public void resetManager(){
         initSensorsToListenIds();
         initSensorsToListen();
+        listenFrequencies.clear();
     }
 
     private void initListeners(){
@@ -104,7 +105,7 @@ public class AndroidSensorManager implements SensorEventListener{
             @Override
             public void run() {
                 for(int i = 0; i<toListen.size();i++){
-                    mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_UI);
+                    if(toListenIds.contains(toListen.get(i).getType()))mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
                 }
 
                 if(toListenIds.contains(SensorsEnum.INTERNAL_ORIENTATION.sensorType)){
@@ -127,14 +128,17 @@ public class AndroidSensorManager implements SensorEventListener{
 
     private void endListeners(){
         mSensorManager.unregisterListener(this);
-        orientationTimer.cancel();
-        orientationTimer.purge();
-        orientationTimer = null;
+        if(orientationTimer != null) {
+            orientationTimer.cancel();
+            orientationTimer.purge();
+            orientationTimer = null;
+        }
     }
 
     public void setSensorsToListen(List<Integer> sensorsToListen, List<Integer> listeningFrequencies){
         //toListen.clear();
         listenFrequencies.clear();
+        toListenIds = sensorsToListen;
         for (int i = 0; i<sensorsToListen.size();i++) {
             //toListen.add(mSensorManager.getDefaultSensor(sensorsToListen.get(i)));
             listenFrequencies.put(sensorsToListen.get(i),listeningFrequencies.get(i));

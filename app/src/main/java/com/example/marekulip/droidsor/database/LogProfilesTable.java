@@ -15,6 +15,7 @@ public class LogProfilesTable  implements BaseColumns{
      * GPS location
      */
     public static final String SAVE_LOCATION = "save_location";
+    public static final String GPS_FREQUENCY = "gps_frequency";
 
     /**
      * Create table statement for SQLite database.
@@ -23,6 +24,7 @@ public class LogProfilesTable  implements BaseColumns{
             "CREATE TABLE " + TABLE_NAME + " (" +
                     _ID + " INTEGER PRIMARY KEY," +
                     PROFILE_NAME + " TEXT," +
+                    GPS_FREQUENCY + " INTEGER," +
                     SAVE_LOCATION + " INTEGER)";
     /**
      * Create table statement for SQLite database.

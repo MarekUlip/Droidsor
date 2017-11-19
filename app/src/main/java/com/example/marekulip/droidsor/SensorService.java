@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.marekulip.droidsor.androidsensormanager.AndroidSensorManager;
@@ -39,6 +40,8 @@ public class SensorService extends Service {
 
     private final static int NOTIFICATION_ID = 100;
     private final static String NOTIFICATION_CHANNEL = "sensor_service_channel";
+    private final int minSendInterval = 200;
+    private long lastTime;
 
     private SensorLogManager sensorLogManager;
     private BluetoothSensorManager bluetoothSensorManager;
@@ -88,9 +91,11 @@ public class SensorService extends Service {
             }
             if (displayMode == ALL_SENSORS_MODE || isSendable(dataPackage)) {
                 dataPackages.push(dataPackage);
-                //if(dataPackages.size()>1000){
-                Intent intent = new Intent(action);
-                sendBroadcast(intent);
+                if(System.currentTimeMillis()-lastTime > minSendInterval) {
+                    lastTime = System.currentTimeMillis();
+                    Intent intent = new Intent(action);
+                    sendBroadcast(intent);
+                }
             }
         }
     }
@@ -212,7 +217,7 @@ public class SensorService extends Service {
         NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
                 .setContentTitle("Droidsor Service")
                 .setContentText("Service is running")
-                .setSmallIcon(android.R.color.transparent)
+                .setSmallIcon(R.drawable.notification_icon)
                 .setOngoing(true);
         Intent stopServiceIntent = new Intent(this, ServiceStopperService.class);
         PendingIntent stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);

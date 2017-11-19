@@ -1,7 +1,9 @@
 package com.example.marekulip.droidsor;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
@@ -16,8 +18,11 @@ public class ServiceStopperService extends Service {
     @Override
     public void onCreate(){
         Intent intent = new Intent(this,SensorService.class);
-        //TODO check if service is still running
-        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
+        if(isMyServiceRunning(SensorService.class)){
+            bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
+        }else {
+            stopSelf();
+        }
     }
 
     @Override
@@ -40,4 +45,14 @@ public class ServiceStopperService extends Service {
             mSensorService = null;
         }
     };
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

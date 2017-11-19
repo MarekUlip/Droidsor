@@ -1,6 +1,7 @@
 package com.example.marekulip.droidsor.logs;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,7 +12,10 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.marekulip.droidsor.R;
-import com.example.marekulip.droidsor.grapview.LineGraphView;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 import java.util.List;
 
@@ -20,6 +24,7 @@ import java.util.List;
  */
 
 public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
+
     public LogDetailArrayAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<LogDetailItem> objects) {
         super(context, resource, objects);
     }
@@ -27,20 +32,46 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        LogDetailItem item = getItem(position);
+        final LogDetailItem item = getItem(position);
 
         if(convertView == null){
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.log_list_item,parent,false);
         }
 
-        LineGraphView graphView =  convertView.findViewById(R.id.log_chart);
+        LineChart graphView =  convertView.findViewById(R.id.log_chart);
         TextView sensorValue = convertView.findViewById(R.id.sensor_name);
 
+        graphView.setTouchEnabled(true);
+        graphView.getDescription().setEnabled(false);
+        // enable scaling and dragging
+        graphView.setDragEnabled(true);
+        graphView.setScaleEnabled(true);
+        graphView.setPinchZoom(true);
+
+        // set an alternative background color
+        graphView.setBackgroundColor(Color.WHITE);
+        graphView.getAxisRight().setEnabled(false);
+        graphView.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        IAxisValueFormatter formatter = new IAxisValueFormatter() {
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                if((int)value>item.xLabels.size())return "";
+                return item.xLabels.get((int)value);
+            }
+        };
+
+        XAxis xAxis = graphView.getXAxis();
+        xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
+        xAxis.setValueFormatter(formatter);
+
+        graphView.setData(item.lineData);
+        graphView.invalidate();
+
+        graphView.setVisibleXRangeMaximum(120);
+
         sensorValue.setText(item.sensorName);
-        graphView.setxAxisLabel("Time");
-        graphView.setyAxisLabel(item.yLabel);
-        graphView.setGraphName("Graph name");
-        graphView.setGraphItem(item.graphItems);
 
         return convertView;
     }

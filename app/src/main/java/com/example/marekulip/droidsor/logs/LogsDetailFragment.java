@@ -3,6 +3,7 @@ package com.example.marekulip.droidsor.logs;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
@@ -20,10 +21,14 @@ import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.database.SensorDataTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
-import com.example.marekulip.droidsor.grapview.Entry;
 import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -69,7 +74,7 @@ public class LogsDetailFragment extends ListFragment {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0,Menu.FIRST,0,"Export this sensor");
+        menu.add(0,Menu.FIRST,0,getString(R.string.export_sensor));
     }
 
     @Override
@@ -79,47 +84,87 @@ public class LogsDetailFragment extends ListFragment {
         //switch ()
         return super.onContextItemSelected(item);
     }
-
     private void loadItems(int id){
         SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
         SQLiteDatabase database = dbHelper.getReadableDatabase();
         Cursor c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID + " = ?",new String[]{String.valueOf(id)},null,null,null);
         List<EntryHolder> lst = new ArrayList<>();
+        int itemCount;
         if(c!= null&& c.moveToFirst()){
             int type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
             lst.add(new EntryHolder(type));
-            float value = c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X));
-            String time =  DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG))));//Calendar.
-            lst.get(0).entries.add(new Entry(time,value));
+            //lst.get(0).entries.add(new ArrayList<Entry>());
+            itemCount = SensorsEnum.resolveEnum(type).itemCount;
+
+            switch (itemCount){
+                case 3: lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                case 2: lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                case 1: lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
+            }
+            lst.get(0).labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
+            //lst.get(0).entries.add(new Entry(time,value));
             int position;
+            int size;
             while (c.moveToNext()){
                 type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
+                itemCount = SensorsEnum.resolveEnum(type).itemCount;
                 for(position = 0; position<lst.size();position++){
                     if(lst.get(position).sensorType==type)break;
                 }
                 if(position==lst.size()){
                     lst.add(new EntryHolder(type));
                     position = lst.size()-1;
+                    switch (itemCount){
+                        case 3: lst.get(position).entries.add(new ArrayList<Entry>());
+                        case 2: lst.get(position).entries.add(new ArrayList<Entry>());
+                        case 1: lst.get(position).entries.add(new ArrayList<Entry>());
+                    }
                 }
-                value = c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X));
-                time =  DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG))));//Calendar.
-                lst.get(position).entries.add(new Entry(time,value));
+                size = lst.get(position).entries.get(0).size();
+                switch (itemCount){
+                    case 1: lst.get(position).entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                            break;
+                    case 2: lst.get(position).entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                            lst.get(position).entries.get(1).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                            break;
+                    case 3: lst.get(position).entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                            lst.get(position).entries.get(1).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                            lst.get(position).entries.get(2).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
+                            break;
+                            //case 2: lst.get(position).entries.get(1).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                    //case 1: lst.get(position).entries.get(2).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
+                }
+                lst.get(position).labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
             }
             c.close();
         }
         database.close();
         dbHelper.close();
-        Log.d(TAG, "loadItems: "+lst.size());
-
+        List<ILineDataSet> dataSets;
+        LineDataSet dataSet;
+        String[] axisLabels = {"X", "Y", "Z"};
+        int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
         for(int i = 0;i< lst.size();i++){
-            items.add(new LogDetailItem(SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorName(getContext()),SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorUnitName(getContext()),lst.get(i).entries,lst.get(i).sensorType));//"Sensor "+lst.get(i).sensorType,"measures",lst.get(i).entries,lst.get(i).sensorType));
+            dataSets = new ArrayList<>();
+            for(int j = 0; j<lst.get(i).entries.size(); j++){
+                dataSet = new LineDataSet(lst.get(i).entries.get(j),axisLabels[j]);
+                dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+                dataSet.setColor(colors[j]);
+                dataSet.setDrawCircles(false);
+                dataSets.add(dataSet);
+            }
+            items.add(new LogDetailItem(SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorName(getContext()),SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorUnitName(getContext()),new LineData(dataSets),lst.get(i).sensorType,lst.get(i).labels));
         }
     }
 
     private class EntryHolder{
         int sensorType;
-        List<Entry> entries = new ArrayList<>();
-        public EntryHolder(int sensorType){
+        List<List<Entry>> entries = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        EntryHolder(int sensorType){
             this.sensorType = sensorType;
         }
     }
@@ -155,34 +200,4 @@ public class LogsDetailFragment extends ListFragment {
             GPXExporter.exportLogItems(data,id+" Sensor "+sensorType+" "+DateFormat.getDateTimeInstance().format(System.currentTimeMillis()), getContext());
         }
     }
-
-    /*public void showLogs(){
-        items.clear();
-        List<Entry> lst = new ArrayList<>();
-        for(int i = 0; i< 100;i++){
-            lst.add(new Entry("12:45:55",(int)(Math.random()*50)));
-        }
-        items.add(new LogDetailItem("Accelerometer","m/s",lst));
-
-        List<Entry> lst2 = new ArrayList<>();
-        for(int i = 0; i< 100;i++){
-            lst2.add(new Entry("12:45:55",(int)(Math.random()*50)));
-        }
-        items.add(new LogDetailItem("BLE Accelerometer","m/s",lst2));
-
-        lst = new ArrayList<>();
-        for(int i = 0; i< 1000;i++){
-            lst.add(new Entry("12:45:55",(int)(Math.random()*50)));
-        }
-        items.add(new LogDetailItem("Humidity","%rH",lst));
-
-        lst = new ArrayList<>();
-        for(int i = 0; i< 100;i++){
-            lst.add(new Entry("12:45:55",(int)(Math.random()*50)));
-        }
-        items.add(new LogDetailItem("BLE Barometer","mBar",lst));
-
-
-
-    }*/
 }

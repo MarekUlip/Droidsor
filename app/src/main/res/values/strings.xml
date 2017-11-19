@@ -12,6 +12,32 @@
     <string name="disconnected">Disconnected</string>
     <string name="title_devices">BLE Device Scan</string>
     <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
+    <string name="save">Save</string>
+    <string name="saved">Saved</string>
+    <string name="updated">Updated</string>
+    <string name="update">Update</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="untitled_profile">Untitled profile</string>
+    <string name="export_sensor">Export this sensor</string>
+    <string name="export_log">Export log</string>
+    <string name="profile_name">Profile Name</string>
+    <string name="scan_gps_when_logging">Save position when logging.</string>
+    <string name="create_profile">Create New Profile</string>
+    <string name="pick_favorite_log">Pick Favorite Log</string>
+    <string name="favorite_log_picked">Favorite log picked.</string>
+    <string name="connect_bt_device">Connect BT Device</string>
+    <string name="no_favorite_log">No favorite log set. Please go to logs settings and pick your favorite log.</string>
+    <string name="mobile_sensors">Mobile Sensors</string>
+    <string name="bluetooth_sensors">Bluetooth Sensors</string>
+    <string name="all_sensors">All Sensors</string>
+    <string name="logged_sensors">Logged Sensors</string>
+    <string name="management">Management</string>
+    <string name="logging">Logging</string>
+    <string name="saved_logs">Saved Logs</string>
+    <string name="log_profile_settings">Log Profile Settings</string>
+    <string name="unavailable_when_not_logging">This display mode is unavailable when app is not logging.</string>
+    <string name="unavailable_when_logging">This display mode is unavailable when app is logging.</string>
 
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_characteristic">Unknown characteristic</string>
@@ -22,6 +48,7 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
+    <string name="menu_refresh">Refresh</string>
     <string name="title_activity_device_control">DeviceControlActivity</string>
     <string name="title_activity_show_log">ShowLogActivity</string>
     <string name="title_activity_location_test">LocationTestActivity</string>
@@ -49,6 +76,7 @@
     <string name="gyroscope_unit">rad/s</string>
     <string name="magnetometer_unit">\u00B5T</string>
     <string name="radian">rad</string>
+    <string name="milliseconds">ms</string>
 
     <string name="internal">Internal</string>
     <string name="external">External</string>

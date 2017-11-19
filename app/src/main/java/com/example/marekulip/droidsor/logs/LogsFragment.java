@@ -21,7 +21,9 @@ import com.example.marekulip.droidsor.adapters.SensorDataDispArrAdapter;
 import com.example.marekulip.droidsor.database.SensorLogsTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -63,14 +65,6 @@ public class LogsFragment extends ListFragment {
         startActivity(intent);
     }
 
-    public void showLogs(){
-        items.clear();
-        items.add(new SensorItem("Log Name, ID:1","24.09.2017 20:20:23.052 - 24.09.2017 21:20:23.052"));
-        items.add(new SensorItem("Another Log Name, ID:2","25.09.2017 20:20:23.052 - 24.09.2017 21:20:23.052"));
-        items.add(new SensorItem("Next One, ID:3","27.09.2017 20:20:23.052 - 24.09.2017 21:20:23.052"));
-        items.add(new SensorItem("Last One, ID:4","29.09.2017 20:20:23.052 - 24.09.2017 21:20:23.052"));
-    }
-
     private class LogsFragmentCursorAdapter extends CursorAdapter{
 
         public LogsFragmentCursorAdapter(Context context, Cursor c, int flags) {
@@ -79,9 +73,7 @@ public class LogsFragment extends ListFragment {
 
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            String name =  cursor.getString(cursor.getColumnIndexOrThrow(SensorLogsTable.LOG_NAME));
-            long start = cursor.getLong(cursor.getColumnIndexOrThrow(SensorLogsTable.DATE_OF_START));
-            name += System.lineSeparator()+start;
+            String name = prepText(cursor);
             TextView tv = new TextView(context);
             tv.setText(name);
             return tv;
@@ -89,10 +81,17 @@ public class LogsFragment extends ListFragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+            String name = prepText(cursor);
+            ((TextView)view).setText(name);
+        }
+
+        private String prepText(Cursor cursor){
             String name =  cursor.getString(cursor.getColumnIndexOrThrow(SensorLogsTable.LOG_NAME));
             long start = cursor.getLong(cursor.getColumnIndexOrThrow(SensorLogsTable.DATE_OF_START));
-            name += System.lineSeparator()+start;
-            ((TextView)view).setText(name);
+            long end = cursor.getLong(cursor.getColumnIndexOrThrow(SensorLogsTable.DATE_OF_END));
+            DateFormat.getDateTimeInstance().format(new Date(start));
+            name += System.lineSeparator()+DateFormat.getDateTimeInstance().format(new Date(start))+ " - " + DateFormat.getDateTimeInstance().format(new Date(end));;
+            return name;
         }
 
 

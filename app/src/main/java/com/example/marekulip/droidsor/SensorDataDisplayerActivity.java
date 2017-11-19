@@ -34,7 +34,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public static final String DEVICE_ADDRESS = "DEVICE_ADDRESS";
-    private static final int BT_DEVICE_REQUEST = 2;
+    public static final String SHARED_PREFS_NAME = "droidsor_prefs";
+    public static final String FAVORITE_LOG = "favorite_log";
+    public static final int BT_DEVICE_REQUEST = 2;
     private SensorDataDispListFragment fragment;
     private SensorService mSensorService;
     private PositionManager positionManager;
@@ -55,13 +57,14 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setCheckedItem(R.id.mobile_sensors);
 
         fragment = new SensorDataDispListFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment, fragment).commit();
 
         Intent intent = new Intent(this,SensorService.class);
         if(!isMyServiceRunning(SensorService.class)){
-            Log.d("NtRn", "onCreate: NotRunning");startService(intent);
+            startService(intent);
         }
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
     }
@@ -140,14 +143,22 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         if (id == R.id.action_start_log) {
             positionManager = new PositionManager(this);
             positionManager.initPosManager(this);
-            mSensorService.startLogging(getProfile());//TODO set up GPS
-            isRecording = true;
-            invalidateOptionsMenu();
+            LogProfile profile = getProfile();
+            if(profile == null){
+                Toast.makeText(this,getString(R.string.no_favorite_log),Toast.LENGTH_LONG).show();
+            }else {
+                mSensorService.startLogging(getProfile());//TODO set up GPS
+                isRecording = true;
+                //
+                invalidateOptionsMenu();
+                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
+            }
             return true;
         }else if(id==R.id.action_stop_log){
             mSensorService.stopLogging();
             isRecording = false;
             invalidateOptionsMenu();
+            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
             return true;
         }
 
@@ -184,14 +195,12 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 new String[]{LogProfilesTable._ID,LogProfilesTable.PROFILE_NAME},
                 LogProfilesTable._ID+" = ?",
                 new String[]{"1"},null,null,null);*/
-        Cursor c = database.query(LogProfileItemsTable.TABLE_NAME,new String[]{LogProfileItemsTable.SCAN_PERIOD,LogProfileItemsTable.SENSOR_TYPE},LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{"1"},null,null,null);
+        Cursor c = database.query(LogProfileItemsTable.TABLE_NAME,new String[]{LogProfileItemsTable.SCAN_PERIOD,LogProfileItemsTable.SENSOR_TYPE},LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(getSharedPreferences(SHARED_PREFS_NAME,0).getInt(FAVORITE_LOG,0))},null,null,null);
         if(c!=null&&c.moveToFirst()){
-            Log.d("gotSomething", "getProfile: ");
             LogProfileItem item;
             item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)),false);
             profile.getLogItems().add(item);
             while (c.moveToNext()){
-                Log.d("gotSomething", "getProfile: ");
                 item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)),false);
                 profile.getLogItems().add(item);
             }
@@ -222,18 +231,31 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.mobile_sensors) {
-            mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
-            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            if(mSensorService.isLogging())Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+            else {
+                mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
+                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            }
         } else if (id == R.id.ble_sensors) {
             if(mSensorService.isBluetoothDeviceOn()){
-                mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
-                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                if(mSensorService.isLogging())Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+                else {
+                    mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
+                    fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                }
             }
             else startActivityForResult(new Intent(this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
         } else if (id == R.id.all_sensors) {
-            mSensorService.setMode(SensorService.ALL_SENSORS_MODE);
-            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
-        } else if (id == R.id.nav_logs) {
+            if(mSensorService.isLogging())Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+            else {
+                mSensorService.setMode(SensorService.ALL_SENSORS_MODE);
+                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            }
+        } else if(id == R.id.logged_sensors){
+            if(mSensorService.isLogging())fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            else Toast.makeText(this,getString(R.string.unavailable_when_not_logging),Toast.LENGTH_LONG).show();
+        }
+        else if (id == R.id.nav_logs) {
             startActivity(new Intent(this,LogsActivity.class));
         } else if(id == R.id.nav_log_profiles_settings){
             startActivity(new Intent(this,LogProfileActivity.class));
@@ -248,7 +270,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mSensorService = ((SensorService.LocalBinder)service).getService();
-            mSensorService.startListeningSensors();//TODO check if it is not already listening
+            mSensorService.startListeningSensors();
             fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
         }
 

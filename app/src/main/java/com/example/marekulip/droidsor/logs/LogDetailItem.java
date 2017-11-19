@@ -1,6 +1,6 @@
 package com.example.marekulip.droidsor.logs;
 
-import com.example.marekulip.droidsor.grapview.Entry;
+import com.github.mikephil.charting.data.LineData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,15 +10,20 @@ import java.util.List;
  */
 
 public class LogDetailItem {
-    public List<Entry> graphItems = new ArrayList<>();
+    //public List<Entry> graphItems = new ArrayList<>();
+    //public List<ILineDataSet> graphItems;
+    public LineData lineData;
+    public List<String> xLabels = new ArrayList<>();
     public String sensorName;
     public String yLabel;
     public int sensorType;
 
-    public LogDetailItem(String sensorName, String yLabel, List<Entry> graphItems, int sensorType){
+    public LogDetailItem(String sensorName, String yLabel, LineData lineData, int sensorType, List<String> xLabels){
         this.sensorName = sensorName;
-        this.graphItems = graphItems;
+        //this.graphItems = graphItems;
+        this.lineData = lineData;
         this.yLabel = yLabel;
         this.sensorType = sensorType;
+        this.xLabels = xLabels;
     }
 }
