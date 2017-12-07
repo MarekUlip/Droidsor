@@ -30,13 +30,18 @@ public class SensorLog {
         }
     }
 
-    public void tryToAddItem(SensorData d, int sensorId){
-       // Log.d(TAG, "tryToAddItem: "+sensorId);
+    public void tryToAddItem(SensorData d){
+        if(d.sensorType==0) try {//TODO only for test puprposes
+            throw new Exception("Id not set for sensor Data");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Log.d(TAG, "tryToAddItem: "+sensorId);
         //Log.d(TAG, "tryToAddItem: "+sensors.size());
         for(SensorLogger l:sensors){
             //Log.d(TAG, "tryToAddItem: Searching for listening sensor");
-            if(l.getSensorType()==sensorId){
-                Log.d(TAG, "tryToAddItem: listening sensor found " + sensorId);
+            if(l.getSensorType()==d.sensorType){
+                Log.d(TAG, "tryToAddItem: listening sensor found " + d.sensorType);
                 l.addItem(d);
                 break;
             }

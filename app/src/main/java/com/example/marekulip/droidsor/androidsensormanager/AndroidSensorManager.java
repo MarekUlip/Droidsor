@@ -9,11 +9,10 @@ import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
 import com.example.marekulip.droidsor.SensorService;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -56,9 +55,9 @@ public class AndroidSensorManager implements SensorEventListener{
         if(time - lastSensorsTime.get(sensorType) > listenFrequencies.get(sensorType,baseListenFrequency)){
             //Log.d("Start", "onSensorChanged: "+sensorEvent.sensor.getType());
             lastSensorsTime.put(sensorType,time);
-            SensorDataPackage dataPackage = new SensorDataPackage();
-            SensorsEnum.resolveSensor(sensorEvent,dataPackage);
-            sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE,dataPackage);
+            List<SensorData> sensorDataList = new ArrayList<>();
+            SensorsEnum.resolveSensor(sensorEvent,sensorDataList);
+            sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE,sensorDataList);
 
             if (sensorType == Sensor.TYPE_ACCELEROMETER) {
                 System.arraycopy(sensorEvent.values, 0, mAccelerometerReading,
@@ -115,9 +114,9 @@ public class AndroidSensorManager implements SensorEventListener{
                     public void run() {
                         if(isAccelSet && isMagFieldSet) {
                             updateOrientationAngles();
-                            SensorDataPackage sensorDataPackage = new SensorDataPackage();
-                            SensorsEnum.INTERNAL_ORIENTATION.resolveSensor(sensorDataPackage, mOrientationAngles);
-                            sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE, sensorDataPackage);
+                            List<SensorData> sensorDataList = new ArrayList<>();
+                            SensorsEnum.INTERNAL_ORIENTATION.resolveSensor(sensorDataList, mOrientationAngles);
+                            sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE, sensorDataList);
                         }
                     }
                     },listenFrequencies.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,baseListenFrequency),listenFrequencies.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,baseListenFrequency));

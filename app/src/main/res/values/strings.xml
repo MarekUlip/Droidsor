@@ -20,7 +20,7 @@
     <string name="delete">Delete</string>
     <string name="untitled_profile">Untitled profile</string>
     <string name="export_sensor">Export this sensor</string>
-    <string name="export_log">Export log</string>
+    <string name="export_log_item">Export log item</string>
     <string name="profile_name">Profile Name</string>
     <string name="scan_gps_when_logging">Save position when logging.</string>
     <string name="create_profile">Create New Profile</string>
@@ -38,6 +38,7 @@
     <string name="log_profile_settings">Log Profile Settings</string>
     <string name="unavailable_when_not_logging">This display mode is unavailable when app is not logging.</string>
     <string name="unavailable_when_logging">This display mode is unavailable when app is logging.</string>
+    <string name="export_log">Export log</string>
     <string name="started_exporting">Started exporting of selected logs. We will inform you when exporting is done.</string>
     <string name="exporting_done">Exporting done.</string>
 

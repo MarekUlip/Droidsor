@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -43,6 +44,7 @@ public class GPXExporter {
     private static final String eleStartTag = "<ele>";
     private static final String eleEndTag = "</ele>";
     private static final DecimalFormat decimalFormat =  new DecimalFormat("##.#####");
+    private static final int timeGap = 500;
 
     static {
         decimalFormat.setRoundingMode(RoundingMode.DOWN);
@@ -102,17 +104,31 @@ public class GPXExporter {
         sb.append(trksegStartTag).append(System.lineSeparator());
         //
         SensorData data;
+        //SensorsEnum sensorsEnum;
+        long lastTime =  datas.get(0).time;
+        String sensorXMLName;
         for(int i = 0; i<size;i++){
             data = datas.get(i);
             sb.append(trkptStartTag).append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">").append(System.lineSeparator())
-                    //.append(timeStartTag).append(DateFormat.getDateTimeInstance().format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator())
                     .append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator());
             if(data.altitude != 0)sb.append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator());
-            sb.append(extensionsStartTag).append(System.lineSeparator())
-                    .append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator())
-                    .append(yValueStartTag).append(decimalFormat.format(data.values.y)).append(yValueEndTag).append(System.lineSeparator())
-                    .append(zValueStartTag).append(decimalFormat.format(data.values.z)).append(zValueEndTag).append(System.lineSeparator())
-                    .append(extensionsEndTag).append(trkptEndTag).append(System.lineSeparator());
+            sb.append(extensionsStartTag).append(System.lineSeparator());
+            for(; i<size;i++){
+                data = datas.get(i);
+                if(data.time - lastTime > timeGap){
+                    lastTime = data.time;
+                    i--;
+                    break;
+                }
+                sensorXMLName = SensorsEnum.resolveEnum(data.sensorType).getSensorNameXmlFriendly(context);
+                sb.append(myNamespaceTagStart).append(sensorXMLName).append(">")
+                .append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator())
+                .append(yValueStartTag).append(decimalFormat.format(data.values.y)).append(yValueEndTag).append(System.lineSeparator())
+                .append(zValueStartTag).append(decimalFormat.format(data.values.z)).append(zValueEndTag).append(System.lineSeparator())
+                .append(myNamespaceTagEnd).append(sensorXMLName).append(">");
+            }
+
+            sb.append(extensionsEndTag).append(trkptEndTag).append(System.lineSeparator());
 
             //sb.append(trkStartTag).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(listItemEnd);
             //sbBody.append(entrieDivStart).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(entrieDivStartEnd).append(entries.get(i).getEntrieBody(false)).append(entrieDivEnd);

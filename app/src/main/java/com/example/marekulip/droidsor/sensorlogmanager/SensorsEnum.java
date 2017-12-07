@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.example.marekulip.droidsor.R;
@@ -12,6 +13,7 @@ import com.example.marekulip.droidsor.database.SensorDataTable;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -27,11 +29,10 @@ public enum SensorsEnum {
     INTERNAL_BAROMETER(Sensor.TYPE_PRESSURE,R.string.barometer,R.string.barometer_unit,R.string.internal,1),
     INTERNAL_GRAVITY(Sensor.TYPE_GRAVITY,R.string.gravity,R.string.meter_per_sec_square_unit,R.string.internal,3),
     INTERNAL_ORIENTATION(98,R.string.orientation,R.string.radian,R.string.internal,3){
-        //203 is used because Sensor.TYPE_ORIENTATION is deprecated so i wanted to avoid wrong type
+        //98 is used because Sensor.TYPE_ORIENTATION is deprecated so i wanted to avoid wrong type
         @Override
-        public void resolveSensor(SensorDataPackage dataPackage, float[] data){
-            dataPackage.getDatas().add(new SensorData(new Point3D(data[0],data[1],data[2]),SensorData.getTime()));
-            dataPackage.getSensorTypes().add(sensorType);
+        public void resolveSensor(List<SensorData> sensorDataList, float[] data){
+            sensorDataList.add(new SensorData(sensorType,new Point3D(data[0],data[1],data[2]),SensorData.getTime()));
         }
     },
     EXT_MOV_ACCELEROMETER(100,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.external,3),
@@ -47,6 +48,7 @@ public enum SensorsEnum {
     public int sensorType;
     public int itemCount;
     private String sensorName = null;
+    private String sensorNameXmlFriendly = null;
     private int sensorNameRes;
     private String sensorUnitName = null;
     private int sensorUnitNameRes;
@@ -80,6 +82,14 @@ public enum SensorsEnum {
             sensorName = context.getString(sensorNameRes)+ " " + context.getString(sPositionStringRes);
         }
         return sensorName;
+    }
+
+    public String getSensorNameXmlFriendly(Context context){
+        if(sensorNameXmlFriendly == null){
+            Log.d("Lazy load", "getSensorNameXmlFriendly: Sensor XML name not initialized. Initializing it now.");
+            sensorNameXmlFriendly = context.getString(sensorNameRes)+ "_" + context.getString(sPositionStringRes);
+        }
+        return sensorNameXmlFriendly;
     }
 
     public String getSensorUnitName(Context context){
@@ -153,12 +163,11 @@ public enum SensorsEnum {
         }
     }
 
-    public static void resolveSensor(SensorEvent event, SensorDataPackage dataPackage){
-        dataPackage.getDatas().add(new SensorData(resolveSensor(event),SensorData.getTime()));
-        dataPackage.getSensorTypes().add(event.sensor.getType());
+    public static void resolveSensor(SensorEvent event, List<SensorData> sensorDataList){
+        sensorDataList.add(new SensorData(event.sensor.getType(),resolveSensor(event),SensorData.getTime()));
     }
 
-    public void resolveSensor(SensorDataPackage dataPackage, float[] data){
+    public void resolveSensor(List<SensorData> sensorDataList, float[] data){
         throw new UnsupportedOperationException("Error: this method should be overriden by enums which requires this method.");
     }
 }

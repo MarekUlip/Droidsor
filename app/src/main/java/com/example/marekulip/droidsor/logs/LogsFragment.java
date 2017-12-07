@@ -19,13 +19,18 @@ import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.SensorItem;
 import com.example.marekulip.droidsor.adapters.SensorDataDispArrAdapter;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
+import com.example.marekulip.droidsor.database.SensorDataTable;
 import com.example.marekulip.droidsor.database.SensorLogsTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
+import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
+import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -71,14 +76,56 @@ public class LogsFragment extends ListFragment {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0, Menu.FIRST,0,getString(R.string.delete));
+        menu.add(0,Menu.FIRST,0,R.string.export_log);
+        menu.add(0, Menu.FIRST+1,0,getString(R.string.delete));
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if(item.getItemId()==Menu.FIRST) deleteItem((int)info.id);
+        if(item.getItemId()==Menu.FIRST) exportLog((int)info.id);
+        if(item.getItemId()==Menu.FIRST+1) deleteItem((int)info.id);
         return super.onContextItemSelected(item);
+    }
+
+    private void exportLog(final int id){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getContext(),R.string.started_exporting,Toast.LENGTH_LONG).show();
+                List<SensorData> data = new ArrayList<>();
+                SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
+                SQLiteDatabase database = dbHelper.getReadableDatabase();
+                Cursor c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ?",new String[]{String.valueOf(id)},null,null,null);
+                if(c!=null && c.moveToFirst()) {
+                    data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
+                            ,new Point3D(
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
+                    ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
+                    ));
+                    while (c.moveToNext()) {
+                        data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
+                                ,new Point3D(
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
+                        ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
+                        ));
+                    }
+                    c.close();
+                    GPXExporter.exportLogItems(data, "Log "+ id + " Exported at " + DateFormat.getDateTimeInstance().format(System.currentTimeMillis()), getContext());
+                    Toast.makeText(getContext(), R.string.exporting_done, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void deleteItem(int id){

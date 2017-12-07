@@ -9,12 +9,14 @@ import com.example.marekulip.droidsor.database.SensorDataTable;
  */
 
 public class SensorData {
+    public int sensorType;
     public final Point3D values;
     public final long time;
     public double longitude;
     public double latitude;
     public double altitude;
-    public SensorData(Point3D v, long t, double longt, double lat, double altitude){
+    public SensorData(int sensorType,Point3D v, long t, double longt, double lat, double altitude){
+        this.sensorType = sensorType;
         values = v;
         time = t;
         longitude = longt;
@@ -22,8 +24,12 @@ public class SensorData {
         this.altitude = altitude;
     }
 
-    public SensorData(Point3D v, long t){
+    /*public SensorData(Point3D v, long t){
         this(v,t,0.0,0.0,0.0);
+    }*/
+
+    public SensorData(int sensorType, Point3D v, long t){
+        this(sensorType,v,t,0.0,0.0,0.0);
     }
 
     public void setLocationData(double longt, double lat, double altit){

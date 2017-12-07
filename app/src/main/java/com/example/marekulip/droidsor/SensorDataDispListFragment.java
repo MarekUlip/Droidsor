@@ -4,15 +4,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
-import android.util.SparseArray;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.example.marekulip.droidsor.adapters.SensorDataDispArrAdapter;
 import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.ArrayDeque;
@@ -67,21 +62,13 @@ public class SensorDataDispListFragment extends ListFragment {
         adapter.notifyDataSetChanged();
     }*/
 
-    public void setNewData(ArrayDeque<SensorDataPackage> dataPackages){
+    public void setNewData(ArrayDeque<SensorData> sensorDataQueue){
         Map<Integer,SensorData> map = new HashMap<>();
-        SensorDataPackage dataPackage;
-        int size;
-        while(!dataPackages.isEmpty()){
+        SensorData sensorData;
+        while(!sensorDataQueue.isEmpty()){
             //Log.d(TAG, "setNewData: ");
-            dataPackage = dataPackages.pop();
-            size = dataPackage.getDatas().size();
-            if(size == 1){
-                map.put(dataPackage.getSensorTypes().get(0),dataPackage.getDatas().get(0));
-                continue;
-            }
-            for(int i = 0; i<size;i++){
-                map.put(dataPackage.getSensorTypes().get(i),dataPackage.getDatas().get(i));
-            }
+            sensorData = sensorDataQueue.pop();
+            map.put(sensorData.sensorType,sensorData);
         }
         boolean wasFound;
 

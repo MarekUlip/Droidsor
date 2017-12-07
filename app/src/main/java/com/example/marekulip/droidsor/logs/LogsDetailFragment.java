@@ -172,8 +172,7 @@ public class LogsDetailFragment extends ListFragment {
         }
     }
 
-    private void exportItems(int position){
-        final int pos = position;
+    private void exportItems(final int pos){
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -184,7 +183,8 @@ public class LogsDetailFragment extends ListFragment {
                 SQLiteDatabase database = dbHelper.getReadableDatabase();
                 Cursor c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" = ?",new String[]{String.valueOf(id),String.valueOf(sensorType)},null,null,null);
                 if(c!=null && c.moveToFirst()) {
-                    data.add(new SensorData(new Point3D(
+                    data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
+                            ,new Point3D(
                             c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
                             c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
                             c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
@@ -194,7 +194,8 @@ public class LogsDetailFragment extends ListFragment {
                             c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
                     ));
                     while (c.moveToNext()) {
-                        data.add(new SensorData(new Point3D(
+                        data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
+                                ,new Point3D(
                                 c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
                                 c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
                                 c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))

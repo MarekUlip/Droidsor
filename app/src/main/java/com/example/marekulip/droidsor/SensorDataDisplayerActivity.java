@@ -224,8 +224,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (SensorService.ACTION_DATA_AVAILABLE.equals(action)) {
-                if(mSensorService.getDataPackages().isEmpty())return;
-                fragment.setNewData(mSensorService.getDataPackages());
+                if(mSensorService.getSensorDataQueue().isEmpty())return;
+                fragment.setNewData(mSensorService.getSensorDataQueue());
                 //Log.d("Displ", "onReceive: Displaying data");
                 //displayData();
             }

@@ -1,19 +1,15 @@
 package com.example.marekulip.droidsor;
 
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,7 +18,7 @@ import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorMana
 import com.example.marekulip.droidsor.positionmanager.PositionManager;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorLogManager;
 
 import java.util.ArrayDeque;
@@ -53,7 +49,7 @@ public class SensorService extends Service {
     private boolean isStopIntended = false;
     private boolean isListening = false;
 
-    private ArrayDeque<SensorDataPackage> dataPackages = new ArrayDeque<>();
+    private ArrayDeque<SensorData> sensorDataQueue = new ArrayDeque<>();
     public SensorService() {
 
     }
@@ -79,19 +75,24 @@ public class SensorService extends Service {
         sendBroadcast(intent);
     }
 
-    public void broadcastUpdate(final String action, SensorDataPackage dataPackage){
+    public void broadcastUpdate(final String action, List<SensorData> sensorData){
         if(action.equals(ACTION_DATA_AVAILABLE)) {
             if (sensorLogManager.isLogging()) {
                 Location location = positionManager.getLocation();
-                for (int i = 0; i < dataPackage.getDatas().size(); i++) {
+                for (int i = 0; i < sensorData.size(); i++) {
                     //dataPackage.getDatas().get(i).setLocationData(location.getLongitude(), location.getLatitude(), location.getAltitude());
-                    if(location!= null)dataPackage.getDatas().get(i).setLocationData(location.getLongitude(),location.getLatitude(),location.getAltitude()); //TODO fix altitude
-                    else dataPackage.getDatas().get(i).setLocationData(0,0,0);
-                    sensorLogManager.postNewData(dataPackage.getDatas().get(i), dataPackage.getSensorTypes().get(i));
+                    if(location!= null)sensorData.get(i).setLocationData(location.getLongitude(),location.getLatitude(),location.getAltitude()); //TODO fix altitude
+                    else sensorData.get(i).setLocationData(0,0,0);
+                    sensorLogManager.postNewData(sensorData.get(i));
                 }
             }
-            if (displayMode == ALL_SENSORS_MODE || isSendable(dataPackage)) {
-                dataPackages.push(dataPackage);
+            if (displayMode == ALL_SENSORS_MODE || isSendable(sensorData)) {
+                if(sensorData.size()==1)sensorDataQueue.push(sensorData.get(0));
+                else{
+                    for(int i =0;i<sensorData.size();i++) {
+                        sensorDataQueue.push(sensorData.get(i));
+                    }
+                }
                 if(System.currentTimeMillis()-lastTime > minSendInterval) {
                     lastTime = System.currentTimeMillis();
                     Intent intent = new Intent(action);
@@ -189,8 +190,8 @@ public class SensorService extends Service {
         return sensorLogManager.isLogging();
     }
 
-    public ArrayDeque<SensorDataPackage> getDataPackages(){
-        return dataPackages;
+    public ArrayDeque<SensorData> getSensorDataQueue(){
+        return sensorDataQueue;
     }
 
     public List<Integer> getMonitoredSensorsTypes(boolean ignoreMode){
@@ -212,9 +213,9 @@ public class SensorService extends Service {
         return sensorTypes;
     }
 
-    private boolean isSendable(SensorDataPackage dataPackage){
-        if(displayMode == BLUETOOTH_SENSORS_MODE && dataPackage.getSensorTypes().get(0)<100)return false;
-        if(displayMode == MOBILE_SENSORS_MODE && dataPackage.getSensorTypes().get(0)>100)return false;
+    private boolean isSendable(List<SensorData> sensorDataList){
+        if(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType<100)return false;//It is enough to check only first sensor from list because ussualy only one value is present at list. When there are multiple values in the list they are from the same source
+        if(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType>100)return false;
         return true;
     }
 

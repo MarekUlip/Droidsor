@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 
-import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.List;
@@ -76,7 +76,7 @@ public abstract class GeneralTISensor {
         mBluetoothGatt.writeDescriptor(desc);
     }
 
-    public abstract boolean processNewData(BluetoothGattCharacteristic data, SensorDataPackage dataPackage);
+    public abstract boolean processNewData(BluetoothGattCharacteristic data, List<SensorData> sensorDataList);
 
     public void getSensorTypes(List<Integer> sensorTypes){
         sensorTypes.add(sensorType);

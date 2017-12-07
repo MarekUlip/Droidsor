@@ -105,8 +105,8 @@ public class SensorLogManager {
         return log != null;
     }
 
-    public void postNewData(SensorData data, int sensorType){
-        log.tryToAddItem(data,sensorType);
+    public void postNewData(SensorData data){
+        log.tryToAddItem(data);
     }
 
     private SQLiteDatabase openDatabase(){

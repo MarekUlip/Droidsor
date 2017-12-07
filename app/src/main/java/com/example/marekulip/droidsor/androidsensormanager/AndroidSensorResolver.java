@@ -5,7 +5,8 @@ import android.hardware.SensorEvent;
 
 import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
+
+import java.util.List;
 
 /**
  * Created by Fredred on 22.10.2017.
@@ -30,8 +31,9 @@ public class AndroidSensorResolver {
 
     }
 
-    public static void resolveSensor(SensorEvent event, SensorDataPackage dataPackage){
-        dataPackage.getDatas().add(new SensorData(resolveSensor(event),SensorData.getTime()));
-        dataPackage.getSensorTypes().add(event.sensor.getType());
+    public static void resolveSensor(SensorEvent event, List<SensorData> datas){
+        datas.add(new SensorData(event.sensor.getType(),resolveSensor(event),SensorData.getTime()));
+        /*dataPackage.getDatas().add(new SensorData(resolveSensor(event),SensorData.getTime()));
+        dataPackage.getSensorTypes().add(event.sensor.getType());*/
     }
 }

@@ -19,7 +19,7 @@ import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TIHumidity
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TIMovementSensor;
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TIOpticalSensor;
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TITemperatureSensor;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.ArrayDeque;
@@ -70,8 +70,8 @@ public class BluetoothSensorManager {
         sensorService.broadcastUpdate(action);
     }
 
-    public void broadcastUpdate(final String action, SensorDataPackage dataPackage){
-        sensorService.broadcastUpdate(action,dataPackage);
+    public void broadcastUpdate(final String action, List<SensorData> sensorDataList){
+        sensorService.broadcastUpdate(action,sensorDataList);
     }
 
     public boolean initialize() {
@@ -184,7 +184,7 @@ public class BluetoothSensorManager {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            SensorDataPackage dataPackage = new SensorDataPackage();
+            List<SensorData> dataPackage = new ArrayList<>();
             for (GeneralTISensor sensor: activeSensors) {
                 if(sensor.processNewData(characteristic,dataPackage)) break;
             }
