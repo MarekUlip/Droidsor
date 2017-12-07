@@ -46,6 +46,8 @@ public class PositionManager {
     private Context context;
 
     private static boolean isPositionObtainable = false;
+    private boolean isTryingToGetFirstPosition = false;
+    private boolean isGettingUpdates = false;
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -75,6 +77,10 @@ public class PositionManager {
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 mLastLocation = locationResult.getLastLocation();
+                if(isTryingToGetFirstPosition) {
+                    stopUpdates();
+                    isTryingToGetFirstPosition = false;
+                }
                 //mFusedLocationClient.removeLocationUpdates(mLocationCallback);
             }
         };
@@ -106,6 +112,7 @@ public class PositionManager {
                     .addOnFailureListener(activity, new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            isPositionObtainable = false;
                             int statusCode = ((ApiException) e).getStatusCode();
                             switch (statusCode) {
                                 case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -123,19 +130,51 @@ public class PositionManager {
                         }
                     });
         } else {
+            isPositionObtainable = false;
             ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MY_PERMISSIONS_REQUEST_LOCATION_FINE);
             ((PermissionHandlerIFace)activity).requestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
         }
     }
+
+    public void tryInitPosManager(){
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
+                    .addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+                        @Override
+                        public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                            //noinspection MissingPermission
+                            // mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                            //  mLocationCallback, Looper.myLooper());
+                            isPositionObtainable = true;
+                            isTryingToGetFirstPosition = true;
+                            startUpdates();
+                        }
+                    });
+        }
+    }
+
+    public void setIntervals(int interval){
+        mLocationRequest.setInterval(interval);
+        if(interval>2000){
+            mLocationRequest.setFastestInterval(interval / 2000);
+        }
+        else{
+            mLocationRequest.setFastestInterval(interval);
+        }
+    }
     @SuppressWarnings("MissingPermission")
     public void startUpdates(){
-        if(isPositionObtainable)
+        if(isPositionObtainable){
             mFusedLocationClient.requestLocationUpdates(mLocationRequest,mLocationCallback,Looper.myLooper());
+            isGettingUpdates = true;
+        }
     }
 
     public void stopUpdates(){
-        if(isPositionObtainable)
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        if(isPositionObtainable && isGettingUpdates) {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+            isGettingUpdates = false;
+        }
     }
 
     private void buildLocationSettingsRequest() {

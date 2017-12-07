@@ -142,7 +142,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_start_log) {
             positionManager = new PositionManager(this);
-            positionManager.initPosManager(this);
+            positionManager.initPosManager(this);//TODO edit is optainable at start of this method
+            Log.d("PosManagerTest", "onOptionsItemSelected: "+positionManager.isObtainable());
             LogProfile profile = getProfile();
             if(profile == null){
                 Toast.makeText(this,getString(R.string.no_favorite_log),Toast.LENGTH_LONG).show();
@@ -204,6 +205,13 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)),false);
                 profile.getLogItems().add(item);
             }
+            c.close();
+        }
+        c = database.query(LogProfilesTable.TABLE_NAME,null,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(getSharedPreferences(SHARED_PREFS_NAME,0).getInt(FAVORITE_LOG,0))},null,null,null);
+        if(c!=null&&c.moveToFirst()){
+            profile.setProfileName(c.getString(c.getColumnIndexOrThrow(LogProfilesTable.PROFILE_NAME)));
+            profile.setGPSFrequency(c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.GPS_FREQUENCY)));
+            profile.setSaveGPS(c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.SAVE_LOCATION))!=0);
             c.close();
         }
         dbHelper.close();

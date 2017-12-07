@@ -51,14 +51,14 @@ public class SensorLogManager {
         return countOfWrittenItems;
     }
 
-    public void startLog(List<Integer> sensorsToListen){
+    public void startLog(String logName,List<Integer> sensorsToListen){
         /*if(logs.size() >= 10){
             return;
         }*/
         ContentValues cv = new ContentValues();
         //Instant.
         cv.put(SensorLogsTable.DATE_OF_START, System.currentTimeMillis());
-        cv.put(SensorLogsTable.LOG_NAME,"Default Log Name");
+        cv.put(SensorLogsTable.LOG_NAME,logName);
         if(db == null){
             db = openDatabase();
         }

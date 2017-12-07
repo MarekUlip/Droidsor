@@ -64,6 +64,7 @@ public class SensorService extends Service {
         bluetoothSensorManager = new BluetoothSensorManager(this);
         androidSensorManager = new AndroidSensorManager(this);
         positionManager = new PositionManager(this);
+        positionManager.tryInitPosManager();
         createOrUpdateServiceNotification("","");
         return super.onStartCommand(intent, flags, startId);
     }
@@ -147,7 +148,11 @@ public class SensorService extends Service {
     }
 
     public void startLogging(LogProfile profile){
-        positionManager.startUpdates();//TODO resolve first missing locations
+        if(profile.isSaveGPS()) {
+            Log.d("GPS wanted", "startLogging: Setting GPS");
+            positionManager.setIntervals(profile.getGPSFrequency());
+            positionManager.startUpdates();//TODO resolve first missing locations
+        }
         List<Integer> androidSensorTypes = new ArrayList<>();
         List<Integer> androidSensorFrequencies = new ArrayList<>();
         List<Integer> bluetoothSensorTypes = new ArrayList<>();
@@ -169,7 +174,7 @@ public class SensorService extends Service {
         //bluetoothSensorManager.
 
         androidSensorTypes.addAll(bluetoothSensorTypes);
-        sensorLogManager.startLog(androidSensorTypes);
+        sensorLogManager.startLog(profile.getProfileName(),androidSensorTypes);
     }
 
     public void stopLogging(){

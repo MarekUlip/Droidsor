@@ -14,11 +14,12 @@ public class SensorData {
     public double longitude;
     public double latitude;
     public double altitude;
-    public SensorData(Point3D v, long t, double longt, double lat,double altitude){
+    public SensorData(Point3D v, long t, double longt, double lat, double altitude){
         values = v;
         time = t;
         longitude = longt;
         latitude = lat;
+        this.altitude = altitude;
     }
 
     public SensorData(Point3D v, long t){

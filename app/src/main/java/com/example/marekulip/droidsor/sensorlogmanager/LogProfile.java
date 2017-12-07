@@ -10,6 +10,8 @@ import java.util.List;
 public class LogProfile {
     private String profileName;
     private List<LogProfileItem> logItems;
+    private boolean saveGPS;
+    private int GPSFrequency;
 
     public LogProfile(String profileName, List<LogProfileItem> logItems){
         this.setProfileName(profileName);
@@ -34,5 +36,21 @@ public class LogProfile {
 
     public void setLogItems(List<LogProfileItem> logItems) {
         this.logItems = logItems;
+    }
+
+    public boolean isSaveGPS() {
+        return saveGPS;
+    }
+
+    public void setSaveGPS(boolean saveGPS) {
+        this.saveGPS = saveGPS;
+    }
+
+    public int getGPSFrequency() {
+        return GPSFrequency;
+    }
+
+    public void setGPSFrequency(int GPSFrequency) {
+        this.GPSFrequency = GPSFrequency;
     }
 }

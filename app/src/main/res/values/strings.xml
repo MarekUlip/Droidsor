@@ -38,6 +38,8 @@
     <string name="log_profile_settings">Log Profile Settings</string>
     <string name="unavailable_when_not_logging">This display mode is unavailable when app is not logging.</string>
     <string name="unavailable_when_logging">This display mode is unavailable when app is logging.</string>
+    <string name="started_exporting">Started exporting of selected logs. We will inform you when exporting is done.</string>
+    <string name="exporting_done">Exporting done.</string>
 
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_characteristic">Unknown characteristic</string>

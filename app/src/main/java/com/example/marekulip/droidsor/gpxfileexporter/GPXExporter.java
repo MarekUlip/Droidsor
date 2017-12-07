@@ -8,7 +8,9 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.RoundingMode;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +42,11 @@ public class GPXExporter {
     private static final String zValueEndTag = myNamespaceTagEnd+"z>";
     private static final String eleStartTag = "<ele>";
     private static final String eleEndTag = "</ele>";
+    private static final DecimalFormat decimalFormat =  new DecimalFormat("##.#####");
+
+    static {
+        decimalFormat.setRoundingMode(RoundingMode.DOWN);
+    }
 
 
     public static void exportLogItems(List<SensorData> entries, String fileName, Context context){
@@ -51,6 +58,37 @@ public class GPXExporter {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         String nowAsISO = df.format(new Date());
+    }*/
+
+    /*private static String createGPXfromDatas(List<SensorData> datas,Context context){
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        df.setTimeZone(tz);
+        int size = datas.size();
+        StringBuilder sb = new StringBuilder(loadBaseHTMLFromFile(context));
+        //StringBuilder sbBody = new StringBuilder("");
+        sb.append(trkStartTag);
+        sb.append(trksegStartTag).append(System.lineSeparator());
+        //
+        SensorData data;
+        for(int i = 0; i<size;i++){
+            data = datas.get(i);
+            sb.append(trkptStartTag).append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">").append(System.lineSeparator())
+                    //.append(timeStartTag).append(DateFormat.getDateTimeInstance().format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator())
+                    .append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator());
+                    if(data.altitude != 0)sb.append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator());
+                    sb.append(extensionsStartTag).append(System.lineSeparator())
+                    .append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator())
+                    .append(yValueStartTag).append(decimalFormat.format(data.values.y)).append(yValueEndTag).append(System.lineSeparator())
+                    .append(zValueStartTag).append(decimalFormat.format(data.values.z)).append(zValueEndTag).append(System.lineSeparator())
+                    .append(extensionsEndTag).append(trkptEndTag).append(System.lineSeparator());
+
+            //sb.append(trkStartTag).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(listItemEnd);
+            //sbBody.append(entrieDivStart).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(entrieDivStartEnd).append(entries.get(i).getEntrieBody(false)).append(entrieDivEnd);
+        }
+        sb.append(trksegEndTag).append(trkEndTag).append("</gpx>");
+        Log.d("Result", "createHTMLfromEntries: "+sb);
+        return sb.toString();
     }*/
 
     private static String createGPXfromDatas(List<SensorData> datas,Context context){
@@ -68,12 +106,12 @@ public class GPXExporter {
             data = datas.get(i);
             sb.append(trkptStartTag).append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">").append(System.lineSeparator())
                     //.append(timeStartTag).append(DateFormat.getDateTimeInstance().format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator())
-                    .append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator())
-                    .append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator())
-                    .append(extensionsStartTag).append(System.lineSeparator())
-                    .append(xValueStartTag).append(data.values.x).append(xValueEndTag).append(System.lineSeparator())
-                    .append(yValueStartTag).append(data.values.y).append(yValueEndTag).append(System.lineSeparator())
-                    .append(zValueStartTag).append(data.values.z).append(zValueEndTag).append(System.lineSeparator())
+                    .append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator());
+            if(data.altitude != 0)sb.append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator());
+            sb.append(extensionsStartTag).append(System.lineSeparator())
+                    .append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator())
+                    .append(yValueStartTag).append(decimalFormat.format(data.values.y)).append(yValueEndTag).append(System.lineSeparator())
+                    .append(zValueStartTag).append(decimalFormat.format(data.values.z)).append(zValueEndTag).append(System.lineSeparator())
                     .append(extensionsEndTag).append(trkptEndTag).append(System.lineSeparator());
 
             //sb.append(trkStartTag).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(listItemEnd);

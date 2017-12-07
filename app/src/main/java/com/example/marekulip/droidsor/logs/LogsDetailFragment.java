@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.database.SensorDataTable;
@@ -172,34 +173,42 @@ public class LogsDetailFragment extends ListFragment {
     }
 
     private void exportItems(int position){
-        List<SensorData> data = new ArrayList<>();
-        int sensorType = items.get(position).sensorType;
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        Cursor c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" = ?",new String[]{String.valueOf(id),String.valueOf(sensorType)},null,null,null);
-        if(c!=null && c.moveToFirst()){
-            data.add(new SensorData(new Point3D(
-                    c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
-                    c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
-                    c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
-            ),c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
-                    c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
-                    c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
-                    c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
+        final int pos = position;
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getContext(),R.string.started_exporting,Toast.LENGTH_LONG).show();
+                List<SensorData> data = new ArrayList<>();
+                int sensorType = items.get(pos).sensorType;
+                SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
+                SQLiteDatabase database = dbHelper.getReadableDatabase();
+                Cursor c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" = ?",new String[]{String.valueOf(id),String.valueOf(sensorType)},null,null,null);
+                if(c!=null && c.moveToFirst()) {
+                    data.add(new SensorData(new Point3D(
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
+                    ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
                     ));
-            while (c.moveToNext()){
-                data.add(new SensorData(new Point3D(
-                        c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
-                        c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
-                        c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
-                ),c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
-                        c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
-                        c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
-                        c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
-                ));
+                    while (c.moveToNext()) {
+                        data.add(new SensorData(new Point3D(
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
+                        ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
+                        ));
+                    }
+                    c.close();
+                    GPXExporter.exportLogItems(data, id + " Sensor " + sensorType + " " + DateFormat.getDateTimeInstance().format(System.currentTimeMillis()), getContext());
+                    Toast.makeText(getContext(), R.string.exporting_done, Toast.LENGTH_SHORT).show();
+                }
             }
-            c.close();
-            GPXExporter.exportLogItems(data,id+" Sensor "+sensorType+" "+DateFormat.getDateTimeInstance().format(System.currentTimeMillis()), getContext());
-        }
+        });
     }
 }

@@ -35,8 +35,8 @@ public class SaveProfileDialogFragment extends DialogFragment {
     public interface SaveProfileDialogListener{
         void saveProfile(String name, int frequency, boolean scanGPS);
     }
-    private int gpsFrequency = 200;
-    private int minScan = 200;
+    private int gpsFrequency = 1000;
+    private int minScan = 1000;
     private int maxScan = 600000-minScan;
     private SaveProfileDialogListener mListener;
 
@@ -72,7 +72,7 @@ public class SaveProfileDialogFragment extends DialogFragment {
         final SeekBar freqBar = view.findViewById(R.id.gps_freq);
         final EditText profNameEdit = view.findViewById(R.id.profile_name);
         freqBar.setMax(maxScan);
-        gpsFrequency = args.getInt(GPS_FREQ,0)==0?minScan:args.getInt(GPS_FREQ,0);
+        gpsFrequency = args.getInt(GPS_FREQ,minScan);
         freqBar.setProgress(gpsFrequency);
         freq.setText(String.valueOf(args.getInt(GPS_FREQ,minScan)));
         String freqText = args.getString(PROFILE_NAME,"");
