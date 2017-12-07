@@ -9,8 +9,10 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Created by Marek Ulip on 29-Oct-17.
@@ -44,7 +46,17 @@ public class GPXExporter {
         DroidsorExporter.writeToFile(createGPXfromDatas(entries,context),fileName+".gpx",context);
     }
 
+    /*private static void prepDateFormat(){
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        df.setTimeZone(tz);
+        String nowAsISO = df.format(new Date());
+    }*/
+
     private static String createGPXfromDatas(List<SensorData> datas,Context context){
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        df.setTimeZone(tz);
         int size = datas.size();
         StringBuilder sb = new StringBuilder(loadBaseHTMLFromFile(context));
         //StringBuilder sbBody = new StringBuilder("");
@@ -55,7 +67,8 @@ public class GPXExporter {
         for(int i = 0; i<size;i++){
             data = datas.get(i);
             sb.append(trkptStartTag).append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">").append(System.lineSeparator())
-                    .append(timeStartTag).append(DateFormat.getDateTimeInstance().format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator())
+                    //.append(timeStartTag).append(DateFormat.getDateTimeInstance().format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator())
+                    .append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator())
                     .append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator())
                     .append(extensionsStartTag).append(System.lineSeparator())
                     .append(xValueStartTag).append(data.values.x).append(xValueEndTag).append(System.lineSeparator())

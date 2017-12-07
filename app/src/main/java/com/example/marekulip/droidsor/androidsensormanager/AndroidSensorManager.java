@@ -159,6 +159,7 @@ public class AndroidSensorManager implements SensorEventListener{
 
     //filter sensor that are desired but are not present on the device
     private void initSensorsToListen(){
+        toListen.clear();
         List<Sensor>  sensors= mSensorManager.getSensorList(Sensor.TYPE_ALL);
         for(Sensor s: sensors){
             if(toListenIds.contains(s.getType())){

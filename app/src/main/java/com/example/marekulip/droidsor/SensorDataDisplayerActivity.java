@@ -147,7 +147,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             if(profile == null){
                 Toast.makeText(this,getString(R.string.no_favorite_log),Toast.LENGTH_LONG).show();
             }else {
-                mSensorService.startLogging(getProfile());//TODO set up GPS
+                mSensorService.startLogging(getProfile());//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth
                 isRecording = true;
                 //
                 invalidateOptionsMenu();

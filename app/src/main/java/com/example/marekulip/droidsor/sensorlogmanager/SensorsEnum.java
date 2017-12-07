@@ -26,7 +26,7 @@ public enum SensorsEnum {
     INTERNAL_LIGHT(Sensor.TYPE_LIGHT,R.string.optical,R.string.optical_unit,R.string.internal,1),
     INTERNAL_BAROMETER(Sensor.TYPE_PRESSURE,R.string.barometer,R.string.barometer_unit,R.string.internal,1),
     INTERNAL_GRAVITY(Sensor.TYPE_GRAVITY,R.string.gravity,R.string.meter_per_sec_square_unit,R.string.internal,3),
-    INTERNAL_ORIENTATION(203,R.string.orientation,R.string.radian,R.string.internal,3){
+    INTERNAL_ORIENTATION(98,R.string.orientation,R.string.radian,R.string.internal,3){
         //203 is used because Sensor.TYPE_ORIENTATION is deprecated so i wanted to avoid wrong type
         @Override
         public void resolveSensor(SensorDataPackage dataPackage, float[] data){
@@ -38,7 +38,7 @@ public enum SensorsEnum {
     EXT_MOV_GYROSCOPE(101,R.string.gyroscope,R.string.gyroscope_unit,R.string.external,3),
     EXT_MOV_MAGNETIC(102,R.string.magnetometer,R.string.magnetometer_unit,R.string.external,3),
     EXT_HUMIDITY(103,R.string.humidity,R.string.humidity_unit,R.string.external,1),
-    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,2),
+    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,3),
     EXT_OPTICAL(105,R.string.optical,R.string.optical_unit,R.string.external,1),
     EXT_BAROMETER(106,R.string.barometer,R.string.barometer_unit,R.string.external,1),
     EXT_MOVEMENT(107,R.string.movement,R.string.meter_per_sec_square_unit,R.string.external,1);

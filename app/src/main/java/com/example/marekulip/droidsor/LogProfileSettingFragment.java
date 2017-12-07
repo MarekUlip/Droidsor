@@ -100,8 +100,6 @@ public class LogProfileSettingFragment extends ListFragment {
         registerForContextMenu(getListView());
         initAdapter();
 
-        Intent intent = new Intent(getContext(),SensorService.class);
-        getActivity().bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
     }
 
     /**
@@ -160,25 +158,7 @@ public class LogProfileSettingFragment extends ListFragment {
         return true;
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        getActivity().unbindService(mServiceConnection); //TODO solve leaking service problem
-    }
 
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mSensorService = ((SensorService.LocalBinder)service).getService();
-            createLogProfileItemList();
-            mAdapter.notifyDataSetChanged();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mSensorService = null;
-        }
-    };
 
     private void createLogProfileItemList(){
         for(Integer i: mSensorService.getMonitoredSensorsTypes(true)){
@@ -245,5 +225,12 @@ public class LogProfileSettingFragment extends ListFragment {
        initAdapter();
        createLogProfileItemList();
        mAdapter.notifyDataSetChanged();
+    }
+
+    public void setSensorService(SensorService sensorService){
+        mSensorService = sensorService;
+        initAdapter();
+        createLogProfileItemList();
+        mAdapter.notifyDataSetChanged();
     }
 }

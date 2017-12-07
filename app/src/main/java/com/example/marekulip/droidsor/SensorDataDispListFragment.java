@@ -45,6 +45,7 @@ public class SensorDataDispListFragment extends ListFragment {
         SensorsEnum sensor;
         for(Integer i: sensorTypes){
             sensor = SensorsEnum.resolveEnum(i);
+            Log.d(TAG, "setSensorsToShow: "+i);
             items.add(new SensorItem(sensor.getSensorName(getContext()),sensor.getStringData(getContext(),Point3D.getDefaultPoint3D()),i));
         }
     }

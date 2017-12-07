@@ -91,6 +91,7 @@ public class LogsDetailFragment extends ListFragment {
         List<EntryHolder> lst = new ArrayList<>();
         int itemCount;
         if(c!= null&& c.moveToFirst()){
+            Log.d(TAG, "loadItems: starting");
             int type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
             lst.add(new EntryHolder(type));
             //lst.get(0).entries.add(new ArrayList<Entry>());
@@ -139,6 +140,7 @@ public class LogsDetailFragment extends ListFragment {
                 }
                 lst.get(position).labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
             }
+            Log.d(TAG, "loadItems: closing");
             c.close();
         }
         database.close();

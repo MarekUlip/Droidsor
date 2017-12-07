@@ -192,11 +192,13 @@ public class SensorService extends Service {
         List<Integer> sensorTypes = new ArrayList<>();
         if(ignoreMode || displayMode == ALL_SENSORS_MODE){
             androidSensorManager.giveMeYourSensorTypes(sensorTypes);
-            if(bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
+            if(bluetoothSensorManager.isBluetoothDeviceOn())
+            bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
         }
         else {
             if(displayMode == BLUETOOTH_SENSORS_MODE){
-                if(bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
+                //if(bluetoothSensorManager.isBluetoothDeviceOn())
+                bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
             }
             else if(displayMode == MOBILE_SENSORS_MODE){
                 androidSensorManager.giveMeYourSensorTypes(sensorTypes);

@@ -7,10 +7,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -18,6 +23,7 @@ import android.widget.TextView;
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.SensorItem;
 import com.example.marekulip.droidsor.adapters.SensorDataDispArrAdapter;
+import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorLogsTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 
@@ -33,8 +39,9 @@ import java.util.List;
 public class LogsFragment extends ListFragment {
     private static final String TAG = LogsFragment.class.toString();
     private SensorDataDispArrAdapter adapter;
-    private CursorAdapter mAdapter;
+    private SimpleCursorAdapter mAdapter;
     private List<SensorItem> items = new ArrayList<>();
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,11 +56,7 @@ public class LogsFragment extends ListFragment {
         registerForContextMenu(getListView());
         //showLogs();
         //adapter = new SensorDataDispArrAdapter(getContext(), R.layout.sensor_data_displayer_list_item,items);
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        Cursor c = database.rawQuery("SELECT * FROM "+SensorLogsTable.TABLE_NAME,null);
-        mAdapter = new LogsFragmentCursorAdapter(getContext(),c,0);
-        getListView().setAdapter(mAdapter);
+        initCursorAdapter();
         //Log.d(TAG, "onActivityCreated: ");
     }
 
@@ -65,24 +68,60 @@ public class LogsFragment extends ListFragment {
         startActivity(intent);
     }
 
-    private class LogsFragmentCursorAdapter extends CursorAdapter{
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.add(0, Menu.FIRST,0,getString(R.string.delete));
+    }
 
-        public LogsFragmentCursorAdapter(Context context, Cursor c, int flags) {
-            super(context, c, flags);
-        }
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        if(item.getItemId()==Menu.FIRST) deleteItem((int)info.id);
+        return super.onContextItemSelected(item);
+    }
 
-        @Override
-        public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-            String name = prepText(cursor);
-            TextView tv = new TextView(context);
-            tv.setText(name);
-            return tv;
+    private void deleteItem(int id){
+        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        database.delete(SensorLogsTable.TABLE_NAME,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(id)});
+        database.close();
+        dbHelper.close();
+        destroyCursorAdapter();
+        initCursorAdapter();
+    }
+
+    public void resumeFragment(){
+        initCursorAdapter();
+    }
+
+    public void pauseFragment(){
+        destroyCursorAdapter();
+    }
+
+    private void initCursorAdapter(){
+        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        Cursor c = database.rawQuery("SELECT * FROM "+SensorLogsTable.TABLE_NAME,null);
+        mAdapter = new LogsFragmentCursorAdapter(getContext(),android.R.layout.simple_list_item_1,c,new String[]{},new int[]{android.R.id.text1},0);
+        getListView().setAdapter(mAdapter);
+    }
+    private void destroyCursorAdapter(){
+        mAdapter.getCursor().close();
+    }
+
+
+    private class LogsFragmentCursorAdapter extends SimpleCursorAdapter{
+
+
+        public LogsFragmentCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags) {
+            super(context, layout, c, from, to, flags);
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             String name = prepText(cursor);
-            ((TextView)view).setText(name);
+            ((TextView)view.findViewById(android.R.id.text1)).setText(name);
         }
 
         private String prepText(Cursor cursor){

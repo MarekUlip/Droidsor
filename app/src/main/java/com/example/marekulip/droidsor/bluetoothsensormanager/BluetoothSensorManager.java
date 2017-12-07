@@ -20,6 +20,7 @@ import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TIMovement
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TIOpticalSensor;
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TITemperatureSensor;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorDataPackage;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -120,7 +121,7 @@ public class BluetoothSensorManager {
     }
 
     public void tryToReconnect(){
-        if(isAddressSet)connect(mBluetoothDeviceAddress);
+        if(isAddressSet&&mConnectionState!=STATE_CONNECTED)connect(mBluetoothDeviceAddress);
     }
 
     public void disconnect(){
@@ -231,7 +232,14 @@ public class BluetoothSensorManager {
     }
 
     public void giveMeYourSensorTypes(List<Integer> sensorTypes){
-        for(GeneralTISensor sensor: sensors){
+        //Log.d(TAG, "giveMeYourSensorTypes: "+activeSensors.size());
+        for(GeneralTISensor sensor: getBasicSetOfSensors()){
+            if(sensor.getSensorType()== SensorsEnum.EXT_MOVEMENT.sensorType){
+                sensorTypes.add(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType);
+                sensorTypes.add(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType);
+                sensorTypes.add(SensorsEnum.EXT_MOV_MAGNETIC.sensorType);
+                continue;
+            }
             sensorTypes.add(sensor.getSensorType());
         }
     }
