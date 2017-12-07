@@ -99,12 +99,30 @@ public class LogsDetailFragment extends ListFragment {
             itemCount = SensorsEnum.resolveEnum(type).itemCount;
 
             switch (itemCount){
-                case 3: lst.get(0).entries.add(new ArrayList<Entry>());
+
+                case 1: lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                    break;
+                case 2:
+                    lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                    lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                    break;
+                case 3:
+                    lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                    lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                    lst.get(0).entries.add(new ArrayList<Entry>());
+                    lst.get(0).entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
+
+                /*case 3: lst.get(0).entries.add(new ArrayList<Entry>());
                     lst.get(0).entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
                 case 2: lst.get(0).entries.add(new ArrayList<Entry>());
                     lst.get(0).entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
                 case 1: lst.get(0).entries.add(new ArrayList<Entry>());
-                    lst.get(0).entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
+                    lst.get(0).entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));*/
             }
             lst.get(0).labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
             //lst.get(0).entries.add(new Entry(time,value));

@@ -95,7 +95,7 @@ public class GPXExporter {
 
     private static String createGPXfromDatas(List<SensorData> datas,Context context){
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         int size = datas.size();
         StringBuilder sb = new StringBuilder(loadBaseHTMLFromFile(context));
@@ -104,7 +104,7 @@ public class GPXExporter {
         sb.append(trksegStartTag).append(System.lineSeparator());
         //
         SensorData data;
-        //SensorsEnum sensorsEnum;
+        SensorsEnum sensorsEnum;
         long lastTime =  datas.get(0).time;
         String sensorXMLName;
         for(int i = 0; i<size;i++){
@@ -120,12 +120,25 @@ public class GPXExporter {
                     i--;
                     break;
                 }
-                sensorXMLName = SensorsEnum.resolveEnum(data.sensorType).getSensorNameXmlFriendly(context);
-                sb.append(myNamespaceTagStart).append(sensorXMLName).append(">")
-                .append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator())
-                .append(yValueStartTag).append(decimalFormat.format(data.values.y)).append(yValueEndTag).append(System.lineSeparator())
-                .append(zValueStartTag).append(decimalFormat.format(data.values.z)).append(zValueEndTag).append(System.lineSeparator())
-                .append(myNamespaceTagEnd).append(sensorXMLName).append(">");
+                sensorsEnum = SensorsEnum.resolveEnum(data.sensorType);
+                sensorXMLName = sensorsEnum.getSensorNameXmlFriendly(context);
+                sb.append(myNamespaceTagStart).append(sensorXMLName).append(">");
+                switch(sensorsEnum.itemCount){
+                    case 1:
+                        sb.append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator());
+                        break;
+                    case 2:
+                        sb.append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator())
+                        .append(yValueStartTag).append(decimalFormat.format(data.values.y)).append(yValueEndTag).append(System.lineSeparator());
+                        break;
+                    case 3:
+                        sb.append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator())
+                        .append(yValueStartTag).append(decimalFormat.format(data.values.y)).append(yValueEndTag).append(System.lineSeparator())
+                        .append(zValueStartTag).append(decimalFormat.format(data.values.z)).append(zValueEndTag).append(System.lineSeparator());
+                    break;
+
+                }
+                sb.append(myNamespaceTagEnd).append(sensorXMLName).append(">");
             }
 
             sb.append(extensionsEndTag).append(trkptEndTag).append(System.lineSeparator());

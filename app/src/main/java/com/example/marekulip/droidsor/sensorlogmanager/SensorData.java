@@ -40,6 +40,7 @@ public class SensorData {
 
     public ContentValues getInsertableFormat(){
         ContentValues cv = new ContentValues();
+        cv.put(SensorDataTable.SENSOR_TYPE,sensorType);
         cv.put(SensorDataTable.SENSOR_VALUE_X,values.x);
         cv.put(SensorDataTable.SENSOR_VALUE_Y,values.y);
         cv.put(SensorDataTable.SENSOR_VALUE_Z,values.z);
@@ -50,9 +51,8 @@ public class SensorData {
         return cv;
     }
 
-    public ContentValues getInsertableFormat(int sensorType, int logId){
+    public ContentValues getInsertableFormat(int logId){
         ContentValues cv = getInsertableFormat();
-        cv.put(SensorDataTable.SENSOR_TYPE,sensorType);
         cv.put(SensorDataTable.LOG_ID,logId);
         return cv;
     }
