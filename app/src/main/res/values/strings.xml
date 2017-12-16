@@ -41,6 +41,7 @@
     <string name="export_log">Export log</string>
     <string name="started_exporting">Started exporting of selected logs. We will inform you when exporting is done.</string>
     <string name="exporting_done">Exporting done.</string>
+    <string name="create_temp_profile">After you are finished with creating temporary profile, click save button and the logging will automatically start.</string>
 
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_characteristic">Unknown characteristic</string>

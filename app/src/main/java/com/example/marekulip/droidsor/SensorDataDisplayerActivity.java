@@ -141,18 +141,13 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_start_log) {
-            positionManager = new PositionManager(this);
-            positionManager.initPosManager(this);//TODO edit is optainable at start of this method
-            Log.d("PosManagerTest", "onOptionsItemSelected: "+positionManager.isObtainable());
             LogProfile profile = getProfile();
             if(profile == null){
-                Toast.makeText(this,getString(R.string.no_favorite_log),Toast.LENGTH_LONG).show();
+                //Toast.makeText(this,getString(R.string.no_favorite_log),Toast.LENGTH_LONG).show();
+                createTempLogProfile();
             }else {
-                mSensorService.startLogging(getProfile());//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth
-                isRecording = true;
-                //
-                invalidateOptionsMenu();
-                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
+                if(profile.isSaveGPS())tryToInitPosManager();
+                startLogging(false);
             }
             return true;
         }else if(id==R.id.action_stop_log){
@@ -164,6 +159,26 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void tryToInitPosManager(){
+        positionManager = new PositionManager(this);
+        positionManager.initPosManager(this);//TODO edit is optainable at start of this method
+        Log.d("PosManagerTest", "onOptionsItemSelected: "+positionManager.isObtainable());
+    }
+
+    private void createTempLogProfile(){
+        Intent intent = new Intent(this,LogProfileSettingActivity.class);
+        intent.putExtra(LogProfileSettingActivity.IS_SETTING_TEMP_PROFILE,true);
+        startActivityForResult(intent,LogProfileSettingActivity.CREATE_TEMP_PROFILE);
+    }
+
+    private void startLogging(boolean isTemp){
+        if(!isTemp)mSensorService.startLogging(getProfile());//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth
+        else mSensorService.startTempProfileLogging();
+        isRecording = true;
+        invalidateOptionsMenu();
+        fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
     }
 
     @Override
@@ -185,6 +200,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             if(resultCode==RESULT_OK) {
                 positionManager.initPosManager(this);
             }
+        } else if(requestCode == LogProfileSettingActivity.CREATE_TEMP_PROFILE){
+            if(resultCode==RESULT_OK){
+                if(mSensorService.getTempLogProfile().isSaveGPS())tryToInitPosManager();
+                startLogging(true);
+            }
         }
     }
 
@@ -192,17 +212,13 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         LogProfile profile = new LogProfile();
         SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(this);
         SQLiteDatabase database = dbHelper.getReadableDatabase();
-        /*Cursor c = database.query(LogProfilesTable.TABLE_NAME,
-                new String[]{LogProfilesTable._ID,LogProfilesTable.PROFILE_NAME},
-                LogProfilesTable._ID+" = ?",
-                new String[]{"1"},null,null,null);*/
         Cursor c = database.query(LogProfileItemsTable.TABLE_NAME,new String[]{LogProfileItemsTable.SCAN_PERIOD,LogProfileItemsTable.SENSOR_TYPE},LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(getSharedPreferences(SHARED_PREFS_NAME,0).getInt(FAVORITE_LOG,0))},null,null,null);
         if(c!=null&&c.moveToFirst()){
             LogProfileItem item;
-            item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)),false);
+            item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
             profile.getLogItems().add(item);
             while (c.moveToNext()){
-                item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)),false);
+                item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
                 profile.getLogItems().add(item);
             }
             c.close();
@@ -262,6 +278,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         } else if(id == R.id.logged_sensors){
             if(mSensorService.isLogging())fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
             else Toast.makeText(this,getString(R.string.unavailable_when_not_logging),Toast.LENGTH_LONG).show();
+        }
+        else if(id == R.id.nav_logging){
+            createTempLogProfile();
         }
         else if (id == R.id.nav_logs) {
             startActivity(new Intent(this,LogsActivity.class));

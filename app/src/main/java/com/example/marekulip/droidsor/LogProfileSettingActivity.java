@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.BT_DEVICE_REQUEST;
 import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.DEVICE_ADDRESS;
@@ -22,6 +23,9 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     private SensorService mSensorService;
     public static final String LOG_PROFILE_ID = "log_id";
     public static final String IS_NEW = "is_new";
+    public static final String IS_SETTING_TEMP_PROFILE = "is_setting_temp_profile";
+    public static final int CREATE_TEMP_PROFILE = 5;
+    private boolean isSettingTempProfile = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +34,8 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        isSettingTempProfile = getIntent().getBooleanExtra(IS_SETTING_TEMP_PROFILE,false);
+        if(isSettingTempProfile)Toast.makeText(this,getString(R.string.create_temp_profile),Toast.LENGTH_LONG).show();
         /*Intent intent = new Intent(this,SensorService.class);
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);*/
 
@@ -94,7 +99,13 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
 
     @Override
     public void saveProfile(String name, int frequency, boolean scanGPS) {
-        fragment.finishSaving(name, frequency, scanGPS);
+        if(isSettingTempProfile){
+            mSensorService.setTempLogProfile(fragment.getTempLogProfile(name,frequency,scanGPS));
+            setResult(RESULT_OK);
+        }
+        else {
+            fragment.finishSaving(name, frequency, scanGPS);
+        }
         finish();
     }
 

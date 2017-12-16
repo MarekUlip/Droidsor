@@ -45,6 +45,10 @@ public class SensorService extends Service {
     private PositionManager positionManager;//TODO Manage intervals possibly add them when setting up profile
     private final IBinder mBinder = new LocalBinder();
     private int displayMode = ALL_SENSORS_MODE;
+    /**
+     * Temporary profile used only for one log then it is deleted.
+     */
+    private LogProfile tempLogProfile = null;
 
     private boolean isStopIntended = false;
     private boolean isListening = false;
@@ -148,6 +152,18 @@ public class SensorService extends Service {
         bluetoothSensorManager.disconnect();
     }
 
+    public void setTempLogProfile(LogProfile profile){
+        tempLogProfile = profile;
+    }
+
+    public LogProfile getTempLogProfile(){
+        return tempLogProfile;
+    }
+
+    public void startTempProfileLogging(){
+        startLogging(tempLogProfile);
+    }
+
     public void startLogging(LogProfile profile){
         if(profile.isSaveGPS()) {
             Log.d("GPS wanted", "startLogging: Setting GPS");
@@ -184,6 +200,7 @@ public class SensorService extends Service {
         androidSensorManager.stopListening();
         androidSensorManager.resetManager();
         androidSensorManager.startListening();
+        if(tempLogProfile!=null) tempLogProfile = null;//TODO consider letting it be and use it till user sets favorite profile
     }
 
     public boolean isLogging(){

@@ -23,6 +23,7 @@ import com.example.marekulip.droidsor.adapters.LogProfileItemArrAdapter;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
+import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 
 import java.util.ArrayList;
@@ -113,13 +114,12 @@ public class LogProfileSettingFragment extends ListFragment {
         Cursor c = database.query(LogProfileItemsTable.TABLE_NAME,null,LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(profileId)},null,null,null);
         if(c!=null&&c.moveToFirst()){
             LogProfileItem item;
-            item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)),false);
+            item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
             items.add(item);
             while (c.moveToNext()){
                 item = new LogProfileItem(true,
                         c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),
-                        c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)),
-                        true);
+                        c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
                 items.add(item);
             }
             c.close();
@@ -232,5 +232,20 @@ public class LogProfileSettingFragment extends ListFragment {
         initAdapter();
         createLogProfileItemList();
         mAdapter.notifyDataSetChanged();
+    }
+
+    public LogProfile getTempLogProfile(String name, int frequency, boolean scanGPS){
+        LogProfile tempLogProfile = new LogProfile();
+        List<LogProfileItem> usedSensors = new ArrayList<>();
+        for(LogProfileItem item: items) {
+            if (item.isEnabled()) {
+                usedSensors.add(item);
+            }
+        }
+        tempLogProfile.setLogItems(usedSensors);
+        tempLogProfile.setSaveGPS(scanGPS);
+        tempLogProfile.setGPSFrequency(frequency);
+        tempLogProfile.setProfileName(name);
+        return tempLogProfile;
     }
 }

@@ -10,17 +10,15 @@ public class LogProfileItem {
     private boolean isEnabled;
     private int sensorType;
     private int scanFrequency;
-    private boolean saveGPSLocation;
 
-    public LogProfileItem(boolean isEnabled, int sensorType, int scanFrequency, boolean saveGPSLocation){
+    public LogProfileItem(boolean isEnabled, int sensorType, int scanFrequency){
         this.isEnabled = isEnabled;
         this.sensorType = sensorType;
         this.scanFrequency = scanFrequency;
-        this.saveGPSLocation = saveGPSLocation;
     }
 
     public LogProfileItem(int sensorType){
-        this(false,sensorType,0,false);
+        this(false,sensorType,0);
     }
 
     public int getSensorType() {
@@ -37,14 +35,6 @@ public class LogProfileItem {
 
     public void setScanFrequency(int scanFrequency) {
         this.scanFrequency = scanFrequency;
-    }
-
-    public boolean isSaveGPSLocation() {
-        return saveGPSLocation;
-    }
-
-    public void setSaveGPSLocation(boolean saveGPSLocation) {
-        this.saveGPSLocation = saveGPSLocation;
     }
 
     public boolean isEnabled() {
