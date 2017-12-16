@@ -175,9 +175,37 @@ public class LogsFragment extends ListFragment {
             String name =  cursor.getString(cursor.getColumnIndexOrThrow(SensorLogsTable.LOG_NAME));
             long start = cursor.getLong(cursor.getColumnIndexOrThrow(SensorLogsTable.DATE_OF_START));
             long end = cursor.getLong(cursor.getColumnIndexOrThrow(SensorLogsTable.DATE_OF_END));
-            DateFormat.getDateTimeInstance().format(new Date(start));
-            name += System.lineSeparator()+DateFormat.getDateTimeInstance().format(new Date(start))+ " - " + DateFormat.getDateTimeInstance().format(new Date(end));;
+            //DateFormat.getDateTimeInstance().format(new Date(start));
+            name += System.lineSeparator()+"Time: "+getElapsedTime(start,end);//
+            // DateFormat.getDateTimeInstance().format(new Date(start))+ " - " + DateFormat.getDateTimeInstance().format(new Date(end));;
             return name;
+        }
+
+        private String getElapsedTime(long start, long end){
+            long different = end - start;
+            if(different < 0) return "Unknown duration";
+            long secondsInMilli = 1000;
+            long minutesInMilli = secondsInMilli * 60;
+            long hoursInMilli = minutesInMilli * 60;
+            long daysInMilli = hoursInMilli * 24;
+
+            //long elapsedDays = different / daysInMilli;
+            different = different % daysInMilli;
+
+            long elapsedHours = different / hoursInMilli;
+            different = different % hoursInMilli;
+
+            long elapsedMinutes = different / minutesInMilli;
+            different = different % minutesInMilli;
+
+            long elapsedSeconds = different / secondsInMilli;
+
+            return convertLessThanTen(elapsedHours)+":"+convertLessThanTen(elapsedMinutes)+":"+convertLessThanTen(elapsedSeconds);
+        }
+
+        private String convertLessThanTen(long num){
+            if(num<10)return "0"+num;
+            else return String.valueOf(num);
         }
 
 

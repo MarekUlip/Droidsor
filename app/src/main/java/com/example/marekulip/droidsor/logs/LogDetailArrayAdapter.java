@@ -17,6 +17,7 @@ import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +25,9 @@ import java.util.List;
  */
 
 public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
+
+    private List<Integer> selectedIds = new ArrayList<>();
+    private static boolean isSelectionModeOn=false;
 
     public LogDetailArrayAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<LogDetailItem> objects) {
         super(context, resource, objects);
@@ -36,6 +40,13 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
 
         if(convertView == null){
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.log_list_item,parent,false);
+        }
+
+        if(isSelectionModeOn){
+            if(selectedIds.contains(item.sensorType))convertView.setBackgroundColor(Color.GRAY);
+            else convertView.setBackgroundColor(Color.TRANSPARENT);
+        }else {
+            convertView.setBackgroundColor(Color.TRANSPARENT);
         }
 
         LineChart graphView =  convertView.findViewById(R.id.log_chart);
@@ -75,4 +86,13 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
 
         return convertView;
     }
+
+    public void setSelectedIds(List<Integer> list){
+        selectedIds = list;
+    }
+
+    public void setSelectionModeOn(boolean selectionModeOn){
+        isSelectionModeOn = selectionModeOn;
+    }
+
 }

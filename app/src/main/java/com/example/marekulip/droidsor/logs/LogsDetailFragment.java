@@ -46,6 +46,8 @@ public class LogsDetailFragment extends ListFragment {
     private LogDetailArrayAdapter adapter;
     private List<LogDetailItem> items = new ArrayList<>();
     private int id;
+    private boolean isSelectionModeOn = false;
+    private List<Integer> idList = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,7 +71,14 @@ public class LogsDetailFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-        startActivity(new Intent(getActivity(),LogDetailActivity.class));
+        if(isSelectionModeOn){
+            v.setBackgroundColor(Color.GRAY);
+            int type = items.get(position).sensorType;
+            Log.d(TAG, "onListItemClick: Adding sensor type "+type);
+            idList.add(type);
+        }else {
+            startActivity(new Intent(getActivity(), LogDetailActivity.class));
+        }
     }
 
     @Override
@@ -85,6 +94,21 @@ public class LogsDetailFragment extends ListFragment {
         //switch ()
         return super.onContextItemSelected(item);
     }
+
+    public void setSelectionMode(boolean isSelectionModeOn){
+        if(isSelectionModeOn){
+            idList.clear();
+            adapter.setSelectedIds(idList);
+        }
+        adapter.setSelectionModeOn(isSelectionModeOn);
+        this.isSelectionModeOn = isSelectionModeOn;
+        adapter.notifyDataSetChanged();
+    }
+
+    public void exportSelected(){
+        if(!idList.isEmpty()) exportItems(-1);
+    }
+
     private void loadItems(int id){
         SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
         SQLiteDatabase database = dbHelper.getReadableDatabase();
@@ -190,16 +214,32 @@ public class LogsDetailFragment extends ListFragment {
         }
     }
 
+
+
+    /**
+     * Export one or more items.
+     * @param pos position of one selected item in list. Is used only when selection mode is off.
+     */
     private void exportItems(final int pos){
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Toast.makeText(getContext(),R.string.started_exporting,Toast.LENGTH_LONG).show();
                 List<SensorData> data = new ArrayList<>();
-                int sensorType = items.get(pos).sensorType;
+                int sensorType = -1;
+                if(!isSelectionModeOn)sensorType = items.get(pos).sensorType;
                 SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
                 SQLiteDatabase database = dbHelper.getReadableDatabase();
-                Cursor c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" = ?",new String[]{String.valueOf(id),String.valueOf(sensorType)},null,null,null);
+                Cursor c;
+                if(!isSelectionModeOn) c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" = ?",new String[]{String.valueOf(id),String.valueOf(sensorType)},null,null,null);
+                else{
+                    String[] params= new String[idList.size()+1];
+                    params[0] = String.valueOf(id);
+                    makeParameters(params);
+                    //new String[]{String.valueOf(id),String.valueOf(sensorType)};
+                    c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" IN ("+makePlaceholders(idList.size())+")",params,null,null,null);
+                }
+
                 if(c!=null && c.moveToFirst()) {
                     data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
                             ,new Point3D(
@@ -229,5 +269,34 @@ public class LogsDetailFragment extends ListFragment {
                 }
             }
         });
+    }
+
+    /**
+     * Used for making placeholder parameters in SQLite select where clause IN is used
+     * @param len number of placeholders
+     * @return placeholder string
+     */
+    private String makePlaceholders(int len) {
+        if (len < 1) {
+            // It will lead to an invalid query anyway ..
+            throw new RuntimeException("No placeholders");
+        } else {
+            StringBuilder sb = new StringBuilder(len * 2 - 1);
+            sb.append("?");
+            for (int i = 1; i < len; i++) {
+                sb.append(",?");
+            }
+            return sb.toString();
+        }
+    }
+    private void makeParameters(String[] params) {
+        if (params.length < 2) {
+            // It will lead to an invalid query anyway ..
+            throw new RuntimeException("No placeholders");
+        } else {
+            for (int i = 1; i <= idList.size(); i++) {
+                params[i] = String.valueOf(idList.get(i-1));
+            }
+        }
     }
 }

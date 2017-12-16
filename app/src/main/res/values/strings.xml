@@ -20,6 +20,7 @@
     <string name="delete">Delete</string>
     <string name="untitled_profile">Untitled profile</string>
     <string name="export_sensor">Export this sensor</string>
+    <string name="export_selected_sensors">Export selected sensors</string>
     <string name="export_log_item">Export log item</string>
     <string name="profile_name">Profile Name</string>
     <string name="scan_gps_when_logging">Save position when logging.</string>
@@ -42,6 +43,7 @@
     <string name="started_exporting">Started exporting of selected logs. We will inform you when exporting is done.</string>
     <string name="exporting_done">Exporting done.</string>
     <string name="create_temp_profile">After you are finished with creating temporary profile, click save button and the logging will automatically start.</string>
+    <string name="mark_more">Mark more</string>
 
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_characteristic">Unknown characteristic</string>
