@@ -1,9 +1,11 @@
 package com.example.marekulip.droidsor;
 
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -13,6 +15,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
 
 import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.BT_DEVICE_REQUEST;
 import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.DEVICE_ADDRESS;
@@ -81,7 +85,8 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     @Override
     public void onPause() {
         super.onPause();
-        unbindService(mServiceConnection); //TODO solve leaking service problem
+        //unbindService(mServiceConnection); //TODO solve leaking service problem
+        disconnectFromService();
     }
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -125,5 +130,31 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
             Log.d("NtRn", "onCreate: NotRunning");startService(intent);
         }
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
+        registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
+    }
+
+    private void disconnectFromService(){
+        if(!mSensorService.isLogging())mSensorService.stopListeningSensors();
+        unregisterReceiver(mSensorServiceUpdateReceiver);
+        unbindService(mServiceConnection);
+    }
+
+    private final BroadcastReceiver mSensorServiceUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action)) {
+                fragment.restartFragment();
+                Log.d("Connected", "onReceive: ");
+                //Log.d("Displ", "onReceive: Displaying data");
+                //displayData();
+            }
+        }
+    };
+
+    private static IntentFilter makeUpdateIntentFilter(){
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_CONNECTED);
+        return intentFilter;
     }
 }

@@ -51,36 +51,39 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
 
         LineChart graphView =  convertView.findViewById(R.id.log_chart);
         TextView sensorValue = convertView.findViewById(R.id.sensor_name);
+        if(isSelectionModeOn){
+            graphView.setVisibility(View.GONE);
+        }else {
+            graphView.setTouchEnabled(true);
+            graphView.getDescription().setEnabled(false);
+            // enable scaling and dragging
+            graphView.setDragEnabled(true);
+            graphView.setScaleEnabled(true);
+            graphView.setPinchZoom(true);
 
-        graphView.setTouchEnabled(true);
-        graphView.getDescription().setEnabled(false);
-        // enable scaling and dragging
-        graphView.setDragEnabled(true);
-        graphView.setScaleEnabled(true);
-        graphView.setPinchZoom(true);
+            // set an alternative background color
+            graphView.setBackgroundColor(Color.WHITE);
+            graphView.getAxisRight().setEnabled(false);
+            graphView.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
 
-        // set an alternative background color
-        graphView.setBackgroundColor(Color.WHITE);
-        graphView.getAxisRight().setEnabled(false);
-        graphView.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+            IAxisValueFormatter formatter = new IAxisValueFormatter() {
 
-        IAxisValueFormatter formatter = new IAxisValueFormatter() {
+                @Override
+                public String getFormattedValue(float value, AxisBase axis) {
+                    if ((int) value > item.xLabels.size()) return "";
+                    return item.xLabels.get((int) value);
+                }
+            };
 
-            @Override
-            public String getFormattedValue(float value, AxisBase axis) {
-                if((int)value>item.xLabels.size())return "";
-                return item.xLabels.get((int)value);
-            }
-        };
+            XAxis xAxis = graphView.getXAxis();
+            xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
+            xAxis.setValueFormatter(formatter);
 
-        XAxis xAxis = graphView.getXAxis();
-        xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
-        xAxis.setValueFormatter(formatter);
+            graphView.setData(item.lineData);
+            graphView.invalidate();
 
-        graphView.setData(item.lineData);
-        graphView.invalidate();
-
-        graphView.setVisibleXRangeMaximum(120);
+            graphView.setVisibleXRangeMaximum(120);
+        }
 
         sensorValue.setText(item.sensorName);
 

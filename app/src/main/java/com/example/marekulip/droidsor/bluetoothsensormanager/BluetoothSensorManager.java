@@ -66,7 +66,7 @@ public class BluetoothSensorManager {
     public void broadcastUpdate(final String action){
         if(action.equals(ACTION_GATT_CONNECTED)){
             mConnectionState = STATE_CONNECTED;
-        }else
+        }
         sensorService.broadcastUpdate(action);
     }
 
@@ -150,8 +150,8 @@ public class BluetoothSensorManager {
             if(newState == BluetoothProfile.STATE_CONNECTED){
                 sensors = getBasicSetOfSensors();//TODO Hardcoded
                 mConnectionState = STATE_CONNECTED;
-                broadcastUpdate(BluetoothSensorManager.ACTION_GATT_CONNECTED);
                 mBluetoothGatt.discoverServices();
+                broadcastUpdate(BluetoothSensorManager.ACTION_GATT_CONNECTED);
             } else if(newState == BluetoothProfile.STATE_DISCONNECTED){
                 mConnectionState = STATE_DISCONNECTED;
                 broadcastUpdate(BluetoothSensorManager.ACTION_GATT_DISCONNECTED);

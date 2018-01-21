@@ -103,6 +103,9 @@ public class SensorService extends Service {
                     sendBroadcast(intent);
                 }
             }
+        } else if(action.equals(BluetoothSensorManager.ACTION_GATT_CONNECTED)){
+            Intent intent = new Intent(action);
+            sendBroadcast(intent);
         }
     }
 

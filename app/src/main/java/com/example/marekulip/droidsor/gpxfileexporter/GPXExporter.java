@@ -12,9 +12,11 @@ import java.io.InputStreamReader;
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -43,11 +45,14 @@ public class GPXExporter {
     private static final String zValueEndTag = myNamespaceTagEnd+"z>";
     private static final String eleStartTag = "<ele>";
     private static final String eleEndTag = "</ele>";
-    private static final DecimalFormat decimalFormat =  new DecimalFormat("##.#####");
+    private static final DecimalFormat decimalFormat;
     private static final int timeGap = 500;
 
     static {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
+        decimalFormat =  new DecimalFormat("##.#####",symbols);
         decimalFormat.setRoundingMode(RoundingMode.DOWN);
+        //decimalFormat.setDe
     }
 
 
