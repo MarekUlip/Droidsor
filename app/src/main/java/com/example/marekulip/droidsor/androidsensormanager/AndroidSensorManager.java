@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
@@ -109,6 +110,7 @@ public class AndroidSensorManager implements SensorEventListener{
 
                 if(toListenIds.contains(SensorsEnum.INTERNAL_ORIENTATION.sensorType)){
                     orientationTimer = new Timer();
+                    Log.d("tst", "run: "+listenFrequencies.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,baseListenFrequency));
                     orientationTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {

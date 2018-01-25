@@ -20,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.example.marekulip.droidsor.adapters.LogProfileItemArrAdapter;
+import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
@@ -109,9 +110,7 @@ public class LogProfileSettingFragment extends ListFragment {
      */
     private List<LogProfileItem> loadProfile(){
         List<LogProfileItem> items = new ArrayList<>();
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        Cursor c = database.query(LogProfileItemsTable.TABLE_NAME,null,LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(profileId)},null,null,null);
+        Cursor c = getContext().getContentResolver().query(DroidsorProvider.LOG_PROFILE_ITEMS_URI,null,LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(profileId)},null);
         if(c!=null&&c.moveToFirst()){
             LogProfileItem item;
             item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
@@ -124,17 +123,13 @@ public class LogProfileSettingFragment extends ListFragment {
             }
             c.close();
         }
-
-        c = database.query(LogProfilesTable.TABLE_NAME,null,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(profileId)},null,null,null);
+        c = getContext().getContentResolver().query(DroidsorProvider.LOG_PROFILE_URI,null,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(profileId)},null);
         if(c!=null&&c.moveToFirst()){
             profileName = c.getString(c.getColumnIndexOrThrow(LogProfilesTable.PROFILE_NAME));
             gpsFrequency = c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.GPS_FREQUENCY));
             scanGPS = c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.SAVE_LOCATION)) != 0;
             c.close();
         }
-
-        dbHelper.close();
-        database.close();
         return items;
     }
 
@@ -185,40 +180,36 @@ public class LogProfileSettingFragment extends ListFragment {
     }
 
     public void finishSaving(String name, int frequency, boolean scanGPS){
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
-        SQLiteDatabase database = dbHelper.getWritableDatabase();
         ContentValues cv = new ContentValues();
         if(name == null || name.length()==0)name = getString(R.string.untitled_profile);
         cv.put(LogProfilesTable.PROFILE_NAME,name);
         cv.put(LogProfilesTable.GPS_FREQUENCY,frequency);
         cv.put(LogProfilesTable.SAVE_LOCATION,scanGPS?1:0);
         if(isNew){
-            long id = database.insert(LogProfilesTable.TABLE_NAME,null, cv);
+
+            long id = Integer.parseInt(getContext().getContentResolver().insert(DroidsorProvider.LOG_PROFILE_URI,cv).getLastPathSegment());
             for(LogProfileItem item: items){
                 if(item.isEnabled()) {
                     cv = new ContentValues();
                     cv.put(LogProfileItemsTable.PROFILE_ID, id);
                     cv.put(LogProfileItemsTable.SCAN_PERIOD, item.getScanFrequency());
                     cv.put(LogProfileItemsTable.SENSOR_TYPE, item.getSensorType());
-                    database.insert(LogProfileItemsTable.TABLE_NAME,null, cv);
+                    getContext().getContentResolver().insert(DroidsorProvider.LOG_PROFILE_ITEMS_URI,cv);
                 }
             }
             Toast.makeText(getContext(),getString(R.string.saved),Toast.LENGTH_SHORT).show();
         } else {
-            database.update(LogProfilesTable.TABLE_NAME,cv,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(profileId)});
+            getContext().getContentResolver().update(DroidsorProvider.LOG_PROFILE_URI,cv,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(profileId)});
             for(LogProfileItem item: items){
                 if(item.isEnabled()) {
                     cv = new ContentValues();
                     cv.put(LogProfileItemsTable.SCAN_PERIOD, item.getScanFrequency());
-                    database.update(LogProfileItemsTable.TABLE_NAME,cv,LogProfileItemsTable.PROFILE_ID +" = ? AND "+LogProfileItemsTable.SENSOR_TYPE+ " = ?",new String[]{String.valueOf(profileId),String.valueOf(item.getSensorType())});
+                    getContext().getContentResolver().update(DroidsorProvider.LOG_PROFILE_ITEMS_URI,cv,LogProfileItemsTable.PROFILE_ID +" = ? AND "+LogProfileItemsTable.SENSOR_TYPE+ " = ?",new String[]{String.valueOf(profileId),String.valueOf(item.getSensorType())});
                     //database.insert(LogProfileItemsTable.TABLE_NAME,null, cv);
                 }
             }
             Toast.makeText(getContext(),getString(R.string.updated),Toast.LENGTH_SHORT).show();
         }
-
-        database.close();
-        dbHelper.close();
     }
 
     public void restartFragment(){

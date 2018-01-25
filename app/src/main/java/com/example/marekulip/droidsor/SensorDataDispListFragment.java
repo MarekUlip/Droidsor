@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
+import android.util.SparseArray;
 
 import com.example.marekulip.droidsor.adapters.SensorDataDispArrAdapter;
 import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
@@ -43,27 +44,30 @@ public class SensorDataDispListFragment extends ListFragment {
             Log.d(TAG, "setSensorsToShow: "+i);
             items.add(new SensorItem(sensor.getSensorName(getContext()),sensor.getStringData(getContext(),Point3D.getDefaultPoint3D()),i));
         }
+        adapter.notifyDataSetChanged();
     }
 
-    /*public void setNewData(SensorDataPackage dataPackage){
-        //items.
-        Map<Integer,SensorData> map = new HashMap<>();
-        int size = dataPackage.getDatas().size();
-        for(int i = 0; i<size;i++){
-            map.put(dataPackage.getSensorTypes().get(i),dataPackage.getDatas().get(i));
+    public void setNewData(ArrayDeque<SensorData> sensorDataQueue){
+        SparseArray<SensorData> map = new SparseArray<>();
+        SensorData sensorData;
+        while(!sensorDataQueue.isEmpty()){
+            //Log.d(TAG, "setNewData: ");
+            sensorData = sensorDataQueue.pop();
+            map.put(sensorData.sensorType,sensorData);
         }
-        for(Integer i: map.keySet()){
+
+        for(int i = 0, size = map.size(), key; i < size; i++) {
             for(SensorItem item: items){
-                if (item.sensorType == i){
-                    item.sensorValue = SensorsEnum.resolveEnum(i).getStringData(getContext(),map.get(i).values);
+                key = map.keyAt(i);
+                if(item.sensorType == key){
+                    item.sensorValue = SensorsEnum.resolveEnum(key).getStringData(getContext(),map.valueAt(i).values);
+                    break;
                 }
             }
         }
         adapter.notifyDataSetChanged();
-    }*/
-
-    public void setNewData(ArrayDeque<SensorData> sensorDataQueue){
-        Map<Integer,SensorData> map = new HashMap<>();
+        //TODO possible errors requires testing
+        /*Map<Integer,SensorData> map = new HashMap<>();
         SensorData sensorData;
         while(!sensorDataQueue.isEmpty()){
             //Log.d(TAG, "setNewData: ");
@@ -84,7 +88,7 @@ public class SensorDataDispListFragment extends ListFragment {
             }
             //items.add(new SensorItem(SensorsEnum.resolveEnum(i).getSensorName(getContext()),SensorsEnum.resolveEnum(i).getStringData(getContext(),map.get(i).values),i));
         }
-        adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();*/
     }
 
 }

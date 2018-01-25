@@ -44,6 +44,24 @@
     <string name="exporting_done">Exporting done.</string>
     <string name="create_temp_profile">After you are finished with creating temporary profile, click save button and the logging will automatically start.</string>
     <string name="mark_more">Mark more</string>
+    <string name="disconnect_from_bt_when_not_needed">Bluetooth power saving</string>
+    <string name="disconnect_from_bt_when_not_needed_summary">Disconnects from Bluetooth device when it is not necessary for use.</string>
+    <string name="wait_for_gps">Wait for GPS position</string>
+    <string name="wait_for_gps_summary">Ensures that logging will not start without some known location.</string>
+    <string name="start_logging_button_behaviour">Start logging button behaviour</string>
+    <string name="favorite_profile_gone">Your favorite profile does not exist anymore. Please pick a new one.</string>
+    <string name="pick_profile_to_log">Pick profile with which you want to make logging.</string>
+
+    <string-array name="log_but_beh_str_arr">
+        <item>Start favorite log profile</item>
+        <item>Show list with all profiles</item>
+    </string-array>
+
+    <string-array name="log_but_beh_str_val">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
 
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_characteristic">Unknown characteristic</string>
@@ -86,7 +104,6 @@
 
     <string name="internal">Internal</string>
     <string name="external">External</string>
-
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

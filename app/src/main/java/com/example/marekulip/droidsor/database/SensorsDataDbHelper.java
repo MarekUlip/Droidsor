@@ -11,16 +11,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class SensorsDataDbHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 4;
     public static final String DATABASE_NAME = "SensorsData.db";
-    private static SensorsDataDbHelper mHelper = null;
 
-
-    private SensorsDataDbHelper(Context context) {
+    public SensorsDataDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);//TODO make settings to external SD
-    }
-
-    public static SensorsDataDbHelper getInstance(Context context){
-        if(mHelper != null) return mHelper;
-        else return mHelper = new SensorsDataDbHelper(context);
     }
 
     @Override

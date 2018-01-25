@@ -51,13 +51,27 @@ public class LogDetailActivity extends AppCompatActivity {
             fragment.setSelectionMode(true);
         } else if(id == R.id.action_export_selected){
             fragment.exportSelected();
-            isSelectionModeOn = false;
-            fragment.setSelectionMode(false);
+            cancelSelection();
         } else if (id == R.id.action_cancel){
-            isSelectionModeOn = false;
-            fragment.setSelectionMode(false);
+            cancelSelection();
         }
         invalidateOptionsMenu();
         return true;
+    }
+
+    private void cancelSelection(){
+        isSelectionModeOn = false;
+        fragment.setSelectionMode(false);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(isSelectionModeOn){
+            cancelSelection();
+            invalidateOptionsMenu();
+        }else{
+            finish();
+        }
+
     }
 }

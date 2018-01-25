@@ -54,6 +54,7 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
         if(isSelectionModeOn){
             graphView.setVisibility(View.GONE);
         }else {
+            graphView.setVisibility(View.VISIBLE);
             graphView.setTouchEnabled(true);
             graphView.getDescription().setEnabled(false);
             // enable scaling and dragging
@@ -79,7 +80,7 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
             xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
             xAxis.setValueFormatter(formatter);
 
-            graphView.setData(item.lineData);
+            graphView.setData(item.lineData);//TODO remove numbers from points
             graphView.invalidate();
 
             graphView.setVisibleXRangeMaximum(120);

@@ -28,6 +28,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     public static final String LOG_PROFILE_ID = "log_id";
     public static final String IS_NEW = "is_new";
     public static final String IS_SETTING_TEMP_PROFILE = "is_setting_temp_profile";
+
     public static final int CREATE_TEMP_PROFILE = 5;
     private boolean isSettingTempProfile = false;
 

@@ -1,5 +1,6 @@
 package com.example.marekulip.droidsor.database;
 
+import android.content.ContentResolver;
 import android.provider.BaseColumns;
 
 /**
@@ -14,6 +15,9 @@ public final class SensorLogsTable implements BaseColumns{
     public static final String DATE_OF_START = "date_of_start";
     public static final String DATE_OF_END = "date_of_end";
     public static final String LOG_NAME = "log_name";
+
+    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/"+TABLE_NAME;
+    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/"+ TABLE_NAME;
 
     /**
      * Create table statement for SQLite database.

@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.marekulip.droidsor.R;
+import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.SensorDataTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
@@ -72,12 +73,17 @@ public class LogsDetailFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
         if(isSelectionModeOn){
-            v.setBackgroundColor(Color.GRAY);
             int type = items.get(position).sensorType;
-            Log.d(TAG, "onListItemClick: Adding sensor type "+type);
-            idList.add(type);
+            if(idList.contains(type)){
+                idList.remove((Integer)type);
+                v.setBackgroundColor(Color.TRANSPARENT);
+            }else{
+                Log.d(TAG, "onListItemClick: Adding sensor type "+type);
+                idList.add(type);
+                v.setBackgroundColor(Color.GRAY);
+            }
         }else {
-            startActivity(new Intent(getActivity(), LogDetailActivity.class));
+            startActivity(new Intent(getActivity(), LogDetailActivity.class));//TODO implement
         }
     }
 
@@ -110,9 +116,7 @@ public class LogsDetailFragment extends ListFragment {
     }
 
     private void loadItems(int id){
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        Cursor c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID + " = ?",new String[]{String.valueOf(id)},null,null,null);
+        Cursor c = getContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID + " = ?",new String[]{String.valueOf(id)},null);
         List<EntryHolder> lst = new ArrayList<>();
         int itemCount;
         if(c!= null&& c.moveToFirst()){
@@ -186,8 +190,6 @@ public class LogsDetailFragment extends ListFragment {
             Log.d(TAG, "loadItems: closing");
             c.close();
         }
-        database.close();
-        dbHelper.close();
         List<ILineDataSet> dataSets;
         LineDataSet dataSet;
         String[] axisLabels = {"X", "Y", "Z"};
@@ -228,16 +230,14 @@ public class LogsDetailFragment extends ListFragment {
                 List<SensorData> data = new ArrayList<>();
                 int sensorType = -1;
                 if(!isSelectionModeOn)sensorType = items.get(pos).sensorType;
-                SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
-                SQLiteDatabase database = dbHelper.getReadableDatabase();
                 Cursor c;
-                if(!isSelectionModeOn) c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" = ?",new String[]{String.valueOf(id),String.valueOf(sensorType)},null,null,null);
+                if(!isSelectionModeOn) c = getContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" = ?",new String[]{String.valueOf(id),String.valueOf(sensorType)},null);
                 else{
                     String[] params= new String[idList.size()+1];
                     params[0] = String.valueOf(id);
                     makeParameters(params);
                     //new String[]{String.valueOf(id),String.valueOf(sensorType)};
-                    c = database.query(SensorDataTable.TABLE_NAME,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" IN ("+makePlaceholders(idList.size())+")",params,null,null,null);
+                    c = getContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID+ " = ? AND "+SensorDataTable.SENSOR_TYPE+" IN ("+makePlaceholders(idList.size())+")",params,null);
                 }
 
                 if(c!=null && c.moveToFirst()) {

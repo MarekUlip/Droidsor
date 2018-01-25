@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 
@@ -109,9 +110,7 @@ public class LogProfileListFragment extends ListFragment {
 
 
     private void initCursorAdapter(){
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        Cursor c = database.query(LogProfilesTable.TABLE_NAME,new String[]{LogProfilesTable._ID,LogProfilesTable.PROFILE_NAME},null,null,null,null,null);
+        Cursor c = getContext().getContentResolver().query(DroidsorProvider.LOG_PROFILE_URI,new String[]{LogProfilesTable._ID,LogProfilesTable.PROFILE_NAME},null,null,null);
         cursorAdapter = new SimpleCursorAdapter(getContext(),android.R.layout.simple_list_item_1,c,new String[]{LogProfilesTable.PROFILE_NAME},new int[]{android.R.id.text1},0);
         setListAdapter(cursorAdapter);
     }
@@ -129,21 +128,13 @@ public class LogProfileListFragment extends ListFragment {
             intent.putExtra(LogProfileSettingActivity.IS_NEW, false);
             startActivity(intent);
         } else {
-            SharedPreferences settings = getActivity().getSharedPreferences(SensorDataDisplayerActivity.SHARED_PREFS_NAME, 0);
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putInt(SensorDataDisplayerActivity.FAVORITE_LOG, (int)id);
-            editor.apply();
-            Toast.makeText(getContext(),R.string.favorite_log_picked,Toast.LENGTH_SHORT).show();
             exitPickingMode();
+            ((LogProfileListFragmentListener)getActivity()).profilePicked(id);
         }
     }
 
     private void deleteItem(int id){
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(getContext());
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        database.delete(LogProfilesTable.TABLE_NAME,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(id)});
-        database.close();
-        dbHelper.close();
+        getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_URI,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(id)});
         destroyCursorAdapter();
         initCursorAdapter();
     }
@@ -154,6 +145,7 @@ public class LogProfileListFragment extends ListFragment {
 
     public interface LogProfileListFragmentListener{
         void changePickingMode(boolean on);
+        void profilePicked(long id);
     }
 
 

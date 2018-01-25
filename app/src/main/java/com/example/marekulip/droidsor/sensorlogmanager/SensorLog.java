@@ -1,8 +1,10 @@
 package com.example.marekulip.droidsor.sensorlogmanager;
 
+import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.SensorDataTable;
 
 import java.util.ArrayList;
@@ -14,11 +16,11 @@ import java.util.List;
 
 public class SensorLog {
     private static final String TAG = "SensorLog";
-    private final int logId;
+    private final long logId;
     private List<Integer> sensorsToLog;
     private List<SensorData> sensorDataList;
     private SensorLogManager sensorLogManager;
-    public SensorLog(SensorLogManager slm, int id, List<Integer> sensorTypes){
+    public SensorLog(SensorLogManager slm, long id, List<Integer> sensorTypes){
         logId = id;
         sensorLogManager = slm;
         initialize(sensorTypes);
@@ -41,24 +43,29 @@ public class SensorLog {
         }
     }
 
-    public void writeToDatabase(SQLiteDatabase db){
-        Log.d("sd", "writeToDatabase: Writting to database");
-        int writtenItems = sensorLogManager.getCountOfWrittenItems();
+    public void writeToDatabase(){
+        Log.d(TAG, "writeToDatabase: Writting to database");
+        //int writtenItems = sensorLogManager.getCountOfWrittenItems();
         List<SensorData> dataList = new ArrayList<>();
         dataList.addAll(sensorDataList);
         sensorDataList.clear();
+        List<ContentValues> bulk = new ArrayList<>();
         for(SensorData s: dataList){
-            Log.d("sd", "writeToDatabase: iterating");
-            if(writtenItems>499){
+            Log.d(TAG, "writeToDatabase: iterating");
+            //TODO possible problem with large bulks
+            /*if(writtenItems>499){
                 db.setTransactionSuccessful();
                 db.endTransaction();
                 db.beginTransaction();
                 writtenItems = 0;
-            }
-            db.insert(SensorDataTable.TABLE_NAME,null,s.getInsertableFormat(logId));
-            writtenItems++;
+            }*/
+            bulk.add(s.getInsertableFormat(logId));
+            //db.insert(SensorDataTable.TABLE_NAME,null,s.getInsertableFormat(logId));
+            //writtenItems++;
         }
-        sensorLogManager.setCountOfWrittenItems(writtenItems);
+        Log.d(TAG, "writeToDatabase: count of entries to write in bulk"+bulk.size());
+        sensorLogManager.getContext().getContentResolver().bulkInsert(DroidsorProvider.SENSOR_DATA_URI,(ContentValues[])bulk.toArray(new ContentValues[bulk.size()]));
+        //sensorLogManager.setCountOfWrittenItems(writtenItems);
     }
 
 

@@ -1,5 +1,6 @@
 package com.example.marekulip.droidsor.database;
 
+import android.content.ContentResolver;
 import android.provider.BaseColumns;
 
 /**
@@ -16,6 +17,9 @@ public class LogProfilesTable  implements BaseColumns{
      */
     public static final String SAVE_LOCATION = "save_location";
     public static final String GPS_FREQUENCY = "gps_frequency";
+
+    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/"+TABLE_NAME;
+    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/"+ TABLE_NAME;
 
     /**
      * Create table statement for SQLite database.

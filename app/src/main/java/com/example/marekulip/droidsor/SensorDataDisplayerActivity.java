@@ -1,6 +1,7 @@
 package com.example.marekulip.droidsor;
 
 import android.app.ActivityManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,6 +12,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -20,8 +23,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
@@ -38,6 +43,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     public static final String FAVORITE_LOG = "favorite_log";
     public static final int BT_DEVICE_REQUEST = 2;
     private SensorDataDispListFragment fragment;
+    private FloatingActionButton fab;
     private SensorService mSensorService;
     private PositionManager positionManager;
     private boolean isRecording = false;
@@ -58,6 +64,10 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.mobile_sensors);
+
+        fab = findViewById(R.id.sens_disp_fab);
+        setFabClickListener();
+
 
         fragment = new SensorDataDispListFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment, fragment).commit();
@@ -141,14 +151,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_start_log) {
-            LogProfile profile = getProfile();
-            if(profile == null){
-                //Toast.makeText(this,getString(R.string.no_favorite_log),Toast.LENGTH_LONG).show();
-                createTempLogProfile();
-            }else {
-                if(profile.isSaveGPS())tryToInitPosManager();
-                startLogging(false);
-            }
+            startLogging(false);
             return true;
         }else if(id==R.id.action_stop_log){
             mSensorService.stopLogging();
@@ -159,6 +162,30 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setFabClickListener(){
+        if(isRecording){
+            fab.setImageResource(R.drawable.ic_action_stop);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mSensorService.stopLogging();
+                    isRecording = false;
+                    invalidateOptionsMenu();
+                    setFabClickListener();
+                    fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                }
+            });
+        }else{
+            fab.setImageResource(R.drawable.ic_action_record);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startLogging(false);
+                }
+            });
+        }
     }
 
     private void tryToInitPosManager(){
@@ -174,10 +201,56 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     }
 
     private void startLogging(boolean isTemp){
-        if(!isTemp)mSensorService.startLogging(getProfile());//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth
-        else mSensorService.startTempProfileLogging();
+        if(isTemp){
+            mSensorService.startTempProfileLogging();
+        }else {
+            String pref = PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.START_LOG_BUT_BEHAVIOUR_PREF,"1");
+            Log.d("sds", "startLogging: "+pref);
+            if (pref.equals("1")) {
+                if (getSharedPreferences(SHARED_PREFS_NAME, 0).getLong(FAVORITE_LOG, 0) == 0) {//TODO solve temp creation when no favorite is picked
+                    Intent intent = new Intent(this,LogProfileActivity.class);
+                    intent.putExtra(LogProfileActivity.IS_PICKING_FAVORITE_PROFILE,true);
+                    Toast.makeText(this, R.string.pick_favorite_log, Toast.LENGTH_SHORT).show();
+                    startActivityForResult(intent,LogProfileActivity.SET_FIRST_FAVORITE_PROFILE);
+                    return;
+                }
+                LogProfile p = getProfile(-1);
+                if(p==null){
+                    Intent intent = new Intent(this,LogProfileActivity.class);
+                    intent.putExtra(LogProfileActivity.IS_PICKING_FAVORITE_PROFILE,true);
+                    Toast.makeText(this, R.string.favorite_profile_gone, Toast.LENGTH_SHORT).show();
+                    startActivityForResult(intent,LogProfileActivity.SET_FIRST_FAVORITE_PROFILE);
+                    return;
+                }
+                if(p.isSaveGPS())tryToInitPosManager();
+                mSensorService.startLogging(p);//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth
+            } else if(pref.equals("2")){
+                Intent intent = new Intent(this,LogProfileActivity.class);
+                intent.putExtra(LogProfileActivity.IS_PICKING_NEXT_TO_LOG,true);
+                Toast.makeText(this,R.string.pick_profile_to_log,Toast.LENGTH_SHORT).show();
+                startActivityForResult(intent,LogProfileActivity.SET_NEXT_TO_LOG);
+                return;
+            }
+            //else mSensorService.startTempProfileLogging();
+            isRecording = true;
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    fab.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_action_record));
+
+                }
+            });
+            invalidateOptionsMenu();
+            setFabClickListener();
+            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
+        }
+    }
+
+    private void startLoggingWithPicked(LogProfile profile){
+        mSensorService.startLogging(profile);
         isRecording = true;
         invalidateOptionsMenu();
+        setFabClickListener();
         fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
     }
 
@@ -205,14 +278,30 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 if(mSensorService.getTempLogProfile().isSaveGPS())tryToInitPosManager();
                 startLogging(true);
             }
+        } else if(requestCode == LogProfileActivity.SET_FIRST_FAVORITE_PROFILE){
+            if(resultCode==RESULT_OK){
+                startLogging(false);
+            }
+        } else if (requestCode == LogProfileActivity.SET_NEXT_TO_LOG){
+            if(resultCode == RESULT_OK){
+                startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
+            }
         }
     }
 
-    private LogProfile getProfile(){
+    private LogProfile getProfile(long id){
+        if(id<0)id = getSharedPreferences(SHARED_PREFS_NAME,0).getLong(FAVORITE_LOG,0);
         LogProfile profile = new LogProfile();
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(this);
-        SQLiteDatabase database = dbHelper.getReadableDatabase();
-        Cursor c = database.query(LogProfileItemsTable.TABLE_NAME,new String[]{LogProfileItemsTable.SCAN_PERIOD,LogProfileItemsTable.SENSOR_TYPE},LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(getSharedPreferences(SHARED_PREFS_NAME,0).getInt(FAVORITE_LOG,0))},null,null,null);
+        Cursor c = getContentResolver().query(DroidsorProvider.LOG_PROFILE_URI,null,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(id)},null);
+        if(c!=null&&c.moveToFirst()){
+            profile.setProfileName(c.getString(c.getColumnIndexOrThrow(LogProfilesTable.PROFILE_NAME)));
+            profile.setGPSFrequency(c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.GPS_FREQUENCY)));
+            profile.setSaveGPS(c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.SAVE_LOCATION))!=0);
+            c.close();
+        } else{
+            return null;
+        }
+        c = getContentResolver().query(DroidsorProvider.LOG_PROFILE_ITEMS_URI,new String[]{LogProfileItemsTable.SCAN_PERIOD,LogProfileItemsTable.SENSOR_TYPE},LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(id)},null);
         if(c!=null&&c.moveToFirst()){
             LogProfileItem item;
             item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
@@ -223,15 +312,6 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }
             c.close();
         }
-        c = database.query(LogProfilesTable.TABLE_NAME,null,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(getSharedPreferences(SHARED_PREFS_NAME,0).getInt(FAVORITE_LOG,0))},null,null,null);
-        if(c!=null&&c.moveToFirst()){
-            profile.setProfileName(c.getString(c.getColumnIndexOrThrow(LogProfilesTable.PROFILE_NAME)));
-            profile.setGPSFrequency(c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.GPS_FREQUENCY)));
-            profile.setSaveGPS(c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.SAVE_LOCATION))!=0);
-            c.close();
-        }
-        dbHelper.close();
-        database.close();
         return profile;
     }
 
@@ -261,6 +341,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
             }
         } else if (id == R.id.ble_sensors) {
+            if(BluetoothAdapter.getDefaultAdapter() == null){
+                Toast.makeText(this,R.string.error_bluetooth_not_supported,Toast.LENGTH_SHORT).show();
+                ((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.all_sensors);
+                return true;
+            }
             if(mSensorService.isBluetoothDeviceOn()){
                 if(mSensorService.isLogging())Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
                 else {
@@ -286,10 +371,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             startActivity(new Intent(this,LogsActivity.class));
         } else if(id == R.id.nav_log_profiles_settings){
             startActivity(new Intent(this,LogProfileActivity.class));
+        } else if (id == R.id.nav_settings){
+            startActivity(new Intent(this,DroidsorSettingsActivity.class));
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+        ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
         return true;
     }
 

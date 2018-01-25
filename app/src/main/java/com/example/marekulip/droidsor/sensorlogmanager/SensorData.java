@@ -51,7 +51,7 @@ public class SensorData {
         return cv;
     }
 
-    public ContentValues getInsertableFormat(int logId){
+    public ContentValues getInsertableFormat(long logId){
         ContentValues cv = getInsertableFormat();
         cv.put(SensorDataTable.LOG_ID,logId);
         return cv;

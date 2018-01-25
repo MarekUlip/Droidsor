@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.SensorLogsTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 
@@ -21,11 +22,11 @@ public class SensorLogManager {
     private static final String TAG = "SensorLogManager";
    // private List<SensorLog> logs = new ArrayList<>(); //comment on release if more logs wont be necessary
     private int countOfWrittenItems = 0;
-    private int logId = 0;
+    private long logId = 0;
     private SensorLog log;
     private Context context;
     private SensorsDataDbHelper dbHelper;
-    private SQLiteDatabase db;
+    //private SQLiteDatabase db;
     private Timer timer;
     public SensorLogManager(Context c){
         context = c;
@@ -59,22 +60,19 @@ public class SensorLogManager {
         //Instant.
         cv.put(SensorLogsTable.DATE_OF_START, System.currentTimeMillis());
         cv.put(SensorLogsTable.LOG_NAME,logName);
-        if(db == null){
+        /*if(db == null){
             db = openDatabase();
-        }
+        }*/
         //SensorLog sensorLog = new SensorLog(this,(int)db.insert(SensorLogsTable.TABLE_NAME,null,cv),sensorsToListen);
         //logs.add(sensorLog);
-        logId = (int)db.insert(SensorLogsTable.TABLE_NAME,null,cv);
+        logId = Long.parseLong(context.getContentResolver().insert(DroidsorProvider.SENSOR_LOGS_URI,cv).getLastPathSegment()); //db.insert(SensorLogsTable.TABLE_NAME,null,cv);
         log = new SensorLog(this,logId,sensorsToListen);
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 Log.d(TAG, "run: timed databes write");
-                db.beginTransaction();
-                log.writeToDatabase(db);
-                db.setTransactionSuccessful();
-                db.endTransaction();
+                log.writeToDatabase();
             }
         },0,10000);
         Log.d(TAG, "startLog: Log started");
@@ -83,21 +81,14 @@ public class SensorLogManager {
     public void endLog(){
         //logs.remove(logToRemove);
         Log.d(TAG, "endLog: ending logging");
-        if(db == null){
-            db = openDatabase();
-        }
         timer.cancel();
         timer.purge();
         timer = null;
-        db.beginTransaction();
         //TODO updateEndTime
-        log.writeToDatabase(db);
-        db.setTransactionSuccessful();
-        db.endTransaction();
+        log.writeToDatabase();
         ContentValues cv = new ContentValues();
         cv.put(SensorLogsTable.DATE_OF_END,System.currentTimeMillis());
-        db.update(SensorLogsTable.TABLE_NAME,cv,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(logId)});
-        closeDatabase();
+        context.getContentResolver().update(DroidsorProvider.SENSOR_LOGS_URI,cv,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(logId)});
         log = null;
     }
 
@@ -109,9 +100,8 @@ public class SensorLogManager {
         log.tryToAddItem(data);
     }
 
-    private SQLiteDatabase openDatabase(){
-        SensorsDataDbHelper dbHelper = SensorsDataDbHelper.getInstance(context);
-        return dbHelper.getWritableDatabase();
+    /*private SQLiteDatabase openDatabase(){
+        return SensorsDataDbHelper.getInstance(context).getWritableDatabase();
     }
 
     private void closeDatabase(){
@@ -127,7 +117,7 @@ public class SensorLogManager {
         }
 
 
-    }
+    }*/
 
     public void setCountOfWrittenItems(int countOfWrittenItems) {
         this.countOfWrittenItems = countOfWrittenItems;

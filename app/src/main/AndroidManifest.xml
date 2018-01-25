@@ -4,7 +4,7 @@
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
-        android:required="true" />
+        android:required="false" />
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -30,8 +30,9 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".BLESensorLocateActivity"
-            android:theme="@android:style/Theme.Holo.Light.DarkActionBar"/>
+        <activity
+            android:name=".BLESensorLocateActivity"
+            android:theme="@android:style/Theme.Holo.Light.DarkActionBar" />
         <activity android:name=".logs.LogDetailActivity" />
         <activity android:name=".logs.LogsActivity" />
         <activity
@@ -53,7 +54,14 @@
         <service
             android:name=".ServiceStopperService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false" />
+
+        <provider
+            android:name=".contentprovider.DroidsorProvider"
+            android:authorities="com.example.marekulip.provider"
+            android:exported="false" />
+
+        <activity android:name=".DroidsorSettingsActivity"></activity>
     </application>
 
 </manifest>

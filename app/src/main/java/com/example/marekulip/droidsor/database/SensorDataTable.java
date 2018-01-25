@@ -1,5 +1,6 @@
 package com.example.marekulip.droidsor.database;
 
+import android.content.ContentResolver;
 import android.provider.BaseColumns;
 
 /**
@@ -20,6 +21,9 @@ public final class SensorDataTable implements BaseColumns{
     public static final String LATITUDE = "latitude";
     public static final String ALTITUDE = "altitude";
     public static final String LOG_ID = "log_id";
+
+    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/"+TABLE_NAME;
+    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/"+ TABLE_NAME;
 
     /**
      * Create table statement for SQLite database.
