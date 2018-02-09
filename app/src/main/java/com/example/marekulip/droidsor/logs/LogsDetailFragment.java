@@ -2,12 +2,13 @@ package com.example.marekulip.droidsor.logs;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,13 +19,16 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
+import com.example.marekulip.droidsor.database.SenorDataItemsCountTable;
 import com.example.marekulip.droidsor.database.SensorDataTable;
-import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
+import com.example.marekulip.droidsor.gpxfileexporter.LogExporter;
 import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorLog;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -34,7 +38,6 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -46,9 +49,11 @@ public class LogsDetailFragment extends ListFragment {
     private static final String TAG = LogsDetailFragment.class.toString();
     private LogDetailArrayAdapter adapter;
     private List<LogDetailItem> items = new ArrayList<>();
-    private int id;
+    private long id;
     private boolean isSelectionModeOn = false;
     private List<Integer> idList = new ArrayList<>();
+    private SparseIntArray weights = new SparseIntArray();
+    private int prefferedCount = 750;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,17 +68,26 @@ public class LogsDetailFragment extends ListFragment {
         registerForContextMenu(getListView());
         id = getArguments().getInt("id");
         //showLogs();
-        loadItems(id);
-        adapter = new LogDetailArrayAdapter(getContext(),R.layout.log_list_item,items);
-        getListView().setAdapter(adapter);
-        Log.d(TAG, "onActivityCreated: ");
+        //long time = System.currentTimeMillis();
+        //loadItems(id);
+        //Log.d(TAG, "onActivityCreated: Without weights: "+(System.currentTimeMillis()-time));
+        //items.clear();
+        //time = System.currentTimeMillis();
+        prefferedCount = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(getContext()).getString(DroidsorSettingsFramgent.COUNT_OF_POINTS,"750"));
+        loadItemsWithWeights(id);
+        //Log.d(TAG, "onActivityCreatedd:  With weights: "+(System.currentTimeMillis()-time));
+
+        //adapter = new LogDetailArrayAdapter(getContext(),R.layout.log_list_item,items);
+        //getListView().setAdapter(adapter);
+        //Log.d(TAG, "onActivityCreated: Showed graph"+(System.currentTimeMillis()-time));
+        //Log.d(TAG, "onActivityCreated: ");
     }
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
+        int type = items.get(position).sensorType;
         if(isSelectionModeOn){
-            int type = items.get(position).sensorType;
             if(idList.contains(type)){
                 idList.remove((Integer)type);
                 v.setBackgroundColor(Color.TRANSPARENT);
@@ -83,7 +97,10 @@ public class LogsDetailFragment extends ListFragment {
                 v.setBackgroundColor(Color.GRAY);
             }
         }else {
-            startActivity(new Intent(getActivity(), LogDetailActivity.class));//TODO implement
+            Intent i = new Intent(getActivity(), LogDetailItemActivity.class);
+            i.putExtra(LogDetailItemActivity.LOG_ID,this.id);
+            i.putExtra(LogDetailItemActivity.SENSOR_ID,type);
+            startActivity(i);
         }
     }
 
@@ -96,8 +113,12 @@ public class LogsDetailFragment extends ListFragment {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-        if(item.getItemId()==Menu.FIRST)exportItems(info.position);
-        //switch ()
+        if(item.getItemId()==Menu.FIRST){
+            List<Integer> sensorTypes = new ArrayList<>();
+            sensorTypes.add(items.get(info.position).sensorType);
+            LogExporter.exportLog(getContext(),id,sensorTypes);
+            //exportItems(info.position);
+        }
         return super.onContextItemSelected(item);
     }
 
@@ -112,10 +133,118 @@ public class LogsDetailFragment extends ListFragment {
     }
 
     public void exportSelected(){
-        if(!idList.isEmpty()) exportItems(-1);
+        if(!idList.isEmpty())
+            LogExporter.exportLog(getContext(),id,idList);//exportItems(-1);
     }
 
-    private void loadItems(int id){
+    private void loadItemsWithWeights(final long id){
+        Cursor c = getContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_COUNT_URI,null, SenorDataItemsCountTable.LOG_ID+" = ?",new String[]{String.valueOf(id)},null);
+        if(c!=null && c.moveToFirst()){
+            weights.put(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.SENSOR_TYPE)),resolveWeight(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.COUNT_OF_ITEMS))));
+            while (c.moveToNext()){
+                weights.put(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.SENSOR_TYPE)),resolveWeight(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.COUNT_OF_ITEMS))));
+            }
+            c.close();
+        }
+        else {
+            return;
+        }
+        getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.VISIBLE);
+        getActivity().findViewById(android.R.id.empty).setVisibility(View.GONE);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final List<EntryHolder> lst = new ArrayList<>();
+                for(int i = 0, size = weights.size(), key, itemCount, index; i<size; i++){
+                    key = weights.keyAt(i);
+                    itemCount = SensorsEnum.resolveEnum(key).itemCount;
+                    lst.add(new EntryHolder(key));
+                    index = lst.size()-1;
+                    switch (itemCount){
+                        case 3: lst.get(index).entries.add(new ArrayList<Entry>());
+                        case 2: lst.get(index).entries.add(new ArrayList<Entry>());
+                        case 1: lst.get(index).entries.add(new ArrayList<Entry>());
+                    }
+                    loadSensorDataWithWeight(id,key,weights.valueAt(i),index,itemCount,lst);
+                }
+                prepItemsForGraph(lst);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter = new LogDetailArrayAdapter(getContext(),R.layout.log_list_item,items);
+                        getListView().setAdapter(adapter);
+                        getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.GONE);
+                    }
+                });
+            }
+        }).start();
+
+    }
+
+    private void prepItemsForGraph(List<EntryHolder> lst){
+        List<ILineDataSet> dataSets;
+        LineDataSet dataSet;
+        String[] axisLabels = {"X", "Y", "Z"};
+        int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
+        for(int i = 0;i< lst.size();i++){
+            dataSets = new ArrayList<>();
+            for(int j = 0; j<lst.get(i).entries.size(); j++){
+                dataSet = new LineDataSet(lst.get(i).entries.get(j),axisLabels[j]);
+                dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+                dataSet.setColor(colors[j]);
+                dataSet.setDrawCircles(false);
+                dataSet.setDrawValues(false);//TODO change maybe
+                dataSets.add(dataSet);
+            }
+            items.add(new LogDetailItem(SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorName(getContext()),SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorUnitName(getContext()),new LineData(dataSets),lst.get(i).sensorType,lst.get(i).labels));
+        }
+    }
+
+    private void loadSensorDataWithWeight(long logId, int sensorType, int weight,int listPosition,int itemCount, final List<EntryHolder> lst){
+        Cursor cursor = getContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID + " = ? and "+SensorDataTable.SENSOR_TYPE+" = ? and "+SensorDataTable.SAMPLE_WEIGHT +" >= ?",new String[]{String.valueOf(logId),String.valueOf(sensorType),String.valueOf(weight)},null);
+        if(cursor!=null && cursor.moveToFirst()){
+            int size = lst.get(listPosition).entries.get(0).size();
+            switch (itemCount){
+                case 1: lst.get(listPosition).entries.get(0).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                    break;
+                case 2: lst.get(listPosition).entries.get(0).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                    lst.get(listPosition).entries.get(1).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                    break;
+                case 3: lst.get(listPosition).entries.get(0).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                    lst.get(listPosition).entries.get(1).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                    lst.get(listPosition).entries.get(2).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
+                    break;
+            }
+            lst.get(listPosition).labels.add(DateFormat.getTimeInstance().format(new Date(cursor.getLong(cursor.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
+            while (cursor.moveToNext()){
+                size = lst.get(listPosition).entries.get(0).size();
+                switch (itemCount){
+                    case 1: lst.get(listPosition).entries.get(0).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                        break;
+                    case 2: lst.get(listPosition).entries.get(0).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                        lst.get(listPosition).entries.get(1).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                        break;
+                    case 3: lst.get(listPosition).entries.get(0).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
+                        lst.get(listPosition).entries.get(1).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
+                        lst.get(listPosition).entries.get(2).add(new Entry(size,cursor.getFloat(cursor.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
+                        break;
+                }
+                lst.get(listPosition).labels.add(DateFormat.getTimeInstance().format(new Date(cursor.getLong(cursor.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
+            }
+            cursor.close();
+        }
+    }
+
+    private int resolveWeight(int count){
+        //Log.d(TAG, "resolveWeight: "+count);
+        if(count<prefferedCount)return 1;
+        for(int i = 0; i< SensorLog.weights.length;i++){
+            if(count/SensorLog.weights[i]>=70&&count/SensorLog.weights[i]<700)return SensorLog.weights[i];
+        }
+        return 1;
+    }
+
+    private void loadItems(long id){
         Cursor c = getContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID + " = ?",new String[]{String.valueOf(id)},null);
         List<EntryHolder> lst = new ArrayList<>();
         int itemCount;
@@ -190,21 +319,7 @@ public class LogsDetailFragment extends ListFragment {
             Log.d(TAG, "loadItems: closing");
             c.close();
         }
-        List<ILineDataSet> dataSets;
-        LineDataSet dataSet;
-        String[] axisLabels = {"X", "Y", "Z"};
-        int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
-        for(int i = 0;i< lst.size();i++){
-            dataSets = new ArrayList<>();
-            for(int j = 0; j<lst.get(i).entries.size(); j++){
-                dataSet = new LineDataSet(lst.get(i).entries.get(j),axisLabels[j]);
-                dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-                dataSet.setColor(colors[j]);
-                dataSet.setDrawCircles(false);
-                dataSets.add(dataSet);
-            }
-            items.add(new LogDetailItem(SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorName(getContext()),SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorUnitName(getContext()),new LineData(dataSets),lst.get(i).sensorType,lst.get(i).labels));
-        }
+        prepItemsForGraph(lst);
     }
 
     private class EntryHolder{
@@ -249,7 +364,9 @@ public class LogsDetailFragment extends ListFragment {
                     ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
                             c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
                             c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
-                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE)),
+                            c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SPEED)),
+                            c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.ACCURACY))
                     ));
                     while (c.moveToNext()) {
                         data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
@@ -260,11 +377,13 @@ public class LogsDetailFragment extends ListFragment {
                         ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
                                 c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
                                 c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
-                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE)),
+                                c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SPEED)),
+                                c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.ACCURACY))
                         ));
                     }
                     c.close();
-                    GPXExporter.exportLogItems(data, id + " Sensor " + sensorType + " " + DateFormat.getDateTimeInstance().format(System.currentTimeMillis()), getContext());
+                    GPXExporter.exportLogItems(data, id + " Sensor " + sensorType + " " + DateFormat.getDateTimeInstance().format(System.currentTimeMillis()), getContext()); //TODO make more meaningfull name
                     Toast.makeText(getContext(), R.string.exporting_done, Toast.LENGTH_SHORT).show();
                 }
             }

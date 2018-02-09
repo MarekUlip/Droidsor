@@ -2,14 +2,11 @@ package com.example.marekulip.droidsor.sensorlogmanager;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.SensorLogsTable;
-import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -24,8 +21,8 @@ public class SensorLogManager {
     private int countOfWrittenItems = 0;
     private long logId = 0;
     private SensorLog log;
+    private boolean isLogging = false;
     private Context context;
-    private SensorsDataDbHelper dbHelper;
     //private SQLiteDatabase db;
     private Timer timer;
     public SensorLogManager(Context c){
@@ -72,28 +69,38 @@ public class SensorLogManager {
             @Override
             public void run() {
                 Log.d(TAG, "run: timed databes write");
-                log.writeToDatabase();
+                if(log!=null)log.writeToDatabase();
             }
         },0,10000);
         Log.d(TAG, "startLog: Log started");
+        isLogging = true;
     }
 
     public void endLog(){
         //logs.remove(logToRemove);
         Log.d(TAG, "endLog: ending logging");
+        isLogging = false;
         timer.cancel();
         timer.purge();
         timer = null;
-        //TODO updateEndTime
-        log.writeToDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(SensorLogsTable.DATE_OF_END,System.currentTimeMillis());
-        context.getContentResolver().update(DroidsorProvider.SENSOR_LOGS_URI,cv,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(logId)});
-        log = null;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.writeToDatabase();
+                ContentValues cv = new ContentValues();
+                cv.put(SensorLogsTable.DATE_OF_END,System.currentTimeMillis());
+                context.getContentResolver().update(DroidsorProvider.SENSOR_LOGS_URI,cv,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(logId)});
+                log.countSensorLogItems();
+                log = null;
+            }
+        }).start();
+
     }
 
+
+
     public boolean isLogging(){
-        return log != null;
+        return isLogging;
     }
 
     public void postNewData(SensorData data){

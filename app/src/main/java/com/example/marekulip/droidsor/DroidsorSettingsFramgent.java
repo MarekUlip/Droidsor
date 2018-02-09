@@ -17,6 +17,8 @@ public class DroidsorSettingsFramgent extends PreferenceFragment{
     public static final String DISCONNECT_FROM_BT_PREF = "disconnect_from_bt";
     public static final String WAIT_FOR_GPS_PREF = "wait_for_gps";
     public static final String START_LOG_BUT_BEHAVIOUR_PREF = "start_log_but_behaviour";
+    public static final String ONE_CLICK_NOTIFICATION_EXIT = "one_click_notification_exit";
+    public static final String COUNT_OF_POINTS = "count_of_points";
 
     public DroidsorSettingsFramgent() {
         // Required empty public constructor

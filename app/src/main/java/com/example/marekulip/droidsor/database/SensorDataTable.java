@@ -20,6 +20,9 @@ public final class SensorDataTable implements BaseColumns{
     public static final String LONGITUDE = "longitude";
     public static final String LATITUDE = "latitude";
     public static final String ALTITUDE = "altitude";
+    public static final String SPEED = "speed";
+    public static final String ACCURACY = "accuracy";
+    public static final String SAMPLE_WEIGHT = "sample_weight";
     public static final String LOG_ID = "log_id";
 
     public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/"+TABLE_NAME;
@@ -38,10 +41,13 @@ public final class SensorDataTable implements BaseColumns{
                     LONGITUDE + " REAL," +
                     LATITUDE + " REAL," +
                     ALTITUDE + " REAL," +
+                    ACCURACY + " REAL," +
+                    SPEED + " REAL," +
+                    SAMPLE_WEIGHT + " INTEGER," +
                     SENSOR_TYPE + " INTEGER," +
                     LOG_ID + " INTEGER)";
     /**
-     * Create table statement for SQLite database.
+     * Delete table statement for SQLite database.
      */
     static final String DELETE_TABLE =
             "DROP TABLE IF EXISTS " + TABLE_NAME;

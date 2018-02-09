@@ -47,12 +47,12 @@ public class SensorDataDispListFragment extends ListFragment {
         adapter.notifyDataSetChanged();
     }
 
-    public void setNewData(ArrayDeque<SensorData> sensorDataQueue){
+    public synchronized void setNewData(ArrayDeque<SensorData> sensorDataQueue){
         SparseArray<SensorData> map = new SparseArray<>();
         SensorData sensorData;
         while(!sensorDataQueue.isEmpty()){
             //Log.d(TAG, "setNewData: ");
-            sensorData = sensorDataQueue.pop();
+            sensorData = sensorDataQueue.pop(); //TODO solve no such element exception
             map.put(sensorData.sensorType,sensorData);
         }
 
@@ -89,6 +89,19 @@ public class SensorDataDispListFragment extends ListFragment {
             //items.add(new SensorItem(SensorsEnum.resolveEnum(i).getSensorName(getContext()),SensorsEnum.resolveEnum(i).getStringData(getContext(),map.get(i).values),i));
         }
         adapter.notifyDataSetChanged();*/
+    }
+
+    public void setNewData(List<Integer> sensorTypes, SparseArray<SensorData> newData){
+        for(int i = 0, size = sensorTypes.size(), key; i < size; i++) {
+            for(SensorItem item: items){
+                key = sensorTypes.get(i);
+                if(item.sensorType == key){
+                    item.sensorValue = SensorsEnum.resolveEnum(key).getStringData(getContext(),newData.get(key).values);
+                    break;
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
     }
 
 }

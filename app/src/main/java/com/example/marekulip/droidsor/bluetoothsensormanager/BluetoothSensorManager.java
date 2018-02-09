@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.util.Log;
+import android.util.SparseIntArray;
 
 import com.example.marekulip.droidsor.SensorService;
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.GeneralTISensor;
@@ -51,11 +52,14 @@ public class BluetoothSensorManager {
 
     private int mConnectionState = STATE_DISCONNECTED;
     private boolean isAddressSet = false;
+    private boolean areActiveSenorsSet = false;
 
     private ArrayDeque<GeneralTISensor> descriptors = new ArrayDeque<>();
     private ArrayDeque<GeneralTISensor> characteristics = new ArrayDeque<>();
+    private ArrayDeque<GeneralTISensor> frequencies = new ArrayDeque<>();
     private List<GeneralTISensor> sensors = getBasicSetOfSensors();
     private List<GeneralTISensor> activeSensors = new ArrayList<>();
+    private SparseIntArray listenFrequencies = new SparseIntArray();
     private List<GeneralTISensor> inactiveSensors = new ArrayList<>();
 
     public BluetoothSensorManager(SensorService service){
@@ -169,8 +173,10 @@ public class BluetoothSensorManager {
                         if(sensor.resolveService(s)){
                             descriptors.add(sensor);
                             characteristics.add(sensor);
+                            frequencies.add(sensor);
                             activeSensors.add(sensor);
-                            sensors.remove(sensor);
+                            areActiveSenorsSet = true;
+                            //TODO change made for possibilty to turn off unused sensors sensors.remove(sensor);
                             break;
                         }
                     }
@@ -210,15 +216,36 @@ public class BluetoothSensorManager {
             return;
         }
         Log.d(TAG, "getNextSensorGoing: Activating next sensor. Total size is: "+descriptors.size());
-        descriptors.pop().configureNotifications(true);
+        if(activeSensors.contains(descriptors.peek())){
+            descriptors.pop().configureNotifications(true);
+        }else {
+            descriptors.pop().configureNotifications(false);
+        }
     }
 
     private void getNextSensorGoing(){
         if(characteristics.isEmpty()){
             Log.d(TAG, "getNextSensorGoing: Sensors are up and running");
+            setNextSensorFrequency();
             return;
         }
-        characteristics.pop().configureSensor(true);
+        if(activeSensors.contains(characteristics.peek())){
+            characteristics.pop().configureSensor(true);
+        }else {
+            characteristics.pop().configureSensor(false);
+        }
+    }
+
+    private void setNextSensorFrequency(){
+        if(frequencies.isEmpty()){
+            Log.d(TAG, "setNextSensorFrequency: All required frequencies has been set");
+            return;
+        }
+        GeneralTISensor sensor = frequencies.pop();
+        if(activeSensors.contains(sensor)){
+            sensor.configureSensorFrequency(listenFrequencies.get(sensor.getSensorType(),1000));
+        }
+
     }
 
     private List<GeneralTISensor> getBasicSetOfSensors(){
@@ -233,7 +260,10 @@ public class BluetoothSensorManager {
 
     public void giveMeYourSensorTypes(List<Integer> sensorTypes){
         //Log.d(TAG, "giveMeYourSensorTypes: "+activeSensors.size());
-        for(GeneralTISensor sensor: getBasicSetOfSensors()){
+        List<GeneralTISensor> toIterate;
+        if(!areActiveSenorsSet) toIterate = getBasicSetOfSensors();
+        else toIterate = activeSensors;
+        for(GeneralTISensor sensor: toIterate){
             if(sensor.getSensorType()== SensorsEnum.EXT_MOVEMENT.sensorType){
                 sensorTypes.add(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType);
                 sensorTypes.add(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType);
@@ -242,5 +272,58 @@ public class BluetoothSensorManager {
             }
             sensorTypes.add(sensor.getSensorType());
         }
+    }
+
+    public void setSensorsToListen(List<Integer> sensorsTypes,List<Integer> sensorFrequencies){
+        clearQues();
+        for(GeneralTISensor sensor: sensors){
+            if(sensorsTypes.contains(sensor.getSensorType())){
+                activeSensors.add(sensor);
+                frequencies.add(sensor);
+            }
+            descriptors.add(sensor);
+            characteristics.add(sensor);
+        }
+        if(sensorsTypes.contains(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType)||sensorsTypes.contains(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType)||sensorsTypes.contains(SensorsEnum.EXT_MOV_MAGNETIC.sensorType)){
+            for(GeneralTISensor sensor: sensors){
+                if(sensor.getSensorType()==SensorsEnum.EXT_MOVEMENT.sensorType){
+                    activeSensors.add(sensor);
+                    frequencies.add(sensor);
+                    descriptors.add(sensor);
+                    characteristics.add(sensor);
+                    break;
+                }
+            }
+        }
+        for(int i = 0; i<sensorsTypes.size();i++){
+            if(sensorsTypes.get(i)>=SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType&&sensorsTypes.get(i)<=SensorsEnum.EXT_MOV_MAGNETIC.sensorType){
+                listenFrequencies.put(SensorsEnum.EXT_MOVEMENT.sensorType,sensorFrequencies.get(i));
+            }
+            listenFrequencies.put(sensorsTypes.get(i),sensorFrequencies.get(i));
+        }
+    }
+
+    public void startListening(){
+        if(!activeSensors.isEmpty())getNextSensorNotificationGoing();
+    }
+
+    public void defaultListeningMode(){
+        clearQues();
+        for(GeneralTISensor sensor: sensors){
+            Log.d(TAG, "defaultListeningMode: "+sensor.getSensorType());
+            descriptors.add(sensor);
+            characteristics.add(sensor);
+            frequencies.add(sensor);
+            activeSensors.add(sensor);
+        }
+        getNextSensorNotificationGoing();
+    }
+
+    private void clearQues(){
+        activeSensors.clear();
+        descriptors.clear();
+        characteristics.clear();
+        frequencies.clear();
+        listenFrequencies.clear();
     }
 }

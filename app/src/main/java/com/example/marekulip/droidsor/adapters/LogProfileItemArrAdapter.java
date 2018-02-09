@@ -158,7 +158,7 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
                 if(editable.toString().length() != 0) {
                     int value = Integer.parseInt(editable.toString());
                     if(value>maxValue)value = maxValue;
-                    items.get(v.position).setScanFrequency(value);
+                    items.get(v.position).setScanFrequency(value-minimumValue>=minimumValue?value-minimumValue:minimumValue);
                     v.frequencySeekBar.setProgress(value-minimumValue);
                 }
             }

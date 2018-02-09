@@ -35,8 +35,10 @@ import com.example.marekulip.droidsor.positionmanager.PositionManager;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 
+import java.util.List;
+
 public class SensorDataDisplayerActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, PositionManager.OnRecievedPositionListener {
 
     public static final String DEVICE_ADDRESS = "DEVICE_ADDRESS";
     public static final String SHARED_PREFS_NAME = "droidsor_prefs";
@@ -46,7 +48,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private FloatingActionButton fab;
     private SensorService mSensorService;
     private PositionManager positionManager;
+    private LogProfile profileHolder;
     private boolean isRecording = false;
+    private boolean recievedLocation = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +132,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         unbindService(mServiceConnection);
     }
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
@@ -162,17 +166,17 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 
     private void setFabClickListener(){
-        if(isRecording){
+        if(mSensorService!=null && mSensorService.isLogging()){
             fab.setImageResource(R.drawable.ic_action_stop);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     mSensorService.stopLogging();
                     isRecording = false;
-                    invalidateOptionsMenu();
+                    //invalidateOptionsMenu();
                     setFabClickListener();
                     fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
                 }
@@ -190,8 +194,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
     private void tryToInitPosManager(){
         positionManager = new PositionManager(this);
+        positionManager.setOnRecievedPositionListener(this);
         positionManager.initPosManager(this);//TODO edit is optainable at start of this method
-        Log.d("PosManagerTest", "onOptionsItemSelected: "+positionManager.isObtainable());
+        Log.d("PosManagerTest", "onOptionsItemSelected: "+PositionManager.isObtainable());
     }
 
     private void createTempLogProfile(){
@@ -200,14 +205,18 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         startActivityForResult(intent,LogProfileSettingActivity.CREATE_TEMP_PROFILE);
     }
 
+    /**
+     * Function to set up logging profile
+     * @param isTemp
+     */
     private void startLogging(boolean isTemp){
+        if(mSensorService.isLogging())return;
         if(isTemp){
             mSensorService.startTempProfileLogging();
         }else {
             String pref = PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.START_LOG_BUT_BEHAVIOUR_PREF,"1");
-            Log.d("sds", "startLogging: "+pref);
             if (pref.equals("1")) {
-                if (getSharedPreferences(SHARED_PREFS_NAME, 0).getLong(FAVORITE_LOG, 0) == 0) {//TODO solve temp creation when no favorite is picked
+                if (getSharedPreferences(SHARED_PREFS_NAME, 0).getLong(FAVORITE_LOG, 0) == 0) {
                     Intent intent = new Intent(this,LogProfileActivity.class);
                     intent.putExtra(LogProfileActivity.IS_PICKING_FAVORITE_PROFILE,true);
                     Toast.makeText(this, R.string.pick_favorite_log, Toast.LENGTH_SHORT).show();
@@ -222,8 +231,13 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                     startActivityForResult(intent,LogProfileActivity.SET_FIRST_FAVORITE_PROFILE);
                     return;
                 }
-                if(p.isSaveGPS())tryToInitPosManager();
-                mSensorService.startLogging(p);//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth
+                startLoggingWithPicked(p);
+                /*if(p.isSaveGPS())tryToInitPosManager();
+                if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
+                    profileHolder = p;
+                    return;
+                }
+                mSensorService.startLogging(p);//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth*/
             } else if(pref.equals("2")){
                 Intent intent = new Intent(this,LogProfileActivity.class);
                 intent.putExtra(LogProfileActivity.IS_PICKING_NEXT_TO_LOG,true);
@@ -231,25 +245,31 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 startActivityForResult(intent,LogProfileActivity.SET_NEXT_TO_LOG);
                 return;
             }
-            //else mSensorService.startTempProfileLogging();
-            isRecording = true;
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    fab.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_action_record));
-
-                }
-            });
-            invalidateOptionsMenu();
+            /*isRecording = true;
             setFabClickListener();
-            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
+            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));*/
         }
     }
 
+    /**
+     * Starts the logging
+     * @param profile
+     */
     private void startLoggingWithPicked(LogProfile profile){
+        if(mSensorService.isLogging())return;
+        if(profile.isSaveGPS()&&!recievedLocation){
+            tryToInitPosManager();
+            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
+                profileHolder = profile;
+                //TODO make dialogue about waiting for GPS
+                return;
+            }
+        }
+
         mSensorService.startLogging(profile);
         isRecording = true;
-        invalidateOptionsMenu();
+        recievedLocation = false;
+        //invalidateOptionsMenu();
         setFabClickListener();
         fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
     }
@@ -275,7 +295,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }
         } else if(requestCode == LogProfileSettingActivity.CREATE_TEMP_PROFILE){
             if(resultCode==RESULT_OK){
-                if(mSensorService.getTempLogProfile().isSaveGPS())tryToInitPosManager();
+                //if(mSensorService.getTempLogProfile().isSaveGPS())tryToInitPosManager();
                 startLogging(true);
             }
         } else if(requestCode == LogProfileActivity.SET_FIRST_FAVORITE_PROFILE){
@@ -320,8 +340,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (SensorService.ACTION_DATA_AVAILABLE.equals(action)) {
-                if(mSensorService.getSensorDataQueue().isEmpty())return;
-                fragment.setNewData(mSensorService.getSensorDataQueue());
+                /*if(mSensorService.getSensorDataQueue().isEmpty())return;
+                fragment.setNewData(mSensorService.getSensorDataQueue());*/
+                List<Integer> sensorTypes = mSensorService.getSensorTypesOccured();
+                if(sensorTypes==null)return;
+                fragment.setNewData(sensorTypes, mSensorService.getSensorDataSparseArray());
                 //Log.d("Displ", "onReceive: Displaying data");
                 //displayData();
             }
@@ -384,6 +407,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mSensorService = ((SensorService.LocalBinder)service).getService();
             mSensorService.startListeningSensors();
+            setFabClickListener();
             fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
         }
 
@@ -407,5 +431,17 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }
         }
         return false;
+    }
+
+    @Override
+    public void positionRecieved() {
+        Log.d("posTest", "positionRecieved: ");
+        positionManager.cancelOnRecievedPositionListener();
+        recievedLocation = true;
+        if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
+            startLoggingWithPicked(profileHolder);
+        }
+
+
     }
 }

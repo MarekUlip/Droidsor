@@ -61,7 +61,8 @@
             android:authorities="com.example.marekulip.provider"
             android:exported="false" />
 
-        <activity android:name=".DroidsorSettingsActivity"></activity>
+        <activity android:name=".DroidsorSettingsActivity" />
+        <activity android:name=".logs.LogDetailItemActivity"></activity>
     </application>
 
 </manifest>

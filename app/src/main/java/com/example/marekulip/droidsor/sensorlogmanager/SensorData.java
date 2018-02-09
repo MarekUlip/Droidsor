@@ -15,13 +15,22 @@ public class SensorData {
     public double longitude;
     public double latitude;
     public double altitude;
-    public SensorData(int sensorType,Point3D v, long t, double longt, double lat, double altitude){
+    public float speed;
+    public float accuracy;
+
+    public SensorData(int sensorType,Point3D v, long t, double longt, double lat, double altitude,float speed, float accuracy){
         this.sensorType = sensorType;
         values = v;
         time = t;
         longitude = longt;
         latitude = lat;
         this.altitude = altitude;
+        this.speed = speed;
+        this.accuracy = accuracy;
+    }
+
+    public SensorData(int sensorType,Point3D v, long t, double longt, double lat){
+        this(sensorType,v,t,longt,lat,-1,-1,-1);
     }
 
     /*public SensorData(Point3D v, long t){
@@ -29,13 +38,19 @@ public class SensorData {
     }*/
 
     public SensorData(int sensorType, Point3D v, long t){
-        this(sensorType,v,t,0.0,0.0,0.0);
+        this(sensorType,v,t,-1.0,-1.0,-1.0,-1,-1);
     }
 
-    public void setLocationData(double longt, double lat, double altit){
+    public void setLocationData(double longt, double lat, double altit,float speed, float accuracy){
         longitude = longt;
         latitude = lat;
         altitude = altit;
+        this.speed = speed;
+        this.accuracy = accuracy;
+    }
+
+    public void setLocationData(double longt, double lat){
+        this.setLocationData(longt,lat,-1,-1,-1);
     }
 
     public ContentValues getInsertableFormat(){
@@ -48,12 +63,15 @@ public class SensorData {
         cv.put(SensorDataTable.LONGITUDE,longitude);
         cv.put(SensorDataTable.LATITUDE,latitude);
         cv.put(SensorDataTable.ALTITUDE,altitude);
+        cv.put(SensorDataTable.SPEED,speed);
+        cv.put(SensorDataTable.ACCURACY,accuracy);
         return cv;
     }
 
-    public ContentValues getInsertableFormat(long logId){
+    public ContentValues getInsertableFormat(long logId,int weight){
         ContentValues cv = getInsertableFormat();
         cv.put(SensorDataTable.LOG_ID,logId);
+        cv.put(SensorDataTable.SAMPLE_WEIGHT,weight);
         return cv;
     }
 

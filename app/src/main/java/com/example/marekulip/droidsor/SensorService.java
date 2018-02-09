@@ -5,12 +5,15 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.example.marekulip.droidsor.androidsensormanager.AndroidSensorManager;
@@ -54,6 +57,8 @@ public class SensorService extends Service {
     private boolean isListening = false;
 
     private ArrayDeque<SensorData> sensorDataQueue = new ArrayDeque<>();
+    private SparseArray<SensorData> sensorDataSparseArray = new SparseArray<>();
+    private List<Integer> sensorTypesOccured = new ArrayList<>();
     public SensorService() {
 
     }
@@ -83,18 +88,33 @@ public class SensorService extends Service {
         if(action.equals(ACTION_DATA_AVAILABLE)) {
             if (sensorLogManager.isLogging()) {
                 Location location = positionManager.getLocation();
+                SensorData data;
                 for (int i = 0; i < sensorData.size(); i++) {
                     //dataPackage.getDatas().get(i).setLocationData(location.getLongitude(), location.getLatitude(), location.getAltitude());
-                    if(location!= null)sensorData.get(i).setLocationData(location.getLongitude(),location.getLatitude(),location.getAltitude()); //TODO fix altitude
-                    else sensorData.get(i).setLocationData(0,0,0);
-                    sensorLogManager.postNewData(sensorData.get(i));
+                    data = sensorData.get(i);
+                    if(location!= null){
+                        data.setLocationData(location.getLongitude(),location.getLatitude());
+                        if(location.hasAltitude()) data.altitude = location.getAltitude();//TODO fix altitude
+                        if(location.hasAccuracy()) data.accuracy = location.getAccuracy();
+                        if(location.hasSpeed()) data.speed = location.getSpeed();
+                    }
+                    //else sensorData.get(i).setLocationData(0,0);
+                    //Log.d("test", "broadcastUpdate: "+data.sensorType);
+                    sensorLogManager.postNewData(data);
                 }
             }
-            if (displayMode == ALL_SENSORS_MODE || isSendable(sensorData)) {
-                if(sensorData.size()==1)sensorDataQueue.push(sensorData.get(0));
+            if (displayMode == ALL_SENSORS_MODE || isSendable(sensorData)||isLogging()) {
+                SensorData data;
+                if(sensorData.size()==1){
+                    data = sensorData.get(0);
+                    sensorDataSparseArray.put(data.sensorType,data);//sensorDataQueue.push(sensorData.get(0));
+                    if(!sensorTypesOccured.contains(data.sensorType))sensorTypesOccured.add(data.sensorType);
+                }
                 else{
                     for(int i =0;i<sensorData.size();i++) {
-                        sensorDataQueue.push(sensorData.get(i));
+                        data = sensorData.get(i);
+                        sensorDataSparseArray.put(data.sensorType,data);//sensorDataQueue.push(sensorData.get(i));
+                        if(!sensorTypesOccured.contains(data.sensorType))sensorTypesOccured.add(data.sensorType);
                     }
                 }
                 if(System.currentTimeMillis()-lastTime > minSendInterval) {
@@ -122,9 +142,13 @@ public class SensorService extends Service {
     }
 
     public void stopListeningSensors(){
+        stopListeningSensors(false);
+    }
+
+    private void stopListeningSensors(boolean fullStop){
         if(isListening) {
             androidSensorManager.stopListening();
-            bluetoothSensorManager.disconnect();
+            if(fullStop||PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.DISCONNECT_FROM_BT_PREF,false))bluetoothSensorManager.disconnect();
             isListening = false;
         }
     }
@@ -177,7 +201,7 @@ public class SensorService extends Service {
         List<Integer> androidSensorFrequencies = new ArrayList<>();
         List<Integer> bluetoothSensorTypes = new ArrayList<>();
         List<Integer> bluetoothSensorFrequencies = new ArrayList<>();
-        androidSensorManager.stopListening();
+        androidSensorManager.stopListening();//TODO turn off bluetooth when it is not required
         //androidSensorManager.setSensorsToListen();
         //bluetoothSensorManager.
         for(LogProfileItem item : profile.getLogItems()){
@@ -191,18 +215,26 @@ public class SensorService extends Service {
         }
         androidSensorManager.setSensorsToListen(androidSensorTypes,androidSensorFrequencies);
         androidSensorManager.startListening();//TODO Optimize
+        if(bluetoothSensorManager.isBluetoothDeviceOn()){
+            bluetoothSensorManager.setSensorsToListen(bluetoothSensorTypes,bluetoothSensorFrequencies);
+            bluetoothSensorManager.startListening();
+        }
         //bluetoothSensorManager.
-
-        androidSensorTypes.addAll(bluetoothSensorTypes);
-        sensorLogManager.startLog(profile.getProfileName(),androidSensorTypes);
+        List<Integer> sensorsToLog = new ArrayList<>();
+        sensorsToLog.addAll(androidSensorTypes);
+        sensorsToLog.addAll(bluetoothSensorTypes);
+        sensorLogManager.startLog(profile.getProfileName(),sensorsToLog);
     }
 
     public void stopLogging(){
-        positionManager.stopUpdates();
         sensorLogManager.endLog();
+        positionManager.stopUpdates();
         androidSensorManager.stopListening();
         androidSensorManager.resetManager();
         androidSensorManager.startListening();
+        if(bluetoothSensorManager.isBluetoothDeviceOn()){
+            bluetoothSensorManager.defaultListeningMode();
+        }
         if(tempLogProfile!=null) tempLogProfile = null;//TODO consider letting it be and use it till user sets favorite profile
     }
 
@@ -210,13 +242,22 @@ public class SensorService extends Service {
         return sensorLogManager.isLogging();
     }
 
-    public ArrayDeque<SensorData> getSensorDataQueue(){
+    /*public ArrayDeque<SensorData> getSensorDataQueue(){
         return sensorDataQueue;
+    }*/
+
+    public SparseArray<SensorData> getSensorDataSparseArray(){return sensorDataSparseArray;}
+    public List<Integer> getSensorTypesOccured(){
+        if(sensorTypesOccured.isEmpty())return null;
+        List<Integer> listToSend = new ArrayList<>();
+        listToSend.addAll(sensorTypesOccured);
+        sensorTypesOccured.clear();
+        return listToSend;
     }
 
     public List<Integer> getMonitoredSensorsTypes(boolean ignoreMode){
         List<Integer> sensorTypes = new ArrayList<>();
-        if(ignoreMode || displayMode == ALL_SENSORS_MODE){
+        if(ignoreMode || displayMode == ALL_SENSORS_MODE||isLogging()){
             androidSensorManager.giveMeYourSensorTypes(sensorTypes);
             if(bluetoothSensorManager.isBluetoothDeviceOn())
             bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
@@ -246,6 +287,7 @@ public class SensorService extends Service {
                 .setContentTitle("Droidsor Service")
                 .setContentText("Service is running")
                 .setSmallIcon(R.drawable.notification_icon)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher))
                 .setOngoing(true);
         Intent stopServiceIntent = new Intent(this, ServiceStopperService.class);
         PendingIntent stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
@@ -264,11 +306,12 @@ public class SensorService extends Service {
 
     public void stop(boolean hardStop){
         if(isStopIntended || hardStop) {
-            if (isLogging()) sensorLogManager.endLog();
-            stopListeningSensors();
-            destroyServiceNotification();
-            stopSelf();
+            stop();
         }else{
+            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.ONE_CLICK_NOTIFICATION_EXIT,false)){
+                stop();
+                return;
+            }
             isStopIntended = true;
             Toast.makeText(getApplicationContext(),"Click again to end Droidsor service and any running logs",Toast.LENGTH_LONG).show();
             Handler handler = new Handler();
@@ -281,6 +324,13 @@ public class SensorService extends Service {
 
             }, 10000);
         }
+    }
+
+    private void stop(){
+        if (isLogging()) sensorLogManager.endLog();
+        stopListeningSensors(true);
+        destroyServiceNotification();
+        stopSelf();
     }
 
 

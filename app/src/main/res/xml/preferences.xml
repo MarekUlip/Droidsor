@@ -11,10 +11,23 @@
         android:title="@string/wait_for_gps"
         android:summary="@string/wait_for_gps_summary"
         />
+
+    <CheckBoxPreference
+        android:key="one_click_notification_exit"
+        android:defaultValue="false"
+        android:title="@string/one_click_notification_exit"
+        android:summary="@string/one_click_notification_exit_summary" />
     <ListPreference
         android:key="start_log_but_behaviour"
         android:defaultValue="1"
         android:title="@string/start_logging_button_behaviour"
         android:entries="@array/log_but_beh_str_arr"
         android:entryValues="@array/log_but_beh_str_val"/>
+    <EditTextPreference
+        android:key="count_of_points"
+        android:defaultValue="750"
+        android:inputType="number"
+        android:title="@string/count_of_points"
+        android:summary="@string/count_of_points_summary"
+        android:maxLength="4"/>
 </PreferenceScreen>

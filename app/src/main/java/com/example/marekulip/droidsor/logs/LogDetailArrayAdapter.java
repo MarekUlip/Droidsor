@@ -80,7 +80,8 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
             xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
             xAxis.setValueFormatter(formatter);
 
-            graphView.setData(item.lineData);//TODO remove numbers from points
+
+            graphView.setData(item.lineData);
             graphView.invalidate();
 
             graphView.setVisibleXRangeMaximum(120);

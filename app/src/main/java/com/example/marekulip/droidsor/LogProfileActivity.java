@@ -3,10 +3,12 @@ package com.example.marekulip.droidsor;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 public class LogProfileActivity extends AppCompatActivity implements LogProfileListFragment.LogProfileListFragmentListener{
@@ -27,14 +29,28 @@ public class LogProfileActivity extends AppCompatActivity implements LogProfileL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_bar_sensor_d_displ);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+        FloatingActionButton fab = findViewById(R.id.sens_disp_fab);
+        fab.setImageResource(R.drawable.ic_action_add);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(LogProfileActivity.this,LogProfileSettingActivity.class));
+            }
+        });
 
         fragment = LogProfileListFragment.newInstance();
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment,fragment).commit();
 
         isPickingFirstFavoriteProfile = getIntent().getBooleanExtra(IS_PICKING_FAVORITE_PROFILE,false);
         isPickingNextToLog = getIntent().getBooleanExtra(IS_PICKING_NEXT_TO_LOG,false);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if(isPickingFirstFavoriteProfile||isPickingNextToLog){
+            toolbar.setVisibility(View.GONE);
+        }else{
+            setSupportActionBar(toolbar);
+        }
     }
 
     @Override

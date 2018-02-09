@@ -109,7 +109,7 @@ public class SaveProfileDialogFragment extends DialogFragment {
                 .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                mListener.saveProfile(profNameEdit.getText().toString(),gpsFrequency,checkBox.isChecked());
+                mListener.saveProfile(profNameEdit.getText().toString(),gpsFrequency+minScan,checkBox.isChecked());
             }
         })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

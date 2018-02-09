@@ -6,9 +6,5 @@
         android:title="@string/save"
         android:icon="@drawable/ic_action_save"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/action_connect_device"
-        android:title="@string/connect_bt_device"
-        app:showAsAction="never" />
 
 </menu>

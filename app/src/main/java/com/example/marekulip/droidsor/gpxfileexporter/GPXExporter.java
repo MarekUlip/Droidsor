@@ -45,6 +45,14 @@ public class GPXExporter {
     private static final String zValueEndTag = myNamespaceTagEnd+"z>";
     private static final String eleStartTag = "<ele>";
     private static final String eleEndTag = "</ele>";
+    private static final String vdopStartTag = "<vdop>";
+    private static final String vdopEndTag = "</vdop>";
+    private static final String hdopStartTag = "<hdop>";
+    private static final String hdopEndTag = "</hdop>";
+    private static final String speedStartTag = "<speed>";
+    private static final String speedEndTag = "</speed>";
+    private static final String fixStartTag = "<fix>";
+    private static final String fixEndTag = "</fix>";
     private static final DecimalFormat decimalFormat;
     private static final int timeGap = 500;
 
@@ -114,10 +122,21 @@ public class GPXExporter {
         String sensorXMLName;
         for(int i = 0; i<size;i++){
             data = datas.get(i);
-            sb.append(trkptStartTag).append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">").append(System.lineSeparator())
-                    .append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator());
-            if(data.altitude != 0)sb.append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator());
+            sb.append(trkptStartTag);
+            if(data.latitude>=0)sb.append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">");
+            else sb.append("lat=\"").append(0.0).append("\" lon=\"").append(0.0).append("\">");
+            sb.append(System.lineSeparator()).append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator());
+            if(data.altitude >= 0)sb.append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator());
+            sb.append(fixStartTag);
+            if(data.latitude>=0&&data.altitude>=0)sb.append("3d");
+            else if(data.latitude>=0)sb.append("2d");
+            else sb.append("none");
+            sb.append(fixEndTag).append(System.lineSeparator());
+            if(data.accuracy>=0){
+                sb.append(hdopStartTag).append((int)(data.accuracy)/5).append(hdopEndTag).append(System.lineSeparator());
+            }
             sb.append(extensionsStartTag).append(System.lineSeparator());
+            if(data.speed>=0)sb.append(speedStartTag).append(data.speed).append(speedEndTag).append(System.lineSeparator());
             for(; i<size;i++){
                 data = datas.get(i);
                 if(data.time - lastTime > timeGap){

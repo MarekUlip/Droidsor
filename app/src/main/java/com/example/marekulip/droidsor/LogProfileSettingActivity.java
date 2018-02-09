@@ -9,11 +9,13 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
@@ -39,6 +41,15 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        FloatingActionButton fab = findViewById(R.id.sens_disp_fab);
+        fab.setImageResource(R.drawable.ic_ble_sensorss);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(new Intent(LogProfileSettingActivity.this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
+            }
+        });
+
         isSettingTempProfile = getIntent().getBooleanExtra(IS_SETTING_TEMP_PROFILE,false);
         if(isSettingTempProfile)Toast.makeText(this,getString(R.string.create_temp_profile),Toast.LENGTH_LONG).show();
         /*Intent intent = new Intent(this,SensorService.class);
@@ -50,7 +61,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.log_profile_items_menu,menu);
+        getMenuInflater().inflate(R.menu.save_menu,menu);
         return true;
     }
 
@@ -59,9 +70,6 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         switch (item.getItemId()){
             case R.id.action_save:
                 fragment.saveProfile();
-                break;
-            case R.id.action_connect_device:
-                startActivityForResult(new Intent(this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
                 break;
         }
         return true;
@@ -86,7 +94,6 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     @Override
     public void onPause() {
         super.onPause();
-        //unbindService(mServiceConnection); //TODO solve leaking service problem
         disconnectFromService();
     }
 
@@ -135,7 +142,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     }
 
     private void disconnectFromService(){
-        if(!mSensorService.isLogging())mSensorService.stopListeningSensors();
+        if(!mSensorService.isLogging())mSensorService.stopListeningSensors();//TODO stop bluetooth sensors too
         unregisterReceiver(mSensorServiceUpdateReceiver);
         unbindService(mServiceConnection);
     }

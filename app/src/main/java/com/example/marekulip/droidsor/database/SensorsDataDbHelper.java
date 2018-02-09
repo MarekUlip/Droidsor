@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public class SensorsDataDbHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 4;
+    public static final int DATABASE_VERSION = 6;
     public static final String DATABASE_NAME = "SensorsData.db";
 
     public SensorsDataDbHelper(Context context) {
@@ -22,6 +22,7 @@ public class SensorsDataDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SensorDataTable.CREATE_TABLE);
         sqLiteDatabase.execSQL(LogProfilesTable.CREATE_TABLE);
         sqLiteDatabase.execSQL(LogProfileItemsTable.CREATE_TABLE);
+        sqLiteDatabase.execSQL(SenorDataItemsCountTable.CREATE_TABLE);
     }
 
     @Override
@@ -31,6 +32,7 @@ public class SensorsDataDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SensorDataTable.DELETE_TABLE);
         sqLiteDatabase.execSQL(LogProfilesTable.DELETE_TABLE);
         sqLiteDatabase.execSQL(LogProfileItemsTable.DELETE_TABLE);
+        sqLiteDatabase.execSQL(SenorDataItemsCountTable.DELETE_TABLE);
         onCreate(sqLiteDatabase);
     }
 }

@@ -8,7 +8,10 @@ import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
+
+import com.example.marekulip.droidsor.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,7 +26,7 @@ public class DroidsorExporter {
 
     public static final int WRITE_EXTERNAL_STORAGE_ID = 1;
     public static final int READ_EXTERNAL_STORAGE_ID = 2;
-    private final static File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+    private final static File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
     private final static boolean isWritable = isExternalStorageWritable();
 
     public static boolean checkForWritePermission(Context context){
@@ -41,8 +44,16 @@ public class DroidsorExporter {
     public static boolean writeToFile(String dataToSave,String fileName,Context context){
         if(isWritable) {
             try {
-                File file = new File(path, fileName);
-                path.mkdirs();
+                File folder = new File(path, context.getString(R.string.app_name));
+                Log.d("sdd", "writeToFile: "+folder.exists());
+                if(!folder.exists()){
+                    boolean rv = folder.mkdir();
+                    Log.d("folder created", "writeToFile: "+ rv);
+                }
+                File file = new File(folder,fileName);
+                Log.d("sdd", "writeToFile: "+file.getPath());
+                //path.mkdirs();
+                //Log.d("sdd", "writeToFile: "+fileName);
                 file.createNewFile();
                 FileOutputStream fOut = new FileOutputStream(file);
                 OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);

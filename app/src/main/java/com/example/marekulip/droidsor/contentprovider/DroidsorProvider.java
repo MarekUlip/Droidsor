@@ -15,6 +15,7 @@ import android.text.TextUtils;
 
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
+import com.example.marekulip.droidsor.database.SenorDataItemsCountTable;
 import com.example.marekulip.droidsor.database.SensorDataTable;
 import com.example.marekulip.droidsor.database.SensorLogsTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
@@ -35,6 +36,9 @@ public class DroidsorProvider extends ContentProvider {
     private static final int SENSOR_LOGS_ID = 6;
     private static final int SENSOR_DATA = 7;
     private static final int SENSOR_DATA_ID = 8;
+    private static final int SENSOR_DATA_COUNT = 9;
+    private static final int SENSOR_DATA_COUNT_ID = 10;
+
 
     private static final String AUTHORITY = "com.example.marekulip.provider";
 
@@ -44,6 +48,7 @@ public class DroidsorProvider extends ContentProvider {
     public static final Uri LOG_PROFILE_ITEMS_URI = Uri.parse("content://"+ AUTHORITY+"/"+LogProfileItemsTable.TABLE_NAME);
     public static final Uri SENSOR_LOGS_URI = Uri.parse("content://"+ AUTHORITY+"/"+SensorLogsTable.TABLE_NAME);
     public static final Uri SENSOR_DATA_URI = Uri.parse("content://"+ AUTHORITY+"/"+SensorDataTable.TABLE_NAME);
+    public static final Uri SENSOR_DATA_COUNT_URI = Uri.parse("content://"+ AUTHORITY+"/"+ SenorDataItemsCountTable.TABLE_NAME);
 
 
     static {
@@ -58,6 +63,10 @@ public class DroidsorProvider extends ContentProvider {
 
         sUriMatcher.addURI(AUTHORITY, SensorDataTable.TABLE_NAME,SENSOR_DATA);
         sUriMatcher.addURI(AUTHORITY, SensorDataTable.TABLE_NAME+"/#",SENSOR_DATA_ID);
+
+        sUriMatcher.addURI(AUTHORITY, SenorDataItemsCountTable.TABLE_NAME,SENSOR_DATA_COUNT);
+        sUriMatcher.addURI(AUTHORITY, SenorDataItemsCountTable.TABLE_NAME+"/#",SENSOR_DATA_COUNT_ID);
+
 
     }
 
@@ -102,6 +111,13 @@ public class DroidsorProvider extends ContentProvider {
                 queryBuilder.setTables(SensorDataTable.TABLE_NAME);
                 queryBuilder.appendWhere(SensorDataTable._ID + " = " + uri.getLastPathSegment());
                 break;
+            case SENSOR_DATA_COUNT:
+                queryBuilder.setTables(SenorDataItemsCountTable.TABLE_NAME);
+                break;
+            case SENSOR_DATA_COUNT_ID:
+                queryBuilder.setTables(SenorDataItemsCountTable.TABLE_NAME);
+                queryBuilder.appendWhere(SenorDataItemsCountTable._ID + " = " + uri.getLastPathSegment());
+                break;
 
             default: throw new IllegalArgumentException("Unknown URI: "+ uri);
         }
@@ -131,6 +147,10 @@ public class DroidsorProvider extends ContentProvider {
                 return SensorDataTable.CONTENT_TYPE;
             case SENSOR_DATA_ID:
                 return SensorDataTable.CONTENT_ITEM_TYPE;
+            case SENSOR_DATA_COUNT:
+                return SenorDataItemsCountTable.CONTENT_TYPE;
+            case SENSOR_DATA_COUNT_ID:
+                return SenorDataItemsCountTable.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
@@ -165,6 +185,12 @@ public class DroidsorProvider extends ContentProvider {
                 id = sqlDB.insert(SensorDataTable.TABLE_NAME,null,contentValues);
                 if(id>0){
                     _uri = ContentUris.withAppendedId((SENSOR_DATA_URI),id);
+                }
+                break;
+            case SENSOR_DATA_COUNT:
+                id = sqlDB.insert(SenorDataItemsCountTable.TABLE_NAME,null,contentValues);
+                if(id>0){
+                    _uri = ContentUris.withAppendedId((SENSOR_DATA_COUNT_URI),id);
                 }
                 break;
             default: throw new SQLException("Failed to insert row into " + uri);
@@ -204,6 +230,12 @@ public class DroidsorProvider extends ContentProvider {
             case SENSOR_DATA_ID:
                 rowsDeleted = db.delete(SensorDataTable.TABLE_NAME,SensorDataTable._ID +"="+uri.getLastPathSegment(),(TextUtils.isEmpty(selection)?null:selectionArgs));
                 break;
+            case SENSOR_DATA_COUNT:
+                rowsDeleted = db.delete(SenorDataItemsCountTable.TABLE_NAME, selection,selectionArgs);
+                break;
+            case SENSOR_DATA_COUNT_ID:
+                rowsDeleted = db.delete(SenorDataItemsCountTable.TABLE_NAME,SenorDataItemsCountTable._ID +"="+uri.getLastPathSegment(),(TextUtils.isEmpty(selection)?null:selectionArgs));
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -239,6 +271,12 @@ public class DroidsorProvider extends ContentProvider {
                 break;
             case SENSOR_DATA_ID:
                 rowsUpdated = db.update(SensorDataTable.TABLE_NAME,contentValues,SensorDataTable._ID +"="+uri.getLastPathSegment(),(TextUtils.isEmpty(selection)?null:selectionArgs));
+                break;
+            case SENSOR_DATA_COUNT:
+                rowsUpdated = db.update(SenorDataItemsCountTable.TABLE_NAME, contentValues, selection,selectionArgs);
+                break;
+            case SENSOR_DATA_COUNT_ID:
+                rowsUpdated = db.update(SenorDataItemsCountTable.TABLE_NAME,contentValues,SenorDataItemsCountTable._ID +"="+uri.getLastPathSegment(),(TextUtils.isEmpty(selection)?null:selectionArgs));
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);

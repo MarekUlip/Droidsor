@@ -1,9 +1,11 @@
 package com.example.marekulip.droidsor.logs;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
@@ -11,35 +13,36 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
-import android.util.Log;
+import android.support.v7.app.AlertDialog;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.CursorAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.marekulip.droidsor.R;
-import com.example.marekulip.droidsor.SensorItem;
-import com.example.marekulip.droidsor.adapters.SensorDataDispArrAdapter;
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
-import com.example.marekulip.droidsor.database.LogProfilesTable;
+import com.example.marekulip.droidsor.database.SenorDataItemsCountTable;
 import com.example.marekulip.droidsor.database.SensorDataTable;
 import com.example.marekulip.droidsor.database.SensorLogsTable;
-import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
+import com.example.marekulip.droidsor.gpxfileexporter.LogExporter;
 import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Created by Marek Ulip on 24-Sep-17.
@@ -47,7 +50,9 @@ import java.util.List;
 
 public class LogsFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>{
     private static final String TAG = LogsFragment.class.toString();
-    private SimpleCursorAdapter mAdapter;
+    private LogsFragmentCursorAdapter mAdapter;
+    private boolean isSelectionModeOn = false;
+    private List<Long> items = new ArrayList<>();
 
 
     @Override
@@ -62,38 +67,121 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         this.getListView().setDividerHeight(2);
         registerForContextMenu(getListView());
         initCursorAdapter();
+        getActivity().invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-        Intent intent = new Intent(getActivity(),LogDetailActivity.class);
-        intent.putExtra("id",(int)mAdapter.getItemId(position));
-        startActivity(intent);
+        if(!isSelectionModeOn){
+            Intent intent = new Intent(getActivity(),LogDetailActivity.class);
+            intent.putExtra("id",(int)mAdapter.getItemId(position));
+            startActivity(intent);}
+        else {
+            if(items.contains(id)){
+                items.remove(id);
+                v.setBackgroundColor(Color.TRANSPARENT);
+            }else{
+                items.add(id);
+                v.setBackgroundColor(Color.GRAY);
+            }
+            mAdapter.setItemsList(items);
+
+        }
     }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        getActivity().getMenuInflater().inflate(R.menu.mark_more_delete_menu,menu);
+        if(isSelectionModeOn){
+            menu.findItem(R.id.action_cancel).setVisible(true);
+            menu.findItem(R.id.action_mark_more).setVisible(false);
+            menu.findItem(R.id.action_delete).setVisible(true);
+        }else{
+            menu.findItem(R.id.action_cancel).setVisible(false);
+            menu.findItem(R.id.action_mark_more).setVisible(true);
+            menu.findItem(R.id.action_delete).setVisible(false);
+        }
+        super.onCreateOptionsMenu(menu,inflater);
+    }
+
+    public boolean isSelectionModeOn(){
+        return isSelectionModeOn;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_mark_more) {
+            setSelectionMode(true);
+        }
+        else if (id == R.id.action_cancel){
+            setSelectionMode(false);
+        }
+        else if(id==R.id.action_delete){
+            deleteMore();
+            setSelectionMode(false);
+        }
+        getActivity().invalidateOptionsMenu();
+        return true;
+    }
+
+    private void setSelectionMode(boolean mode){
+        isSelectionModeOn = mode;
+        if(!mode){
+            cancelSelection();
+        }else {
+            mAdapter.setItemsList(items);
+        }
+    }
+    private void cancelSelection(){
+        items.clear();
+        mAdapter.setItemsList(items);
+        initCursorAdapter();
+    }
+
+    private void deleteMore(){
+        for(Long item : items){
+            deleteItem(item);
+        }
+        //setSelectionMode(false);
+        //initCursorAdapter();
+    }
+
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.add(0,Menu.FIRST,0,R.string.export_log);
         menu.add(0, Menu.FIRST+1,0,getString(R.string.delete));
+        menu.add(0,Menu.FIRST+2,0,R.string.rename);
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if(item.getItemId()==Menu.FIRST) exportLog((int)info.id);
-        if(item.getItemId()==Menu.FIRST+1) deleteItem((int)info.id);
+        if(item.getItemId()==Menu.FIRST) LogExporter.exportLog(getContext(),info.id,null);//exportLog(info.id);
+        if(item.getItemId()==Menu.FIRST+1) {
+            deleteItem(info.id);
+            initCursorAdapter();
+        }
+        if(item.getItemId() == Menu.FIRST+2) renameItem(info.id);
         return super.onContextItemSelected(item);
     }
 
-    private void exportLog(final int id){
-        getActivity().runOnUiThread(new Runnable() {
+    private void exportLog(final long id){
+        Toast.makeText(getContext(),R.string.started_exporting,Toast.LENGTH_LONG).show();
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(getContext(),R.string.started_exporting,Toast.LENGTH_LONG).show();
                 List<SensorData> data = new ArrayList<>();
-                Cursor c = getContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID+ " = ?",new String[]{String.valueOf(id)},null);
+                Cursor c = getContext().getApplicationContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID+ " = ?",new String[]{String.valueOf(id)},null);
                 if(c!=null && c.moveToFirst()) {
                     data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
                             ,new Point3D(
@@ -103,7 +191,9 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
                     ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
                             c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
                             c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
-                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
+                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE)),
+                            c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SPEED)),
+                            c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.ACCURACY))
                     ));
                     while (c.moveToNext()) {
                         data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
@@ -114,20 +204,53 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
                         ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
                                 c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
                                 c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
-                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE))
+                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE)),
+                                c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SPEED)),
+                                c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.ACCURACY))
                         ));
                     }
                     c.close();
-                    GPXExporter.exportLogItems(data, "Log "+ id + " Exported at " + DateFormat.getDateTimeInstance().format(System.currentTimeMillis()), getContext());
-                    Toast.makeText(getContext(), R.string.exporting_done, Toast.LENGTH_SHORT).show();
+                    TimeZone tz = TimeZone.getTimeZone("UTC");
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); // Quoted "Z" to indicate UTC, no timezone offset
+                    df.setTimeZone(tz);
+                    GPXExporter.exportLogItems(data, "Log "+ id + " Exported at "+df.format(new Date(System.currentTimeMillis())), getContext().getApplicationContext());
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getContext().getApplicationContext(), R.string.exporting_done, Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
-        });
+        }).start();
     }
 
-    private void deleteItem(int id){
+    private void deleteItem(long id){
+        getContext().getContentResolver().delete(DroidsorProvider.SENSOR_DATA_COUNT_URI, SenorDataItemsCountTable.LOG_ID + " = ?",new String[]{String.valueOf(id)});
+        getContext().getContentResolver().delete(DroidsorProvider.SENSOR_DATA_URI,SensorDataTable.LOG_ID + " = ?",new String[]{String.valueOf(id)});
         getContext().getContentResolver().delete(DroidsorProvider.SENSOR_LOGS_URI,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(id)});
-        initCursorAdapter();
+        //initCursorAdapter();
+    }
+
+    private void renameItem(final long id){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        final EditText editText = new EditText(getContext());
+        builder.setTitle(R.string.choose_new_log_name).setView(editText).setPositiveButton(R.string.rename, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                ContentValues cv = new ContentValues();
+                cv.put(SensorLogsTable.LOG_NAME,editText.getText().toString());
+                getContext().getContentResolver().update(DroidsorProvider.SENSOR_LOGS_URI,cv,SensorLogsTable._ID + " = ?",new String[]{String.valueOf(id)});
+                initCursorAdapter();
+            }
+        }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
    private void initCursorAdapter(){
@@ -154,7 +277,8 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
 
 
     private class LogsFragmentCursorAdapter extends SimpleCursorAdapter{
-
+        private List<Long> items = new ArrayList<>();
+        //private static boolean isSelectionModeOn
 
         public LogsFragmentCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags) {
             super(context, layout, c, from, to, flags);
@@ -164,6 +288,11 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         public void bindView(View view, Context context, Cursor cursor) {
             String name = prepText(cursor);
             ((TextView)view.findViewById(android.R.id.text1)).setText(name);
+            if(items.contains(cursor.getLong(cursor.getColumnIndexOrThrow(SensorLogsTable._ID)))){
+                view.setBackgroundColor(Color.GRAY);
+            }else {
+                view.setBackgroundColor(Color.TRANSPARENT);
+            }
         }
 
         private String prepText(Cursor cursor){
@@ -174,6 +303,10 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
             name += System.lineSeparator()+"Time: "+getElapsedTime(start,end);//
             // DateFormat.getDateTimeInstance().format(new Date(start))+ " - " + DateFormat.getDateTimeInstance().format(new Date(end));;
             return name;
+        }
+
+        private void setItemsList(List<Long> ids){
+            items = ids;
         }
 
         private String getElapsedTime(long start, long end){

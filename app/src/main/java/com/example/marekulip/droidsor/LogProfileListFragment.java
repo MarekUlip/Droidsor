@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
+import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 
@@ -60,31 +61,9 @@ public class LogProfileListFragment extends ListFragment {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if(item.getItemId()==Menu.FIRST) deleteItem((int)info.id);
+        if(item.getItemId()==Menu.FIRST) deleteItem(info.id);
         return super.onContextItemSelected(item);
     }
-
-    /*@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_create_new:
-                startActivity(new Intent(getContext(),LogProfileSettingActivity.class));
-                break;
-            case R.id.action_pick_favorite:
-                enterPickingMode();
-                break;
-            case R.id.action_cancel:
-                exitPickingMode();
-                break;
-        }
-        return true;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        if(isPickingModeOn)inflater.inflate(R.menu.log_profile_menu,menu);
-        else inflater.inflate(R.menu.cancel_menu,menu);
-    }*/
 
     @Override
     public void onResume() {
@@ -133,7 +112,8 @@ public class LogProfileListFragment extends ListFragment {
         }
     }
 
-    private void deleteItem(int id){
+    private void deleteItem(long id){
+        getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_ITEMS_URI, LogProfileItemsTable.PROFILE_ID + " = ?",new String[]{String.valueOf(id)});
         getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_URI,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(id)});
         destroyCursorAdapter();
         initCursorAdapter();

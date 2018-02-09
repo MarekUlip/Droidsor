@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.util.Log;
 
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
@@ -74,6 +75,14 @@ public abstract class GeneralTISensor {
         mBluetoothGatt.setCharacteristicNotification(desc.getCharacteristic(),enable);
         desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         mBluetoothGatt.writeDescriptor(desc);
+    }
+
+    public void configureSensorFrequency(int frequency){
+        if (frequency > 2450) frequency = 2450;
+        if (frequency < 100) frequency = 100;
+        byte f = (byte)((frequency/10));//TODO first frequency for movement must be 1000
+        periodCharacteristic.setValue(new byte[]{f});
+        mBluetoothGatt.writeCharacteristic(periodCharacteristic);
     }
 
     public abstract boolean processNewData(BluetoothGattCharacteristic data, List<SensorData> sensorDataList);

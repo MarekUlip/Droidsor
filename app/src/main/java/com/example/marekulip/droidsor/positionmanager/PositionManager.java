@@ -44,6 +44,7 @@ public class PositionManager {
     private LocationCallback mLocationCallback;
     private Location mLastLocation;
     private Context context;
+    private OnRecievedPositionListener onRecievedPositionListener;
 
     private static boolean isPositionObtainable = false;
     private boolean isTryingToGetFirstPosition = false;
@@ -77,10 +78,12 @@ public class PositionManager {
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 mLastLocation = locationResult.getLastLocation();
+                if(onRecievedPositionListener!=null)onRecievedPositionListener.positionRecieved();
                 if(isTryingToGetFirstPosition) {
                     stopUpdates();
                     isTryingToGetFirstPosition = false;
                 }
+                Log.d("timeTest", "onLocationResult: " + mLocationRequest.getInterval()+" "+mLocationRequest.getFastestInterval());
                 //mFusedLocationClient.removeLocationUpdates(mLocationCallback);
             }
         };
@@ -93,7 +96,7 @@ public class PositionManager {
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    public boolean isObtainable(){
+    public static boolean isObtainable(){
         return isPositionObtainable;
     }
 
@@ -107,6 +110,10 @@ public class PositionManager {
                            // mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                                   //  mLocationCallback, Looper.myLooper());
                             isPositionObtainable = true;
+                            if(onRecievedPositionListener!=null){
+                                isTryingToGetFirstPosition = true;
+                                startUpdates();
+                            }
                         }
                     })
                     .addOnFailureListener(activity, new OnFailureListener() {
@@ -117,7 +124,6 @@ public class PositionManager {
                             switch (statusCode) {
                                 case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                                     try {
-                                        //TODO resolve
                                         ResolvableApiException rae = (ResolvableApiException) e;
                                         rae.startResolutionForResult(activity, REQUEST_CHECK_SETTINGS);
                                     } catch (IntentSender.SendIntentException sie) {
@@ -132,7 +138,7 @@ public class PositionManager {
         } else {
             isPositionObtainable = false;
             ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MY_PERMISSIONS_REQUEST_LOCATION_FINE);
-            ((PermissionHandlerIFace)activity).requestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+            //((PermissionHandlerIFace)activity).requestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
         }
     }
 
@@ -153,10 +159,17 @@ public class PositionManager {
         }
     }
 
+    public void setOnRecievedPositionListener(OnRecievedPositionListener listener){
+        onRecievedPositionListener = listener;
+    }
+    public void cancelOnRecievedPositionListener(){
+        onRecievedPositionListener = null;
+    }
+
     public void setIntervals(int interval){
         mLocationRequest.setInterval(interval);
         if(interval>2000){
-            mLocationRequest.setFastestInterval(interval / 2000);
+            mLocationRequest.setFastestInterval(interval / 2);
         }
         else{
             mLocationRequest.setFastestInterval(interval);
@@ -188,5 +201,9 @@ public class PositionManager {
             return mLastLocation;
         }
         return null;
+    }
+
+    public interface OnRecievedPositionListener{
+        void positionRecieved();
     }
 }
