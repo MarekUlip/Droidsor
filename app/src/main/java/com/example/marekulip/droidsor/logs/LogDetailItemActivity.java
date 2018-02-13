@@ -1,14 +1,13 @@
 package com.example.marekulip.droidsor.logs;
 
-import android.app.ProgressDialog;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
@@ -76,8 +75,10 @@ public class LogDetailItemActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         setUpGraph();
-                        findViewById(R.id.progressBar2).setVisibility(View.GONE);
+                        findViewById(R.id.progress_bar).setVisibility(View.GONE);
                         findViewById(R.id.log_chart).setVisibility(View.VISIBLE);
+                        ((TextView)findViewById(R.id.text_sensor_units)).setText(SensorsEnum.resolveEnum(sensorId).getSensorUnitName(LogDetailItemActivity.this));
+                        ((TextView)findViewById(R.id.text_sensor_name)).setText(SensorsEnum.resolveEnum(sensorId).getSensorName(LogDetailItemActivity.this));
                     }
                 });
             }

@@ -21,6 +21,7 @@
     <string name="untitled_profile">Untitled profile</string>
     <string name="export_sensor">Export this sensor</string>
     <string name="export_selected_sensors">Export selected sensors</string>
+    <string name="export_selected_logs">Export selected logs</string>
     <string name="export_log_item">Export log item</string>
     <string name="profile_name">Profile Name</string>
     <string name="scan_gps_when_logging">Save position when logging.</string>
@@ -59,6 +60,9 @@
     <string name="no_logs">You have not made any logs yet.</string>
     <string name="count_of_points">Count of points at graph summary</string>
     <string name="count_of_points_summary">Count of points to display at graph summary. The more points to show the slower the loading of the log will be.</string>
+    <string name="waiting_for_gps">Waiting for GPS</string>
+    <string name="waiting_for_gps_message">Do you fish to start logging without GPS?</string>
+    <string name="start_without_gps">Start without GPS</string>
 
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>

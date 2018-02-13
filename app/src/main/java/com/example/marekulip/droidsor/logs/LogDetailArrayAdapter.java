@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.marekulip.droidsor.R;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
@@ -51,10 +52,13 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
 
         LineChart graphView =  convertView.findViewById(R.id.log_chart);
         TextView sensorValue = convertView.findViewById(R.id.sensor_name);
+        TextView sensorUnit = convertView.findViewById(R.id.text_sensor_units);
+        View graphWrapper = convertView.findViewById(R.id.graph_wrapper);
         if(isSelectionModeOn){
-            graphView.setVisibility(View.GONE);
+            graphWrapper.setVisibility(View.GONE);
         }else {
-            graphView.setVisibility(View.VISIBLE);
+            graphWrapper.setVisibility(View.VISIBLE);
+            sensorUnit.setText(SensorsEnum.resolveEnum(item.sensorType).getSensorUnitName(getContext()));
             graphView.setTouchEnabled(true);
             graphView.getDescription().setEnabled(false);
             // enable scaling and dragging

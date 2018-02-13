@@ -9,19 +9,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -29,7 +28,6 @@ import android.widget.Toast;
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
-import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 import com.example.marekulip.droidsor.logs.LogsActivity;
 import com.example.marekulip.droidsor.positionmanager.PositionManager;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
@@ -38,7 +36,7 @@ import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 import java.util.List;
 
 public class SensorDataDisplayerActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, PositionManager.OnRecievedPositionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, PositionManager.OnRecievedPositionListener, WaitForGPSDialog.WaitForGPSIFace {
 
     public static final String DEVICE_ADDRESS = "DEVICE_ADDRESS";
     public static final String SHARED_PREFS_NAME = "droidsor_prefs";
@@ -51,6 +49,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private LogProfile profileHolder;
     private boolean isRecording = false;
     private boolean recievedLocation = false;
+    private DialogFragment waitForGPSDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -261,6 +260,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             tryToInitPosManager();
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
                 profileHolder = profile;
+                waitForGPSDialog = new WaitForGPSDialog();
+                waitForGPSDialog.setCancelable(false);
+                waitForGPSDialog.show(getSupportFragmentManager(),"WaitForGPSDialog");
                 //TODO make dialogue about waiting for GPS
                 return;
             }
@@ -436,6 +438,10 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     @Override
     public void positionRecieved() {
         Log.d("posTest", "positionRecieved: ");
+        if(waitForGPSDialog !=null){
+            waitForGPSDialog.dismiss();
+            waitForGPSDialog = null;
+        }
         positionManager.cancelOnRecievedPositionListener();
         recievedLocation = true;
         if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
@@ -443,5 +449,15 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         }
 
 
+    }
+
+    @Override
+    public void startWithNoGPS() {
+        positionRecieved();
+    }
+
+    @Override
+    public void cancelLog() {
+        positionManager.cancelOnRecievedPositionListener();
     }
 }

@@ -98,15 +98,17 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        getActivity().getMenuInflater().inflate(R.menu.mark_more_delete_menu,menu);
+        getActivity().getMenuInflater().inflate(R.menu.mark_more_delete_export_menu,menu);
         if(isSelectionModeOn){
             menu.findItem(R.id.action_cancel).setVisible(true);
             menu.findItem(R.id.action_mark_more).setVisible(false);
             menu.findItem(R.id.action_delete).setVisible(true);
+            menu.findItem(R.id.action_export_selected).setVisible(true);
         }else{
             menu.findItem(R.id.action_cancel).setVisible(false);
             menu.findItem(R.id.action_mark_more).setVisible(true);
             menu.findItem(R.id.action_delete).setVisible(false);
+            menu.findItem(R.id.action_export_selected).setVisible(false);
         }
         super.onCreateOptionsMenu(menu,inflater);
     }
@@ -126,6 +128,10 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         }
         else if(id==R.id.action_delete){
             deleteMore();
+            setSelectionMode(false);
+        }
+        else if(id==R.id.action_export_selected){
+            exportMore();
             setSelectionMode(false);
         }
         getActivity().invalidateOptionsMenu();
@@ -152,6 +158,12 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         }
         //setSelectionMode(false);
         //initCursorAdapter();
+    }
+
+    private void exportMore(){
+        for(Long item:items){
+            LogExporter.exportLog(getContext(),item,null);
+        }
     }
 
 
