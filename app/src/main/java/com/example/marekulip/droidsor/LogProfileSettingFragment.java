@@ -127,6 +127,7 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
                         items.add(new LogProfileItem(true,SensorsEnum.EXT_MOVEMENT.sensorType,item.scanFrequency));
                         extMovSet = true;
                     }
+                    continue;
                 }
                 items.add(item);
             }while (c.moveToNext());

@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
@@ -398,6 +399,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 fragment.setNewData(sensorTypes, mSensorService.getSensorDataSparseArray());
                 //Log.d("Displ", "onReceive: Displaying data");
                 //displayData();
+            }else if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action) ||BluetoothSensorManager.ACTION_GATT_DISCONNECTED.equals(action) ) {
+                invalidateOptionsMenu();
             }
         }
     };
@@ -471,6 +474,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private static IntentFilter makeUpdateIntentFilter(){
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(SensorService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_DISCONNECTED);
         return intentFilter;
     }
 

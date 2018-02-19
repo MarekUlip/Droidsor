@@ -101,6 +101,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     protected void onResume() {
         super.onResume();
         connectToService();
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -164,11 +165,9 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action)) {
+            if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action) || BluetoothSensorManager.ACTION_GATT_DISCONNECTED.equals(action)) {
                 fragment.restartFragment();
-                Log.d("Connected", "onReceive: ");
-                //Log.d("Displ", "onReceive: Displaying data");
-                //displayData();
+                invalidateOptionsMenu();
             }
         }
     };
@@ -176,6 +175,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     private static IntentFilter makeUpdateIntentFilter(){
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_DISCONNECTED);
         return intentFilter;
     }
 

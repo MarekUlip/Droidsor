@@ -26,8 +26,7 @@ public class DroidsorExporter {
 
     public static final int WRITE_EXTERNAL_STORAGE_ID = 1;
     public static final int READ_EXTERNAL_STORAGE_ID = 2;
-    private final static File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-    private final static boolean isWritable = isExternalStorageWritable();
+    private final static File path = Environment.getExternalStorageDirectory();//Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
 
     public static boolean checkForWritePermission(Context context){
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
@@ -42,7 +41,7 @@ public class DroidsorExporter {
     }
 
     public static boolean writeToFile(String dataToSave,String fileName,Context context){
-        if(isWritable) {
+        if(isExternalStorageWritable()) {
             try {
                 File folder = new File(path, context.getString(R.string.app_name));
                 Log.d("sdd", "writeToFile: "+folder.exists());
@@ -67,6 +66,7 @@ public class DroidsorExporter {
             }
             return false;
         }
+        Log.d("nope", "writeToFile: sheeet");
         return false;
     }
 

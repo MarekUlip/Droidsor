@@ -165,6 +165,7 @@ public class BluetoothSensorManager {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if(status == BluetoothGatt.GATT_SUCCESS){
+                clearQues();
                 //broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
 
                 for (BluetoothGattService s : mBluetoothGatt.getServices()){
@@ -176,7 +177,6 @@ public class BluetoothSensorManager {
                             frequencies.add(sensor);
                             activeSensors.add(sensor);
                             areActiveSenorsSet = true;
-                            //TODO change made for possibilty to turn off unused sensors sensors.remove(sensor);
                             break;
                         }
                     }

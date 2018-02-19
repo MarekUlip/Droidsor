@@ -273,7 +273,7 @@ public class LogsDetailFragment extends ListFragment {
         String[] params = new String[weights.size()*2+1];
         params[0] = String.valueOf(id);
         makeParameters(weights,params);
-        Cursor c = getContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,where,params,null);
+        Cursor c = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,where,params,null);
         List<EntryHolder> lst = new ArrayList<>();
         int itemCount;
         if(c!= null&& c.moveToFirst()){
