@@ -1,11 +1,14 @@
 package com.example.marekulip.droidsor.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +20,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.marekulip.droidsor.R;
+import com.example.marekulip.droidsor.SetExtMovSensorDialogFragment;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
@@ -29,22 +33,19 @@ import java.util.List;
 public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
 
     private List<LogProfileItem> items;
-    private int accelPosition;
-    private int magnetPosition;
-    private int orientPosition;
-    private ViewHolder accellViewHolder;
-    private ViewHolder magnetViewHolder;
-    private ViewHolder orientViewHolder;
+    private FragmentActivity mActivity;
+    private SparseBooleanArray extBluetoothMovSensorStates = new SparseBooleanArray();
 
 
-    public LogProfileItemArrAdapter(@NonNull Context context, int resource, List<LogProfileItem> items) {
+    public LogProfileItemArrAdapter(@NonNull Context context, int resource, List<LogProfileItem> items, FragmentActivity activity) {
         super(context, resource, items);
         this.items = items;
+        mActivity = activity;
     }
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         ViewHolder viewHolder;
         final LogProfileItem profile = getItem(position);
         if(convertView == null){
@@ -58,50 +59,40 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
             viewHolder.frequencySeekBar.setOnSeekBarChangeListener(createSeekBarChangeListener(viewHolder));
             viewHolder.frequencyEditText = convertView.findViewById(R.id.profile_item_freq_et);
             viewHolder.frequencyEditText.addTextChangedListener(createTextWatcher(viewHolder));
+            viewHolder.frequencyEditText.setOnFocusChangeListener(mOnFocusChangeListener);
+
             convertView.setTag(viewHolder);
         } else{
             viewHolder = (ViewHolder)convertView.getTag();
             viewHolder.position = position;
         }
-
+        viewHolder.enableChB.setOnCheckedChangeListener(null);
+        viewHolder.enableChB.setChecked(profile.isEnabled);
         viewHolder.enableChB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                profile.setEnabled(b);
-                if(profile.getSensorType() == SensorsEnum.INTERNAL_ORIENTATION.sensorType){
-                    for(LogProfileItem p: items){
-                        if(p.getSensorType()==SensorsEnum.INTERNAL_ACCELEROMETER.sensorType){
-                            p.setEnabled(true);
-                        }
-                        else if(p.getSensorType()==SensorsEnum.INTERNAL_MAGNETOMETER.sensorType){
-                            p.setEnabled(true);
-                        }
-                    }
-                }else if(profile.getSensorType() == SensorsEnum.INTERNAL_ACCELEROMETER.sensorType){
-                    for(LogProfileItem p: items){
-                        if(p.getSensorType()==SensorsEnum.INTERNAL_ORIENTATION.sensorType){
-                            p.setEnabled(false);
-                            break;
-                        }
-                    }
-                }else if (profile.getSensorType() == SensorsEnum.INTERNAL_MAGNETOMETER.sensorType){
-                    for(LogProfileItem p: items){
-                        if(p.getSensorType()==SensorsEnum.INTERNAL_ORIENTATION.sensorType){
-                            p.setEnabled(false);
-                            break;
-                        }
-                    }
-                }
+                if(profile.sensorType==SensorsEnum.EXT_MOVEMENT.sensorType){
+                    /*if(isCheckProgrammatical){
+                        isCheckProgrammatical = false;
+                        return;
+                    }*/
+                    DialogFragment dialogFragment = new SetExtMovSensorDialogFragment();
+                    Bundle args = new Bundle();
+                    args.putBoolean(SetExtMovSensorDialogFragment.MAG_SENSOR,extBluetoothMovSensorStates.get(SensorsEnum.EXT_MOV_MAGNETIC.sensorType,false));
+                    args.putBoolean(SetExtMovSensorDialogFragment.ACC_SENSOR,extBluetoothMovSensorStates.get(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType,false));
+                    args.putBoolean(SetExtMovSensorDialogFragment.GYR_SENSOR,extBluetoothMovSensorStates.get(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType,false));
+                    dialogFragment.setArguments(args);
+                    dialogFragment.show(mActivity.getSupportFragmentManager(),"SetExtMovSensor");
+                }else profile.setEnabled(b);
+
             }
         });
-        viewHolder.enableChB.setChecked(profile.isEnabled());
-        viewHolder.frequencyEditText.setText(String.valueOf(profile.getScanFrequency()+minimumValue));
-        viewHolder.frequencySeekBar.setProgress(profile.getScanFrequency());
-        viewHolder.itemName.setText(SensorsEnum.resolveEnum(profile.getSensorType()).getSensorName(getContext()));// "Sensor "+profile.getSensorType());
+        //if(profile.getSensorType())
+        viewHolder.frequencyEditText.setText(String.valueOf(profile.scanFrequency+minimumValue));
+        viewHolder.frequencySeekBar.setProgress(profile.scanFrequency-minimumValue);
+        viewHolder.itemName.setText(SensorsEnum.resolveEnum(profile.sensorType).getSensorName(getContext()));// "Sensor "+profile.getSensorType());
         return convertView;
     }
-
-
 
     public void setItems(List<LogProfileItem> items){
         this.items = items;
@@ -109,6 +100,13 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
 
     public List<LogProfileItem> getItems(){
         return items;
+    }
+
+    public SparseBooleanArray getExtBluetoothMovSensorStates(){
+        return extBluetoothMovSensorStates;
+    }
+    public void setExtBluetoothMovSensorStates(SparseBooleanArray extBluetoothMovSensorStates){
+        this.extBluetoothMovSensorStates = extBluetoothMovSensorStates;
     }
 
     static class ViewHolder{
@@ -154,14 +152,45 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
 
             @Override
             public void afterTextChanged(Editable editable) {
-                Log.d("sd", "afterTextChanged: ");
+                //Log.d("sd", "afterTextChanged: ");
                 if(editable.toString().length() != 0) {
                     int value = Integer.parseInt(editable.toString());
                     if(value>maxValue)value = maxValue;
+                    else if(value<minimumValue)value = minimumValue;
                     items.get(v.position).setScanFrequency(value-minimumValue>=minimumValue?value-minimumValue:minimumValue);
                     v.frequencySeekBar.setProgress(value-minimumValue);
                 }
             }
         };
     }
+
+    private final int minDelta = 300;           // threshold in ms
+    private long focusTime = 0;                 // time of last touch
+    private View focusTarget = null;
+
+    View.OnFocusChangeListener mOnFocusChangeListener = new View.OnFocusChangeListener() {
+        @Override
+        public void onFocusChange(View view, boolean hasFocus) {
+            long t = System.currentTimeMillis();
+            long delta = t - focusTime;
+            if (hasFocus) {     // gained focus
+                if (delta > minDelta) {
+                    focusTime = t;
+                    focusTarget = view;
+                }
+            }
+            else {              // lost focus
+                if (delta <= minDelta  &&  view == focusTarget) {
+                    focusTarget.post(new Runnable() {   // reset focus to target
+                        public void run() {
+                            focusTarget.requestFocus();
+                            if(focusTarget instanceof EditText){
+                                ((EditText) focusTarget).setSelection(((EditText) focusTarget).getText().toString().length());
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    };
 }

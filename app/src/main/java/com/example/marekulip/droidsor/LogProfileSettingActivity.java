@@ -23,7 +23,7 @@ import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorMana
 import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.BT_DEVICE_REQUEST;
 import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.DEVICE_ADDRESS;
 
-public class LogProfileSettingActivity extends AppCompatActivity implements SaveProfileDialogFragment.SaveProfileDialogListener{
+public class LogProfileSettingActivity extends AppCompatActivity implements SaveProfileDialogFragment.SaveProfileDialogListener, SetExtMovSensorDialogFragment.SetExtMovSensorIface{
 
     LogProfileSettingFragment fragment;
     private SensorService mSensorService;
@@ -42,11 +42,11 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.sens_disp_fab);
-        fab.setImageResource(R.drawable.ic_ble_sensorss);
+        fab.setImageResource(R.drawable.ic_action_save);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivityForResult(new Intent(LogProfileSettingActivity.this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
+                fragment.saveProfile();
             }
         });
 
@@ -61,15 +61,27 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.save_menu,menu);
+        getMenuInflater().inflate(R.menu.menu_bluetooth_conn,menu);
+        if(mSensorService!=null){
+            if(mSensorService.isBluetoothDeviceOn()){
+                menu.findItem(R.id.action_bluetooth_connect).setVisible(false);
+                menu.findItem(R.id.action_bluetooth_disconnect).setVisible(true);
+            }else {
+                menu.findItem(R.id.action_bluetooth_connect).setVisible(true);
+                menu.findItem(R.id.action_bluetooth_disconnect).setVisible(false);
+            }
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.action_save:
-                fragment.saveProfile();
+            case R.id.action_bluetooth_connect:
+                startActivityForResult(new Intent(LogProfileSettingActivity.this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
+                break;
+            case R.id.action_bluetooth_disconnect:
+                mSensorService.disconnectFromBluetoothDevice();
                 break;
         }
         return true;
@@ -102,6 +114,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mSensorService = ((SensorService.LocalBinder)service).getService();
             fragment.setSensorService(mSensorService);
+            invalidateOptionsMenu();
         }
 
         @Override
@@ -164,5 +177,10 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_CONNECTED);
         return intentFilter;
+    }
+
+    @Override
+    public void extMovSensorsSet(boolean acc, boolean gyr, boolean mag) {
+        fragment.extMovSensorsSet(acc,gyr,mag);
     }
 }

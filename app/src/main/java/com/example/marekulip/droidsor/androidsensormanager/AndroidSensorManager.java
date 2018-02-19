@@ -32,8 +32,9 @@ public class AndroidSensorManager implements SensorEventListener{
     private final int baseListenFrequency = 500;
     private boolean isAccelSet = false;
     private boolean isMagFieldSet = false;
+    private final int orientationId = SensorsEnum.INTERNAL_ORIENTATION.sensorType;
 
-    private Timer orientationTimer = null;
+    //private static Timer orientationTimer = new Timer();
 
     private final float[] mAccelerometerReading = new float[3];
     private final float[] mMagnetometerReading = new float[3];
@@ -60,18 +61,41 @@ public class AndroidSensorManager implements SensorEventListener{
             SensorsEnum.resolveSensor(sensorEvent,sensorDataList);
             sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE,sensorDataList);
 
-            if (sensorType == Sensor.TYPE_ACCELEROMETER) {
+            /*if (sensorType == Sensor.TYPE_ACCELEROMETER) {
                 System.arraycopy(sensorEvent.values, 0, mAccelerometerReading,
                         0, mAccelerometerReading.length);
-                isAccelSet = true;
+                isAccelSet=true;
             }
             else if (sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
                 System.arraycopy(sensorEvent.values, 0, mMagnetometerReading,
                         0, mMagnetometerReading.length);
                 isMagFieldSet = true;
-            }
+            }*/
 
         }
+        if (!isAccelSet && sensorType == Sensor.TYPE_ACCELEROMETER) {
+            System.arraycopy(sensorEvent.values, 0, mAccelerometerReading,
+                    0, mAccelerometerReading.length);
+            isAccelSet=true;
+        }
+        else if (!isMagFieldSet && sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
+            System.arraycopy(sensorEvent.values, 0, mMagnetometerReading,
+                    0, mMagnetometerReading.length);
+            isMagFieldSet = true;
+        }
+
+        if(toListenIds.contains(orientationId) &&isAccelSet && isMagFieldSet) {
+            if(time - lastSensorsTime.get(orientationId) > listenFrequencies.get(orientationId,baseListenFrequency)) {
+                lastSensorsTime.put(orientationId,time);
+                updateOrientationAngles();
+                List<SensorData> sensorDataList = new ArrayList<>();
+                SensorsEnum.INTERNAL_ORIENTATION.resolveSensor(sensorDataList, mOrientationAngles);
+                sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE, sensorDataList);
+                isMagFieldSet = false;
+                isAccelSet = false;
+            }
+        }
+
     }
 
     @Override
@@ -108,12 +132,13 @@ public class AndroidSensorManager implements SensorEventListener{
                     if(toListenIds.contains(toListen.get(i).getType()))mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
                 }
 
-                if(toListenIds.contains(SensorsEnum.INTERNAL_ORIENTATION.sensorType)){
+                /*if(toListenIds.contains(SensorsEnum.INTERNAL_ORIENTATION.sensorType)){//TODO make required sensor run
                     orientationTimer = new Timer();
                     Log.d("tst", "run: "+listenFrequencies.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,baseListenFrequency));
                     orientationTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
+                        Log.d("OrientationTimer", "run: ");
                         if(isAccelSet && isMagFieldSet) {
                             updateOrientationAngles();
                             List<SensorData> sensorDataList = new ArrayList<>();
@@ -122,18 +147,18 @@ public class AndroidSensorManager implements SensorEventListener{
                         }
                     }
                     },listenFrequencies.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,baseListenFrequency),listenFrequencies.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,baseListenFrequency));
-                }
+                }*/
             }
         }).start();
     }
 
     private void endListeners(){
         mSensorManager.unregisterListener(this);
-        if(orientationTimer != null) {
+        /*if(orientationTimer != null) {
             orientationTimer.cancel();
             orientationTimer.purge();
             orientationTimer = null;
-        }
+        }*/
     }
 
     public void setSensorsToListen(List<Integer> sensorsToListen, List<Integer> listeningFrequencies){
@@ -159,7 +184,7 @@ public class AndroidSensorManager implements SensorEventListener{
     }
 
     //filter sensor that are desired but are not present on the device
-    private void initSensorsToListen(){
+    private void initSensorsToListen(){//TODO optimize
         toListen.clear();
         List<Sensor>  sensors= mSensorManager.getSensorList(Sensor.TYPE_ALL);
         for(Sensor s: sensors){

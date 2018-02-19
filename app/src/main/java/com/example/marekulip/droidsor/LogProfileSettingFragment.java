@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +27,7 @@ import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,7 @@ import static android.content.Context.BIND_AUTO_CREATE;
  * Created by Fredred on 28.10.2017.
  */
 
-public class LogProfileSettingFragment extends ListFragment {
+public class LogProfileSettingFragment extends ListFragment implements SetExtMovSensorDialogFragment.SetExtMovSensorIface{
 
 
     private boolean isNew = true;
@@ -44,6 +46,7 @@ public class LogProfileSettingFragment extends ListFragment {
     private SensorService mSensorService;
     private LogProfileItemArrAdapter mAdapter;
     private List<LogProfileItem> items;
+    private SparseBooleanArray extBluetoothMovSensorStates;
     private String profileName;
     private int gpsFrequency;
     private boolean scanGPS;
@@ -113,14 +116,20 @@ public class LogProfileSettingFragment extends ListFragment {
         Cursor c = getContext().getContentResolver().query(DroidsorProvider.LOG_PROFILE_ITEMS_URI,null,LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(profileId)},null);
         if(c!=null&&c.moveToFirst()){
             LogProfileItem item;
-            item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
-            items.add(item);
-            while (c.moveToNext()){
+            boolean extMovSet = false;
+            do{
                 item = new LogProfileItem(true,
                         c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),
                         c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
+                if(item.sensorType>=100 && item.sensorType <= 102){ //TODO make boolean isStandalone
+                    extBluetoothMovSensorStates.put(item.sensorType,true);
+                    if(!extMovSet){
+                        items.add(new LogProfileItem(true,SensorsEnum.EXT_MOVEMENT.sensorType,item.scanFrequency));
+                        extMovSet = true;
+                    }
+                }
                 items.add(item);
-            }
+            }while (c.moveToNext());
             c.close();
         }
         c = getContext().getContentResolver().query(DroidsorProvider.LOG_PROFILE_URI,null,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(profileId)},null);
@@ -134,12 +143,14 @@ public class LogProfileSettingFragment extends ListFragment {
     }
 
     private void initAdapter(){
+        extBluetoothMovSensorStates = new SparseBooleanArray();
         if(isNew){
             items = new ArrayList<>();
         }else{
             items = loadProfile();
         }
-        mAdapter = new LogProfileItemArrAdapter(getContext(),R.layout.profile_list_item,items);
+        mAdapter = new LogProfileItemArrAdapter(getContext(),R.layout.profile_list_item,items,getActivity());
+        mAdapter.setExtBluetoothMovSensorStates(extBluetoothMovSensorStates);
         setListAdapter(mAdapter);
     }
 
@@ -156,7 +167,7 @@ public class LogProfileSettingFragment extends ListFragment {
 
 
     private void createLogProfileItemList(){
-        for(Integer i: mSensorService.getMonitoredSensorsTypes(true)){
+        for(Integer i: mSensorService.getSensorTypesForProfile()){
             if(!isNew){
                 int pos;
                 for(pos = 0; pos<items.size();pos++){
@@ -179,20 +190,28 @@ public class LogProfileSettingFragment extends ListFragment {
         dialogFragment.show(getActivity().getSupportFragmentManager(),"SaveProfileDialog");
     }
 
-    public void finishSaving(String name, int frequency, boolean scanGPS){
+   /* public void finishSaving(String name, int frequency, boolean scanGPS){
         ContentValues cv = new ContentValues();
         if(name == null || name.length()==0)name = getString(R.string.untitled_profile);
         cv.put(LogProfilesTable.PROFILE_NAME,name);
         cv.put(LogProfilesTable.GPS_FREQUENCY,frequency);
         cv.put(LogProfilesTable.SAVE_LOCATION,scanGPS?1:0);
+        int movScanFrequency = 1000;
         if(isNew){
 
             long id = Integer.parseInt(getContext().getContentResolver().insert(DroidsorProvider.LOG_PROFILE_URI,cv).getLastPathSegment());
             for(LogProfileItem item: items){
                 if(item.isEnabled()) {
+                    if(item.sensorType==SensorsEnum.EXT_MOVEMENT.sensorType){//All sensors associated to this should be placed after
+                        movScanFrequency = item.scanFrequency;
+                        continue;
+                    }
                     cv = new ContentValues();
                     cv.put(LogProfileItemsTable.PROFILE_ID, id);
-                    cv.put(LogProfileItemsTable.SCAN_PERIOD, item.getScanFrequency());
+                    if(item.sensorType>=100 && item.sensorType <=102){
+                        cv.put(LogProfileItemsTable.SCAN_PERIOD, movScanFrequency);
+                    }
+                    else cv.put(LogProfileItemsTable.SCAN_PERIOD, item.getScanFrequency());
                     cv.put(LogProfileItemsTable.SENSOR_TYPE, item.getSensorType());
                     getContext().getContentResolver().insert(DroidsorProvider.LOG_PROFILE_ITEMS_URI,cv);
                 }
@@ -202,13 +221,82 @@ public class LogProfileSettingFragment extends ListFragment {
             getContext().getContentResolver().update(DroidsorProvider.LOG_PROFILE_URI,cv,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(profileId)});
             for(LogProfileItem item: items){
                 if(item.isEnabled()) {
+                    if(item.sensorType==SensorsEnum.EXT_MOVEMENT.sensorType){//All sensors associated to this should be placed after
+                        movScanFrequency = item.scanFrequency;
+                        continue;
+                    }
                     cv = new ContentValues();
-                    cv.put(LogProfileItemsTable.SCAN_PERIOD, item.getScanFrequency());
+                    if(item.sensorType==SensorsEnum.EXT_MOVEMENT.sensorType){//TODO try to generalize it
+
+                        for(int i = 0, size = extBluetoothMovSensorStates.size(),key; i< size;i++){
+                            key =extBluetoothMovSensorStates.keyAt(i);
+
+                        }
+                        continue;
+                    }
+                    else cv.put(LogProfileItemsTable.SCAN_PERIOD, item.getScanFrequency());
+                    //cv.put(LogProfileItemsTable.SCAN_PERIOD, item.getScanFrequency());
                     getContext().getContentResolver().update(DroidsorProvider.LOG_PROFILE_ITEMS_URI,cv,LogProfileItemsTable.PROFILE_ID +" = ? AND "+LogProfileItemsTable.SENSOR_TYPE+ " = ?",new String[]{String.valueOf(profileId),String.valueOf(item.getSensorType())});
                     //database.insert(LogProfileItemsTable.TABLE_NAME,null, cv);
+                }else {
+                    getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_ITEMS_URI,LogProfileItemsTable.PROFILE_ID +" = ? AND "+LogProfileItemsTable.SENSOR_TYPE+ " = ?",new String[]{String.valueOf(profileId),String.valueOf(item.getSensorType())});
                 }
             }
             Toast.makeText(getContext(),getString(R.string.updated),Toast.LENGTH_SHORT).show();
+        }
+    }*/
+
+    public void finishSaving(String name, int frequency, boolean scanGPS){
+        ContentValues cv = new ContentValues();
+        if(name == null || name.length()==0)name = getString(R.string.untitled_profile);
+        cv.put(LogProfilesTable.PROFILE_NAME,name);
+        cv.put(LogProfilesTable.GPS_FREQUENCY,frequency);
+        cv.put(LogProfilesTable.SAVE_LOCATION,scanGPS?1:0);
+        int movScanFrequency = 1000;
+        long id;
+        if(isNew) {
+            id = Integer.parseInt(getContext().getContentResolver().insert(DroidsorProvider.LOG_PROFILE_URI, cv).getLastPathSegment());
+        } else {
+            id = profileId;
+            getContext().getContentResolver().update(DroidsorProvider.LOG_PROFILE_URI,cv,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(id)});
+        }
+
+        for(LogProfileItem item: items){
+            if(item.sensorType==SensorsEnum.EXT_MOVEMENT.sensorType){//All sensors associated to this should be placed after
+                movScanFrequency = item.scanFrequency;
+                continue;
+            }
+            if(item.isEnabled()) {
+                cv = new ContentValues();
+                cv.put(LogProfileItemsTable.PROFILE_ID, id);
+                cv.put(LogProfileItemsTable.SCAN_PERIOD, item.getScanFrequency());
+                cv.put(LogProfileItemsTable.SENSOR_TYPE, item.getSensorType());
+                insertOrUpdate(cv,item.sensorType);
+            }else {
+                getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_ITEMS_URI,LogProfileItemsTable.PROFILE_ID +" = ? AND "+LogProfileItemsTable.SENSOR_TYPE+ " = ?",new String[]{String.valueOf(profileId),String.valueOf(item.getSensorType())});
+            }
+        }
+        for(int i = 0, size = extBluetoothMovSensorStates.size(),key; i< size;i++){
+            key =extBluetoothMovSensorStates.keyAt(i);
+            if(extBluetoothMovSensorStates.get(key,false)){
+                cv = new ContentValues();
+                cv.put(LogProfileItemsTable.PROFILE_ID, id);
+                cv.put(LogProfileItemsTable.SCAN_PERIOD, movScanFrequency);
+                cv.put(LogProfileItemsTable.SENSOR_TYPE, key);
+                insertOrUpdate(cv,key);
+            } else {
+                getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_ITEMS_URI,LogProfileItemsTable.PROFILE_ID +" = ? AND "+LogProfileItemsTable.SENSOR_TYPE+ " = ?",new String[]{String.valueOf(profileId),String.valueOf(key)});
+            }
+        }
+            Toast.makeText(getContext(),getString(R.string.saved),Toast.LENGTH_SHORT).show();
+    }
+
+    private void insertOrUpdate(ContentValues cv,int sensorType){
+        if(isNew) getContext().getContentResolver().insert(DroidsorProvider.LOG_PROFILE_ITEMS_URI,cv);
+        else {
+            if(getContext().getContentResolver().update(DroidsorProvider.LOG_PROFILE_ITEMS_URI,cv,LogProfileItemsTable.PROFILE_ID +" = ? AND "+LogProfileItemsTable.SENSOR_TYPE+ " = ?",new String[]{String.valueOf(profileId),String.valueOf(sensorType)}) == 0){
+                getContext().getContentResolver().insert(DroidsorProvider.LOG_PROFILE_ITEMS_URI,cv);
+            }
         }
     }
 
@@ -238,5 +326,19 @@ public class LogProfileSettingFragment extends ListFragment {
         tempLogProfile.setGPSFrequency(frequency);
         tempLogProfile.setProfileName(name);
         return tempLogProfile;
+    }
+
+    @Override
+    public void extMovSensorsSet(boolean acc, boolean gyr, boolean mag) {
+        mAdapter.getExtBluetoothMovSensorStates().put(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType,acc);
+        mAdapter.getExtBluetoothMovSensorStates().put(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType,gyr);
+        mAdapter.getExtBluetoothMovSensorStates().put(SensorsEnum.EXT_MOV_MAGNETIC.sensorType,mag);
+        for(LogProfileItem item: mAdapter.getItems()){
+            if(item.sensorType == SensorsEnum.EXT_MOVEMENT.sensorType){
+                item.setEnabled(acc||gyr||mag);
+                break;
+            }
+        }
+        mAdapter.notifyDataSetChanged();
     }
 }

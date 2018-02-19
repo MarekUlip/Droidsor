@@ -274,6 +274,13 @@ public class BluetoothSensorManager {
         }
     }
 
+    public void giveMeYourSensorTypesForProfile(List<Integer> sensorTypes){
+        List<GeneralTISensor> toIterate = getBasicSetOfSensors();
+        for(GeneralTISensor sensor: toIterate){
+            sensorTypes.add(sensor.getSensorType());
+        }
+    }
+
     public void setSensorsToListen(List<Integer> sensorsTypes,List<Integer> sensorFrequencies){
         clearQues();
         for(GeneralTISensor sensor: sensors){
@@ -296,8 +303,9 @@ public class BluetoothSensorManager {
             }
         }
         for(int i = 0; i<sensorsTypes.size();i++){
-            if(sensorsTypes.get(i)>=SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType&&sensorsTypes.get(i)<=SensorsEnum.EXT_MOV_MAGNETIC.sensorType){
+            if(sensorsTypes.get(i)>=SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType&&sensorsTypes.get(i)<=SensorsEnum.EXT_MOV_MAGNETIC.sensorType){//TODO make boolean standalone
                 listenFrequencies.put(SensorsEnum.EXT_MOVEMENT.sensorType,sensorFrequencies.get(i));
+                continue;
             }
             listenFrequencies.put(sensorsTypes.get(i),sensorFrequencies.get(i));
         }

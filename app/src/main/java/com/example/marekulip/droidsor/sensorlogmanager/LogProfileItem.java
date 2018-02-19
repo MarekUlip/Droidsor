@@ -7,9 +7,9 @@ import java.util.List;
  */
 
 public class LogProfileItem {
-    private boolean isEnabled;
-    private int sensorType;
-    private int scanFrequency = 200;
+    public boolean isEnabled;
+    public int sensorType;
+    public int scanFrequency = 200;
 
     public LogProfileItem(boolean isEnabled, int sensorType, int scanFrequency){
         this.isEnabled = isEnabled;

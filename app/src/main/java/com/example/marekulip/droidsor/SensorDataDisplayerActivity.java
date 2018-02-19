@@ -21,6 +21,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -126,46 +127,39 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     }
 
     private void disconnectFromService(){
+        if(mSensorService==null)return;//TODO solve service leakage on orientation change
         if(!mSensorService.isLogging())mSensorService.stopListeningSensors();
         unregisterReceiver(mSensorServiceUpdateReceiver);
         unbindService(mServiceConnection);
     }
 
-    /*@Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        if(mSensorService.isLogging()){
-            menu.findItem(R.id.action_start_log).setVisible(false);
-            menu.findItem(R.id.action_stop_log).setVisible(true);
-        }else {
-            menu.findItem(R.id.action_start_log).setVisible(true);
-            menu.findItem(R.id.action_stop_log).setVisible(false);
+        getMenuInflater().inflate(R.menu.menu_bluetooth_conn,menu);
+        if(mSensorService!=null){
+            if(mSensorService.isBluetoothDeviceOn()){
+                menu.findItem(R.id.action_bluetooth_connect).setVisible(false);
+                menu.findItem(R.id.action_bluetooth_disconnect).setVisible(true);
+            }else {
+                menu.findItem(R.id.action_bluetooth_connect).setVisible(true);
+                menu.findItem(R.id.action_bluetooth_disconnect).setVisible(false);
+            }
         }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_start_log) {
-            startLogging(false);
-            return true;
-        }else if(id==R.id.action_stop_log){
-            mSensorService.stopLogging();
-            isRecording = false;
-            invalidateOptionsMenu();
-            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
-            return true;
+        switch (item.getItemId()){
+            case R.id.action_bluetooth_connect:
+                startActivityForResult(new Intent(this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
+                break;
+            case R.id.action_bluetooth_disconnect:
+                mSensorService.disconnectFromBluetoothDevice();
+                break;
         }
-
-        return super.onOptionsItemSelected(item);
-    }*/
+        return true;
+    }
 
     private void setFabClickListener(){
         if(mSensorService!=null && mSensorService.isLogging()){
@@ -255,7 +249,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
      * @param profile
      */
     private void startLoggingWithPicked(LogProfile profile){
-        if(mSensorService.isLogging())return;
+        if(mSensorService==null || mSensorService.isLogging())return;
         if(profile.isSaveGPS()&&!recievedLocation){
             tryToInitPosManager();
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
@@ -276,8 +270,63 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
     }
 
+    private void delayedOnActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == BT_DEVICE_REQUEST){
+            if(resultCode==RESULT_OK) {
+                mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
+                mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
+                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            }else {
+                mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
+                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            }
+        } else if(requestCode == PositionManager.REQUEST_CHECK_SETTINGS){
+            if(resultCode==RESULT_OK) {
+                positionManager.initPosManager(this);
+            }
+        } else if(requestCode == PositionManager.MY_PERMISSIONS_REQUEST_LOCATION_FINE){
+            if(resultCode==RESULT_OK) {
+                positionManager.initPosManager(this);
+            }
+        } else if(requestCode == LogProfileSettingActivity.CREATE_TEMP_PROFILE){
+            if(resultCode==RESULT_OK){
+                //if(mSensorService.getTempLogProfile().isSaveGPS())tryToInitPosManager();
+                startLogging(true);
+            }
+        } else if(requestCode == LogProfileActivity.SET_FIRST_FAVORITE_PROFILE){
+            if(resultCode==RESULT_OK){
+                startLogging(false);
+            }
+        } else if (requestCode == LogProfileActivity.SET_NEXT_TO_LOG){
+            if(resultCode == RESULT_OK){
+                startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
+            }
+        }
+    }
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if(mSensorService==null){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        while(mSensorService==null)
+                            Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            delayedOnActivityResult(requestCode,resultCode,data);
+                        }
+                    });
+
+                }
+            }).start();
+            return;
+        }
         if(requestCode == BT_DEVICE_REQUEST){
             if(resultCode==RESULT_OK) {
                 mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));

@@ -274,6 +274,13 @@ public class SensorService extends Service {
         return sensorTypes;
     }
 
+    public List<Integer> getSensorTypesForProfile(){
+        List<Integer> sensorTypes = new ArrayList<>();
+        androidSensorManager.giveMeYourSensorTypes(sensorTypes);
+        if(bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.giveMeYourSensorTypesForProfile(sensorTypes);
+        return sensorTypes;
+    }
+
     private boolean isSendable(List<SensorData> sensorDataList){
         if(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType<100)return false;//It is enough to check only first sensor from list because ussualy only one value is present at list. When there are multiple values in the list they are from the same source
         if(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType>100)return false;
