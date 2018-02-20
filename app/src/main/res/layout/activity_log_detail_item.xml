@@ -23,7 +23,6 @@
         android:layout_marginTop="8dp"
         android:gravity="center_vertical|center_horizontal"
         android:rotation="-90"
-        android:text="rad/s"
         android:textAlignment="center"
         android:textColor="#000"
         app:layout_constraintBottom_toBottomOf="@+id/log_chart"

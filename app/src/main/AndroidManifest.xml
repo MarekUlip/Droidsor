@@ -62,7 +62,8 @@
             android:exported="false" />
 
         <activity android:name=".DroidsorSettingsActivity" />
-        <activity android:name=".logs.LogDetailItemActivity"></activity>
+        <activity android:name=".logs.LogDetailItemActivity" />
+        <activity android:name=".opengl.OpenGLActivity"></activity>
     </application>
 
 </manifest>

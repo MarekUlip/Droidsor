@@ -127,14 +127,14 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
             setSelectionMode(false);
         }
         else if(id==R.id.action_delete){
-            deleteMore();
-            setSelectionMode(false);
+            deleteItemDialog(-1);//deleteMore();
+            //setSelectionMode(false);
         }
         else if(id==R.id.action_export_selected){
             exportMore();
             setSelectionMode(false);
         }
-        getActivity().invalidateOptionsMenu();
+        //getActivity().invalidateOptionsMenu();
         return true;
     }
 
@@ -145,6 +145,7 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         }else {
             mAdapter.setItemsList(items);
         }
+        getActivity().invalidateOptionsMenu();
     }
     private void cancelSelection(){
         items.clear();
@@ -153,9 +154,35 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
     }
 
     private void deleteMore(){
-        for(Long item : items){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final Context appContext = getContext().getApplicationContext();
+                String placeholders = makePlaceholders(items.size());
+                String where = SenorDataItemsCountTable.LOG_ID + " IN ("+placeholders+")";
+                String[] params = new String[items.size()];
+                makeParameters(params,items);
+
+                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_COUNT_URI, where,params);
+                where = SensorDataTable.LOG_ID + " IN ("+placeholders+")";
+                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_URI,where,params);
+                where = SensorLogsTable._ID + " IN ("+placeholders+")";
+                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_LOGS_URI,where,params);
+
+                if(getActivity()!=null){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(appContext,R.string.deleted,Toast.LENGTH_SHORT).show();
+                            setSelectionMode(false);
+                        }
+                    });
+                }
+            }
+        }).start();
+        /*for(Long item : items){
             deleteItem(item);
-        }
+        }*/
         //setSelectionMode(false);
         //initCursorAdapter();
     }
@@ -163,6 +190,30 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
     private void exportMore(){
         for(Long item:items){
             LogExporter.exportLog(getContext(),item,null);
+        }
+    }
+
+    private String makePlaceholders(int len) {
+        if (len < 1) {
+            // It will lead to an invalid query anyway ..
+            throw new RuntimeException("No placeholders");
+        } else {
+            StringBuilder sb = new StringBuilder(len * 2 - 1);
+            sb.append("?");
+            for (int i = 1; i < len; i++) {
+                sb.append(",?");
+            }
+            return sb.toString();
+        }
+    }
+    private void makeParameters(String[] params,List<Long> idList) {
+        if (params.length < 1) {
+            // It will lead to an invalid query anyway ..
+            throw new RuntimeException("No placeholders");
+        } else {
+            for (int i = 0; i < idList.size(); i++) {
+                params[i] = String.valueOf(idList.get(i));
+            }
         }
     }
 
@@ -180,8 +231,9 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         if(item.getItemId()==Menu.FIRST) LogExporter.exportLog(getContext(),info.id,null);//exportLog(info.id);
         if(item.getItemId()==Menu.FIRST+1) {
-            deleteItem(info.id);
-            initCursorAdapter();
+            deleteItemDialog(info.id);
+            //deleteItem(info.id);
+            //initCursorAdapter();
         }
         if(item.getItemId() == Menu.FIRST+2) renameItem(info.id);
         return super.onContextItemSelected(item);
@@ -254,6 +306,27 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
                 cv.put(SensorLogsTable.LOG_NAME,editText.getText().toString());
                 getContext().getContentResolver().update(DroidsorProvider.SENSOR_LOGS_URI,cv,SensorLogsTable._ID + " = ?",new String[]{String.valueOf(id)});
                 initCursorAdapter();
+            }
+        }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void deleteItemDialog(final long id){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.confirm_delete).setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if(isSelectionModeOn)deleteMore();
+                else {
+                    deleteItem(id);
+                    initCursorAdapter();
+                }
             }
         }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override

@@ -9,15 +9,22 @@
         android:layout_height="wrap_content"
         android:id="@+id/sensor_name"
         android:textSize="32sp"
-        android:text="test"
         android:textColor="#000000"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/sensor_value"
         android:textSize="20sp"
-        android:text="test"
         android:textColor="#000000"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_3d_view"
+        android:textSize="18sp"
+        android:textColor="#000000"
+        android:text="@string/three_d_view"
+        android:visibility="visible"
+        />
 
 
 </LinearLayout>

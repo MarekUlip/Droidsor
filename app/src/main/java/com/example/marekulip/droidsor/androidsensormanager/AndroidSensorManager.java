@@ -129,6 +129,7 @@ public class AndroidSensorManager implements SensorEventListener{
             @Override
             public void run() {
                 for(int i = 0; i<toListen.size();i++){
+                    if(toListen.get(i).getType()==orientationId)continue;
                     if(toListenIds.contains(toListen.get(i).getType()))mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
                 }
 

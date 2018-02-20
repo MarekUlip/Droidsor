@@ -23,6 +23,7 @@ import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorLogManager;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class SensorService extends Service {
 
     private final static int NOTIFICATION_ID = 100;
     private final static String NOTIFICATION_CHANNEL = "sensor_service_channel";
-    private final int minSendInterval = 200;
+    private int minSendInterval = 200;
     private long lastTime;
 
     private SensorLogManager sensorLogManager;
@@ -238,6 +239,29 @@ public class SensorService extends Service {
         if(tempLogProfile!=null) tempLogProfile = null;//TODO consider letting it be and use it till user sets favorite profile
     }
 
+    public void startOpenGLMode(){
+        androidSensorManager.stopListening();
+        minSendInterval = 20;
+        List<Integer> sensorTypes = new ArrayList<>();
+        List<Integer> sensorFrequencies = new ArrayList<>();
+        sensorTypes.add(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType);
+        sensorFrequencies.add(20);
+        sensorTypes.add(SensorsEnum.INTERNAL_GYROSCOPE.sensorType);
+        sensorFrequencies.add(20);
+        sensorTypes.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
+        sensorFrequencies.add(20);
+        sensorTypes.add(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType);
+        sensorFrequencies.add(20);
+        androidSensorManager.setSensorsToListen(sensorTypes,sensorFrequencies);
+        androidSensorManager.startListening();
+    }
+
+    public void stopOpenGLMode(){
+        minSendInterval = 200;
+        androidSensorManager.stopListening();
+        androidSensorManager.resetManager();
+    }
+
     public boolean isLogging(){
         return sensorLogManager.isLogging();
     }
@@ -343,7 +367,7 @@ public class SensorService extends Service {
 
 
     public class LocalBinder extends Binder {
-        SensorService getService(){
+        public SensorService getService(){
             return SensorService.this;
         }
     }

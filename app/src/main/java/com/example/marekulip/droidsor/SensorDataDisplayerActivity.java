@@ -36,6 +36,7 @@ import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 public class SensorDataDisplayerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, PositionManager.OnRecievedPositionListener, WaitForGPSDialog.WaitForGPSIFace {
@@ -51,6 +52,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private LogProfile profileHolder;
     private boolean isRecording = false;
     private boolean recievedLocation = false;
+    private boolean isRequestingDialog = false;
+    private Semaphore serviceSemaphore = new Semaphore(5,true);
+    private Semaphore dialogSemaphore = new Semaphore(1,true);
     private DialogFragment waitForGPSDialog;
 
     @Override
@@ -109,6 +113,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         super.onResume();
         //registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
         connectToService();
+        if(isRequestingDialog){
+            Log.d("ds", "onResume: releasing");
+            dialogSemaphore.release();
+            isRequestingDialog = false;
+        }
     }
 
     @Override
@@ -271,7 +280,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
     }
 
-    private void delayedOnActivityResult(int requestCode, int resultCode, Intent data){
+    private void delayedOnActivityResult(final int requestCode, final int resultCode, final Intent data,boolean waitedForService){
         if(requestCode == BT_DEVICE_REQUEST){
             if(resultCode==RESULT_OK) {
                 mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
@@ -300,7 +309,25 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }
         } else if (requestCode == LogProfileActivity.SET_NEXT_TO_LOG){
             if(resultCode == RESULT_OK){
-                startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
+                if(!waitedForService){
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                isRequestingDialog = true;
+                                dialogSemaphore.acquire();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
+                                    }
+                                });
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }else startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
             }
         }
     }
@@ -312,15 +339,16 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 @Override
                 public void run() {
                     try {
-                        while(mSensorService==null)
-                            Thread.sleep(100);
+                        /*while(mSensorService==null)
+                            Thread.sleep(100);*/
+                        serviceSemaphore.acquire();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            delayedOnActivityResult(requestCode,resultCode,data);
+                            delayedOnActivityResult(requestCode,resultCode,data,true);
                         }
                     });
 
@@ -328,7 +356,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }).start();
             return;
         }
-        if(requestCode == BT_DEVICE_REQUEST){
+        delayedOnActivityResult(requestCode,resultCode,data,false);
+        /*if(requestCode == BT_DEVICE_REQUEST){
             if(resultCode==RESULT_OK) {
                 mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
                 mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
@@ -358,7 +387,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             if(resultCode == RESULT_OK){
                 startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
             }
-        }
+        }*/
     }
 
     private LogProfile getProfile(long id){
@@ -463,6 +492,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             mSensorService.startListeningSensors();
             setFabClickListener();
             fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            serviceSemaphore.release();
         }
 
         @Override
