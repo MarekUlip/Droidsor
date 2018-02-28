@@ -69,6 +69,7 @@
     <string name="three_d_view">3D View</string>
     <string name="deleted">Deleted</string>
     <string name="confirm_delete">Confirm delete</string>
+    <string name="show_three_d_but">Show 3D View button</string>
 
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>
@@ -112,6 +113,7 @@
 
     <string name="meter_per_sec_square_unit">m/s²</string>
     <string name="celsius_degree_unit">°C</string>
+    <string name="fahrenheit_degree_unit">°F</string>
     <string name="humidity_unit">%rH</string>
     <string name="barometer_unit">mBar</string>
     <string name="optical_unit">Lux</string>

@@ -314,21 +314,6 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         mAdapter.notifyDataSetChanged();
     }
 
-    public LogProfile getTempLogProfile(String name, int frequency, boolean scanGPS){
-        LogProfile tempLogProfile = new LogProfile();
-        List<LogProfileItem> usedSensors = new ArrayList<>();
-        for(LogProfileItem item: items) {
-            if (item.isEnabled()) {
-                usedSensors.add(item);
-            }
-        }
-        tempLogProfile.setLogItems(usedSensors);
-        tempLogProfile.setSaveGPS(scanGPS);
-        tempLogProfile.setGPSFrequency(frequency);
-        tempLogProfile.setProfileName(name);
-        return tempLogProfile;
-    }
-
     @Override
     public void extMovSensorsSet(boolean acc, boolean gyr, boolean mag) {
         mAdapter.getExtBluetoothMovSensorStates().put(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType,acc);

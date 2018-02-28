@@ -2,6 +2,7 @@ package com.example.marekulip.droidsor.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.preference.PreferenceManager;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.SensorItem;
 import com.example.marekulip.droidsor.opengl.OpenGLActivity;
@@ -24,8 +26,12 @@ import java.util.List;
  */
 
 public class SensorDataDispArrAdapter extends ArrayAdapter<SensorItem> {
+
+    private boolean show3DBut = true;
+
     public SensorDataDispArrAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<SensorItem> objects) {
         super(context, resource, objects);
+        show3DBut = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DroidsorSettingsFramgent.SHOW_THREE_D_BUT,true);
     }
 
     @NonNull
@@ -43,8 +49,12 @@ public class SensorDataDispArrAdapter extends ArrayAdapter<SensorItem> {
 
         sensorName.setText(item.sensorName);
         sensorValue.setText(item.sensorValue);
-
         if(item.sensorType== SensorsEnum.INTERNAL_GYROSCOPE.sensorType || item.sensorType== SensorsEnum.INTERNAL_ORIENTATION.sensorType){
+            show3DBut = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(DroidsorSettingsFramgent.SHOW_THREE_D_BUT,true);
+            if(!show3DBut){
+                button.setVisibility(View.GONE);
+                return convertView;
+            }
             button.setVisibility(View.VISIBLE);
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -57,6 +67,7 @@ public class SensorDataDispArrAdapter extends ArrayAdapter<SensorItem> {
         }else {
             button.setVisibility(View.GONE);
         }
+
 
         return convertView;
     }

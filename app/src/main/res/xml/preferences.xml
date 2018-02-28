@@ -30,4 +30,9 @@
         android:title="@string/count_of_points"
         android:summary="@string/count_of_points_summary"
         android:maxLength="4"/>
+
+    <CheckBoxPreference
+        android:key="show_three_d_but"
+        android:defaultValue="true"
+        android:title="@string/show_three_d_but"/>
 </PreferenceScreen>

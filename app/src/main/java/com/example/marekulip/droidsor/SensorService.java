@@ -46,18 +46,13 @@ public class SensorService extends Service {
     private SensorLogManager sensorLogManager;
     private BluetoothSensorManager bluetoothSensorManager;
     private AndroidSensorManager androidSensorManager;
-    private PositionManager positionManager;//TODO Manage intervals possibly add them when setting up profile
+    private PositionManager positionManager;
     private final IBinder mBinder = new LocalBinder();
     private int displayMode = ALL_SENSORS_MODE;
-    /**
-     * Temporary profile used only for one log then it is deleted.
-     */
-    private LogProfile tempLogProfile = null;
 
     private boolean isStopIntended = false;
     private boolean isListening = false;
 
-    private ArrayDeque<SensorData> sensorDataQueue = new ArrayDeque<>();
     private SparseArray<SensorData> sensorDataSparseArray = new SparseArray<>();
     private List<Integer> sensorTypesOccured = new ArrayList<>();
     public SensorService() {
@@ -180,18 +175,6 @@ public class SensorService extends Service {
         bluetoothSensorManager.disconnect();
     }
 
-    public void setTempLogProfile(LogProfile profile){
-        tempLogProfile = profile;
-    }
-
-    public LogProfile getTempLogProfile(){
-        return tempLogProfile;
-    }
-
-    public void startTempProfileLogging(){
-        startLogging(tempLogProfile);
-    }
-
     public void startLogging(LogProfile profile){
         if(profile.isSaveGPS()) {
             Log.d("GPS wanted", "startLogging: Setting GPS");
@@ -236,7 +219,6 @@ public class SensorService extends Service {
         if(bluetoothSensorManager.isBluetoothDeviceOn()){
             bluetoothSensorManager.defaultListeningMode();
         }
-        if(tempLogProfile!=null) tempLogProfile = null;//TODO consider letting it be and use it till user sets favorite profile
     }
 
     public void startOpenGLMode(){
@@ -265,10 +247,6 @@ public class SensorService extends Service {
     public boolean isLogging(){
         return sensorLogManager.isLogging();
     }
-
-    /*public ArrayDeque<SensorData> getSensorDataQueue(){
-        return sensorDataQueue;
-    }*/
 
     public SparseArray<SensorData> getSensorDataSparseArray(){return sensorDataSparseArray;}
     public List<Integer> getSensorTypesOccured(){

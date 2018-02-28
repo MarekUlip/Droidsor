@@ -44,10 +44,8 @@ public class DroidsorExporter {
         if(isExternalStorageWritable()) {
             try {
                 File folder = new File(path, context.getString(R.string.app_name));
-                Log.d("sdd", "writeToFile: "+folder.exists());
                 if(!folder.exists()){
                     boolean rv = folder.mkdir();
-                    Log.d("folder created", "writeToFile: "+ rv);
                 }
                 File file = new File(folder,fileName);
                 Log.d("sdd", "writeToFile: "+file.getPath());
@@ -66,7 +64,6 @@ public class DroidsorExporter {
             }
             return false;
         }
-        Log.d("nope", "writeToFile: sheeet");
         return false;
     }
 

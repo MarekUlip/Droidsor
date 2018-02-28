@@ -28,6 +28,8 @@ public enum SensorsEnum {
     INTERNAL_LIGHT(Sensor.TYPE_LIGHT,R.string.optical,R.string.optical_unit,R.string.internal,1),
     INTERNAL_BAROMETER(Sensor.TYPE_PRESSURE,R.string.barometer,R.string.barometer_unit,R.string.internal,1),
     INTERNAL_GRAVITY(Sensor.TYPE_GRAVITY,R.string.gravity,R.string.meter_per_sec_square_unit,R.string.internal,3),
+    INTERNAL_TEMPERATURE(Sensor.TYPE_AMBIENT_TEMPERATURE,R.string.thermometer,R.string.celsius_degree_unit,R.string.internal,1),
+    INTERNAL_HUMIDITY(Sensor.TYPE_RELATIVE_HUMIDITY,R.string.humidity,R.string.humidity_unit,R.string.internal,1),
     INTERNAL_ORIENTATION(98,R.string.orientation,R.string.radian,R.string.internal,3){
         //98 is used because Sensor.TYPE_ORIENTATION is deprecated so i wanted to avoid wrong type
         @Override
@@ -39,7 +41,16 @@ public enum SensorsEnum {
     EXT_MOV_GYROSCOPE(101,R.string.gyroscope,R.string.gyroscope_unit,R.string.external,3),
     EXT_MOV_MAGNETIC(102,R.string.magnetometer,R.string.magnetometer_unit,R.string.external,3),
     EXT_HUMIDITY(103,R.string.humidity,R.string.humidity_unit,R.string.external,1),
-    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,3),
+    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,3){
+        @Override
+        public String getSensorUnitName(Context context, int position) {
+            if(position == 2) return context.getString(R.string.fahrenheit_degree_unit);
+            if(this.sensorUnitName == null){
+                this.sensorUnitName = context.getString(this.sensorUnitNameRes);
+            }
+            return this.sensorUnitName;
+        }
+    },
     EXT_OPTICAL(105,R.string.optical,R.string.optical_unit,R.string.external,1),
     EXT_BAROMETER(106,R.string.barometer,R.string.barometer_unit,R.string.external,1),
     EXT_MOVEMENT(107,R.string.movement,R.string.meter_per_sec_square_unit,R.string.external,1);
@@ -92,7 +103,7 @@ public enum SensorsEnum {
         return sensorNameXmlFriendly;
     }
 
-    public String getSensorUnitName(Context context){
+    public String getSensorUnitName(Context context,int position){
         if(sensorUnitName == null){
             sensorUnitName = context.getString(sensorUnitNameRes);
         }
@@ -100,15 +111,15 @@ public enum SensorsEnum {
     }
 
     private StringBuilder allValuesString(Point3D data, Context c, StringBuilder sb){
-        return twoValuesString(data,c,sb).append("Z: ").append(decimalFormat.format(data.z)).append(getSensorUnitName(c)).append(System.lineSeparator());
+        return twoValuesString(data,c,sb).append("Z: ").append(decimalFormat.format(data.z)).append(getSensorUnitName(c,3)).append(System.lineSeparator());
     }
 
     private StringBuilder twoValuesString(Point3D data, Context c, StringBuilder sb){
-        return oneValueString(data,c,sb).append("Y: ").append(decimalFormat.format(data.y)).append(getSensorUnitName(c)).append(System.lineSeparator());
+        return oneValueString(data,c,sb).append("Y: ").append(decimalFormat.format(data.y)).append(getSensorUnitName(c,2)).append(System.lineSeparator());
     }
 
     private StringBuilder oneValueString(Point3D data, Context c, StringBuilder sb){
-       return sb.append("X: ").append(decimalFormat.format(data.x)).append(getSensorUnitName(c)).append(System.lineSeparator());
+       return sb.append("X: ").append(decimalFormat.format(data.x)).append(getSensorUnitName(c,1)).append(System.lineSeparator());
     }
 
     public String getStringData(Context c, Point3D data){

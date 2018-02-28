@@ -128,9 +128,31 @@ public class AndroidSensorManager implements SensorEventListener{
         new Thread(new Runnable() {
             @Override
             public void run() {
+                boolean hasAcc = false, hasMag = false, hasOrientation = false;
                 for(int i = 0; i<toListen.size();i++){
-                    if(toListen.get(i).getType()==orientationId)continue;
-                    if(toListenIds.contains(toListen.get(i).getType()))mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
+                    if(toListen.get(i).getType()==orientationId)hasOrientation = true;
+                    if(toListenIds.contains(toListen.get(i).getType())){
+                        if(toListen.get(i).getType()==SensorsEnum.INTERNAL_MAGNETOMETER.sensorType)hasMag = true;
+                        if(toListen.get(i).getType()==SensorsEnum.INTERNAL_ACCELEROMETER.sensorType)hasAcc = true;
+                        mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
+                    }
+                }
+                if(hasOrientation && !(hasAcc && hasMag)){
+                    //Using loop to ensure that enabled sensors are supported by app
+                    for(int i = 0; i<toListen.size();i++){
+                        if(toListen.get(i).getType()==SensorsEnum.INTERNAL_MAGNETOMETER.sensorType){
+                            if(hasMag)continue;
+                            hasMag = true;
+                        }
+                        else if(toListen.get(i).getType()==SensorsEnum.INTERNAL_ACCELEROMETER.sensorType){
+                            if(hasAcc)continue;
+                            hasAcc = true;
+                        }
+                        else continue;
+                        mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
+                        listenFrequencies.put(toListen.get(i).getType(),listenFrequencies.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,500));
+                        if(hasAcc  && hasMag)break;
+                    }
                 }
 
                 /*if(toListenIds.contains(SensorsEnum.INTERNAL_ORIENTATION.sensorType)){//TODO make required sensor run
@@ -176,11 +198,14 @@ public class AndroidSensorManager implements SensorEventListener{
     private void initSensorsToListenIds(){
         toListenIds = new ArrayList<>();
         toListenIds.add(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_GYROSCOPE.sensorType);
         toListenIds.add(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType);
+        toListenIds.add(SensorsEnum.INTERNAL_GYROSCOPE.sensorType);
         toListenIds.add(SensorsEnum.INTERNAL_LIGHT.sensorType);
         //toListenIds.add(Sensor.TYPE_PROXIMITY);
         toListenIds.add(SensorsEnum.INTERNAL_GRAVITY.sensorType);
+        toListenIds.add(SensorsEnum.INTERNAL_HUMIDITY.sensorType);
+        toListenIds.add(SensorsEnum.INTERNAL_BAROMETER.sensorType);
+        toListenIds.add(SensorsEnum.INTERNAL_TEMPERATURE.sensorType);
         toListenIds.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
     }
 
