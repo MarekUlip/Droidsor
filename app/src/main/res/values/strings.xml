@@ -70,6 +70,7 @@
     <string name="deleted">Deleted</string>
     <string name="confirm_delete">Confirm delete</string>
     <string name="show_three_d_but">Show 3D View button</string>
+    <string name="channel_description">Channel for service notification</string>
 
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>

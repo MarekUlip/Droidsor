@@ -1,5 +1,7 @@
 package com.example.marekulip.droidsor;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -8,8 +10,10 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -25,7 +29,6 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorLogManager;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,8 +41,8 @@ public class SensorService extends Service {
     public final static int MOBILE_SENSORS_MODE = 1;
     public final static int BLUETOOTH_SENSORS_MODE = 2;
 
-    private final static int NOTIFICATION_ID = 100;
-    private final static String NOTIFICATION_CHANNEL = "sensor_service_channel";
+    private final static int NOTIFICATION_ID = 101;
+    private final static String NOTIFICATION_CHANNEL_ID = "droidsor_service_channel";
     private int minSendInterval = 200;
     private long lastTime;
 
@@ -66,7 +69,8 @@ public class SensorService extends Service {
         androidSensorManager = new AndroidSensorManager(this);
         positionManager = new PositionManager(this);
         positionManager.tryInitPosManager();
-        createOrUpdateServiceNotification("","");
+        //createOrUpdateServiceNotification("","");
+        startForeground(NOTIFICATION_ID,createOrUpdateServiceNotification("",""));
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -177,17 +181,14 @@ public class SensorService extends Service {
 
     public void startLogging(LogProfile profile){
         if(profile.isSaveGPS()) {
-            Log.d("GPS wanted", "startLogging: Setting GPS");
             positionManager.setIntervals(profile.getGPSFrequency());
-            positionManager.startUpdates();//TODO resolve first missing locations
+            positionManager.startUpdates();
         }
         List<Integer> androidSensorTypes = new ArrayList<>();
         List<Integer> androidSensorFrequencies = new ArrayList<>();
         List<Integer> bluetoothSensorTypes = new ArrayList<>();
         List<Integer> bluetoothSensorFrequencies = new ArrayList<>();
-        androidSensorManager.stopListening();//TODO turn off bluetooth when it is not required
-        //androidSensorManager.setSensorsToListen();
-        //bluetoothSensorManager.
+        androidSensorManager.stopListening();
         for(LogProfileItem item : profile.getLogItems()){
             if(item.getSensorType()<100){
                 androidSensorTypes.add(item.getSensorType());
@@ -207,17 +208,23 @@ public class SensorService extends Service {
         List<Integer> sensorsToLog = new ArrayList<>();
         sensorsToLog.addAll(androidSensorTypes);
         sensorsToLog.addAll(bluetoothSensorTypes);
+        /*PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "DroidsorWakelockTag");
+        wakeLock.acquire();*/
         sensorLogManager.startLog(profile.getProfileName(),sensorsToLog);
     }
 
     public void stopLogging(){
-        sensorLogManager.endLog();
-        positionManager.stopUpdates();
-        androidSensorManager.stopListening();
-        androidSensorManager.resetManager();
-        androidSensorManager.startListening();
-        if(bluetoothSensorManager.isBluetoothDeviceOn()){
-            bluetoothSensorManager.defaultListeningMode();
+        if(isLogging()) {
+            sensorLogManager.endLog();
+            positionManager.stopUpdates();
+            androidSensorManager.stopListening();
+            androidSensorManager.resetManager();
+            androidSensorManager.startListening();
+            if (bluetoothSensorManager.isBluetoothDeviceOn()) {
+                bluetoothSensorManager.defaultListeningMode();
+            }
         }
     }
 
@@ -289,10 +296,23 @@ public class SensorService extends Service {
         return true;
     }
 
-    private void createOrUpdateServiceNotification(String name, String contextText){
+    private Notification createOrUpdateServiceNotification(String name, String contextText){
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the NotificationChannel
+            CharSequence channelName = getString(R.string.app_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);
+            mChannel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+
+            mNotificationManager.createNotificationChannel(mChannel);
+        }
+
+        NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setContentTitle("Droidsor Service")
                 .setContentText("Service is running")
                 .setSmallIcon(R.drawable.notification_icon)
@@ -302,9 +322,7 @@ public class SensorService extends Service {
         PendingIntent stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
         mNotifyBuilder.setContentIntent(stopServicePendingIntent);
         //PendingIntent.get
-        mNotificationManager.notify(
-                NOTIFICATION_ID,
-                mNotifyBuilder.build());
+        return mNotifyBuilder.build();
     }
 
     private void destroyServiceNotification(){
@@ -338,7 +356,8 @@ public class SensorService extends Service {
     private void stop(){
         if (isLogging()) sensorLogManager.endLog();
         stopListeningSensors(true);
-        destroyServiceNotification();
+        stopForeground(true);
+        //destroyServiceNotification();
         stopSelf();
     }
 

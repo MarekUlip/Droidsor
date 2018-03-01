@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
@@ -138,7 +139,11 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     private void connectToService(){
         Intent intent = new Intent(this,SensorService.class);
         if(!isMyServiceRunning(SensorService.class)){
-            Log.d("NtRn", "onCreate: NotRunning");startService(intent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);//startService(intent);
+            }else{
+                startService(intent);
+            }
         }
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
         registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());

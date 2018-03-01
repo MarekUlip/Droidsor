@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -81,11 +82,12 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         fragment = new SensorDataDispListFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment, fragment).commit();
 
-        Intent intent = new Intent(this,SensorService.class);
+        /*Intent intent = new Intent(this,SensorService.class);
         if(!isMyServiceRunning(SensorService.class)){
             startService(intent);
+            //startForegroundService(intent);
         }
-        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
+        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);*/
     }
 
     @Override
@@ -130,7 +132,13 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private void connectToService(){
         Intent intent = new Intent(this,SensorService.class);
         if(!isMyServiceRunning(SensorService.class)){
-            Log.d("NtRn", "onCreate: NotRunning");startService(intent);
+            Log.d("NtRn", "onCreate: NotRunning");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Log.d("sdd", "connectToService: Starting foreground");
+                startForegroundService(intent);//startService(intent);
+            }else{
+                startService(intent);
+            }
         }
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
         registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());

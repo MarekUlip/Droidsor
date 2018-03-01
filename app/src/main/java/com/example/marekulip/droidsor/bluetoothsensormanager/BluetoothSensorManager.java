@@ -311,8 +311,12 @@ public class BluetoothSensorManager {
         }
     }
 
+    /**
+     * Starts listening to sensors which were set in setSensorsToListen. Those which are not set will be turned off.
+     */
     public void startListening(){
-        if(!activeSensors.isEmpty())getNextSensorNotificationGoing();
+        //if(!activeSensors.isEmpty())
+        getNextSensorNotificationGoing();//TODO keep watch
     }
 
     public void defaultListeningMode(){

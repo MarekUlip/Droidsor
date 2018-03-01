@@ -130,13 +130,14 @@ public class AndroidSensorManager implements SensorEventListener{
             public void run() {
                 boolean hasAcc = false, hasMag = false, hasOrientation = false;
                 for(int i = 0; i<toListen.size();i++){
-                    if(toListen.get(i).getType()==orientationId)hasOrientation = true;
+                    //if(toListen.get(i).getType()==orientationId)hasOrientation = true;
                     if(toListenIds.contains(toListen.get(i).getType())){
                         if(toListen.get(i).getType()==SensorsEnum.INTERNAL_MAGNETOMETER.sensorType)hasMag = true;
                         if(toListen.get(i).getType()==SensorsEnum.INTERNAL_ACCELEROMETER.sensorType)hasAcc = true;
                         mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
                     }
                 }
+                if(toListenIds.contains(SensorsEnum.INTERNAL_ORIENTATION.sensorType))hasOrientation = true;
                 if(hasOrientation && !(hasAcc && hasMag)){
                     //Using loop to ensure that enabled sensors are supported by app
                     for(int i = 0; i<toListen.size();i++){

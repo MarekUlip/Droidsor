@@ -43,12 +43,9 @@ public enum SensorsEnum {
     EXT_HUMIDITY(103,R.string.humidity,R.string.humidity_unit,R.string.external,1),
     EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,3){
         @Override
-        public String getSensorUnitName(Context context, int position) {
+        protected String getSensorUnitName(Context context, int position) {
             if(position == 2) return context.getString(R.string.fahrenheit_degree_unit);
-            if(this.sensorUnitName == null){
-                this.sensorUnitName = context.getString(this.sensorUnitNameRes);
-            }
-            return this.sensorUnitName;
+            return super.getSensorUnitName(context);
         }
     },
     EXT_OPTICAL(105,R.string.optical,R.string.optical_unit,R.string.external,1),
@@ -97,18 +94,23 @@ public enum SensorsEnum {
 
     public String getSensorNameXmlFriendly(Context context){
         if(sensorNameXmlFriendly == null){
-            Log.d("Lazy load", "getSensorNameXmlFriendly: Sensor XML name not initialized. Initializing it now.");
             sensorNameXmlFriendly = context.getString(sensorNameRes)+ "_" + context.getString(sPositionStringRes);
         }
         return sensorNameXmlFriendly;
     }
 
-    public String getSensorUnitName(Context context,int position){
+    public String getSensorUnitName(Context context){
         if(sensorUnitName == null){
             sensorUnitName = context.getString(sensorUnitNameRes);
         }
         return sensorUnitName;
     }
+
+    protected String getSensorUnitName(Context context,int position){
+        return getSensorUnitName(context);
+    }
+
+
 
     private StringBuilder allValuesString(Point3D data, Context c, StringBuilder sb){
         return twoValuesString(data,c,sb).append("Z: ").append(decimalFormat.format(data.z)).append(getSensorUnitName(c,3)).append(System.lineSeparator());
