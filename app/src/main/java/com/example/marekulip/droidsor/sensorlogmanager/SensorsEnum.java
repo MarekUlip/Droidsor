@@ -38,7 +38,7 @@ public enum SensorsEnum {
         }
     },
     EXT_MOV_ACCELEROMETER(100,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.external,3),
-    EXT_MOV_GYROSCOPE(101,R.string.gyroscope,R.string.gyroscope_unit,R.string.external,3),
+    EXT_MOV_GYROSCOPE(101,R.string.gyroscope,R.string.degrees_per_second,R.string.external,3),
     EXT_MOV_MAGNETIC(102,R.string.magnetometer,R.string.magnetometer_unit,R.string.external,3),
     EXT_HUMIDITY(103,R.string.humidity,R.string.humidity_unit,R.string.external,1),
     EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,3){

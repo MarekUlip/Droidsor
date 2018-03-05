@@ -71,6 +71,8 @@
     <string name="confirm_delete">Confirm delete</string>
     <string name="show_three_d_but">Show 3D View button</string>
     <string name="channel_description">Channel for service notification</string>
+    <string name="permission_fine_location_not_granted">Permission not granted. Without this permission we cannot search for Bluetooth devices.</string>
+    <string name="service_is_off_resetting">Service is off. Please try it again.</string>
 
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>
@@ -117,6 +119,7 @@
     <string name="fahrenheit_degree_unit">°F</string>
     <string name="humidity_unit">%rH</string>
     <string name="barometer_unit">mBar</string>
+    <string name="degrees_per_second">°/s</string>
     <string name="optical_unit">Lux</string>
     <string name="gyroscope_unit">rad/s</string>
     <string name="magnetometer_unit">\u00B5T</string>

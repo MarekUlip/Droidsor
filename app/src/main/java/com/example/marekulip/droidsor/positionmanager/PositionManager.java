@@ -83,7 +83,7 @@ public class PositionManager {
                     stopUpdates();
                     isTryingToGetFirstPosition = false;
                 }
-                Log.d("timeTest", "onLocationResult: " + mLocationRequest.getInterval()+" "+mLocationRequest.getFastestInterval());
+                //Log.d("timeTest", "onLocationResult: " + mLocationRequest.getInterval()+" "+mLocationRequest.getFastestInterval());
                 //mFusedLocationClient.removeLocationUpdates(mLocationCallback);
             }
         };

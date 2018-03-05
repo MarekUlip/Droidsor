@@ -52,6 +52,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private PositionManager positionManager;
     private LogProfile profileHolder;
     private boolean isRecording = false;
+    /**
+     * Indicates when service has been closed off by user.
+     */
+    private boolean isServiceOff = true;
+    private boolean isWaitingToStartLog = false;
     private boolean recievedLocation = false;
     private boolean isRequestingDialog = false;
     private Semaphore serviceSemaphore = new Semaphore(5,true);
@@ -120,6 +125,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             dialogSemaphore.release();
             isRequestingDialog = false;
         }
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -213,6 +219,12 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
      * Function to set up logging profile
      */
     private void startLogging(){
+        if(isServiceOff){
+            Toast.makeText(this,R.string.service_is_off_resetting,Toast.LENGTH_SHORT).show();
+            disconnectFromService();
+            connectToService();
+            return;
+        }
         if(mSensorService.isLogging())return;
         String pref = PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.START_LOG_BUT_BEHAVIOUR_PREF,"1");
         if (pref.equals("1")) {
@@ -419,6 +431,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 //displayData();
             }else if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action) ||BluetoothSensorManager.ACTION_GATT_DISCONNECTED.equals(action) ) {
                 invalidateOptionsMenu();
+            } else if(SensorService.SERVICE_IS_TURNING_OFF.equals(action)){
+                isServiceOff = true;
+                setFabClickListener();
             }
         }
     };
@@ -475,6 +490,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mSensorService = ((SensorService.LocalBinder)service).getService();
+            isServiceOff = false;
             mSensorService.startListeningSensors();
             setFabClickListener();
             fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
@@ -492,6 +508,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         intentFilter.addAction(SensorService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(SensorService.SERVICE_IS_TURNING_OFF);
         return intentFilter;
     }
 

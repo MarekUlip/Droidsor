@@ -35,6 +35,7 @@ import java.util.List;
 public class SensorService extends Service {
 
     public final static String ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE";
+    public final static String SERVICE_IS_TURNING_OFF  = "SERVICE_IS_TURNING_OFF";
 
     public final static int NO_SENSORS_MODE = -1;
     public final static int ALL_SENSORS_MODE = 0;
@@ -355,6 +356,7 @@ public class SensorService extends Service {
 
     private void stop(){
         if (isLogging()) sensorLogManager.endLog();
+        sendBroadcast(new Intent(SERVICE_IS_TURNING_OFF));
         stopListeningSensors(true);
         stopForeground(true);
         //destroyServiceNotification();

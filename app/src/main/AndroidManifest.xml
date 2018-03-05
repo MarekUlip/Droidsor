@@ -64,7 +64,8 @@
 
         <activity android:name=".DroidsorSettingsActivity" />
         <activity android:name=".logs.LogDetailItemActivity" />
-        <activity android:name=".opengl.OpenGLActivity"></activity>
+        <activity android:name=".opengl.OpenGLActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

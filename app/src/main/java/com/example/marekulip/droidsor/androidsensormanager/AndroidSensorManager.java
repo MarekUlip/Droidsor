@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
@@ -213,10 +214,12 @@ public class AndroidSensorManager implements SensorEventListener{
     //filter sensor that are desired but are not present on the device
     private void initSensorsToListen(){//TODO optimize
         toListen.clear();
+        SparseBooleanArray foundSensors = new SparseBooleanArray();
         List<Sensor>  sensors= mSensorManager.getSensorList(Sensor.TYPE_ALL);
         for(Sensor s: sensors){
-            if(toListenIds.contains(s.getType())){
+            if(!foundSensors.get(s.getType(),false) && toListenIds.contains(s.getType())){
                 toListen.add(s);
+                foundSensors.put(s.getType(),true);
             }
         }
         if(toListenIds.size() != toListen.size()-1){

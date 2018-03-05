@@ -1,5 +1,6 @@
 package com.example.marekulip.droidsor;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
@@ -10,6 +11,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,6 +24,8 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.marekulip.droidsor.positionmanager.PositionManager;
 
 import java.util.ArrayList;
 
@@ -52,6 +58,25 @@ public class BLESensorLocateActivity extends ListActivity{
             Toast.makeText(this, getString(R.string.error_bluetooth_not_supported), Toast.LENGTH_SHORT).show();
             finish();
             return;
+        }
+        //It is required to search for BLE devices
+        if (!(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PositionManager.MY_PERMISSIONS_REQUEST_LOCATION_FINE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PositionManager.MY_PERMISSIONS_REQUEST_LOCATION_FINE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startScan();
+                } else {
+                    Toast.makeText(this,R.string.permission_fine_location_not_granted,Toast.LENGTH_LONG).show();
+                }
+            }
         }
     }
 
@@ -91,6 +116,10 @@ public class BLESensorLocateActivity extends ListActivity{
     protected void onResume() {
         super.onResume();
 
+        startScan();
+    }
+
+    private void startScan(){
         if(!mBluetoothAdapter.isEnabled()){
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent,REQUEST_ENABLE_BT);

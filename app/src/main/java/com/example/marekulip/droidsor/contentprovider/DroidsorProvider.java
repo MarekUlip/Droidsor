@@ -121,7 +121,7 @@ public class DroidsorProvider extends ContentProvider {
 
             default: throw new IllegalArgumentException("Unknown URI: "+ uri);
         }
-        SQLiteDatabase db = database.getWritableDatabase();
+        SQLiteDatabase db = database.getReadableDatabase();
         Cursor cursor = queryBuilder.query(db,projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(),uri);
         return cursor;

@@ -71,4 +71,9 @@ public class SensorDataDispArrAdapter extends ArrayAdapter<SensorItem> {
 
         return convertView;
     }
+
+    @Override
+    public boolean isEnabled(int position) {
+        return false;
+    }
 }
