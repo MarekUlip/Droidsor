@@ -25,7 +25,7 @@
         android:entryValues="@array/log_but_beh_str_val"/>
     <EditTextPreference
         android:key="count_of_points"
-        android:defaultValue="750"
+        android:defaultValue="500"
         android:inputType="number"
         android:title="@string/count_of_points"
         android:summary="@string/count_of_points_summary"

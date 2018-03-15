@@ -138,7 +138,7 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         return true;
     }
 
-    private void setSelectionMode(boolean mode){
+    public void setSelectionMode(boolean mode){
         isSelectionModeOn = mode;
         if(!mode){
             cancelSelection();

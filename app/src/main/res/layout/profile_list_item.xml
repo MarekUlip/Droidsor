@@ -42,9 +42,10 @@
     <EditText
         android:id="@+id/profile_item_freq_et"
         android:layout_width="75dp"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
+        android:minHeight="40dp"
         android:ems="10"
         android:inputType="number"
         app:layout_constraintEnd_toStartOf="@+id/textView2"

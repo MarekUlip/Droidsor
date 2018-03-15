@@ -69,9 +69,9 @@ public class LogProfileActivity extends AppCompatActivity implements LogProfileL
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.action_create_new:
+            /*case R.id.action_create_new:
                 startActivity(new Intent(this,LogProfileSettingActivity.class));
-                break;
+                break;*/
             case R.id.action_pick_favorite:
                 fragment.enterPickingMode();
                 break;

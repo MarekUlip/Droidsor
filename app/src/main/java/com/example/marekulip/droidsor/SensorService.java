@@ -149,9 +149,16 @@ public class SensorService extends Service {
     private void stopListeningSensors(boolean fullStop){
         if(isListening) {
             androidSensorManager.stopListening();
-            if(fullStop||PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.DISCONNECT_FROM_BT_PREF,false))bluetoothSensorManager.disconnect();
+            if(bluetoothSensorManager.isBluetoothDeviceOn()) {
+                bluetoothSensorManager.setSensorsToListen(new ArrayList<Integer>(), new ArrayList<Integer>());
+                bluetoothSensorManager.startListening();
+                if (fullStop || PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.DISCONNECT_FROM_BT_PREF, false))
+                    bluetoothSensorManager.disconnect();
+            }
             isListening = false;
+            return;
         }
+        if(fullStop&&bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.disconnect();
     }
 
     /**

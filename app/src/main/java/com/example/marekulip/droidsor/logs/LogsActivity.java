@@ -18,4 +18,14 @@ public class LogsActivity extends AppCompatActivity {
         fragment = new LogsFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.log_fragment, fragment).commit();
     }
+
+    @Override
+    public void onBackPressed() {
+        if(fragment.isSelectionModeOn()){
+            fragment.setSelectionMode(false);
+        }
+        else {
+            finish();
+        }
+    }
 }

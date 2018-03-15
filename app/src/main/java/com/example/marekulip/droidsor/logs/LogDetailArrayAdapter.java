@@ -2,6 +2,7 @@ package com.example.marekulip.droidsor.logs;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.preference.PreferenceManager;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.example.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import com.github.mikephil.charting.charts.LineChart;
@@ -29,9 +31,12 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
 
     private List<Integer> selectedIds = new ArrayList<>();
     private static boolean isSelectionModeOn=false;
+    private final int numOfPoints;
 
     public LogDetailArrayAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<LogDetailItem> objects) {
         super(context, resource, objects);
+        numOfPoints = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(getContext()).getString(DroidsorSettingsFramgent.COUNT_OF_POINTS,"500"));
+
     }
 
     @NonNull
@@ -88,7 +93,7 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
             graphView.setData(item.lineData);
             graphView.invalidate();
 
-            graphView.setVisibleXRangeMaximum(120);
+            graphView.setVisibleXRangeMaximum(numOfPoints);
         }
 
         sensorValue.setText(item.sensorName);

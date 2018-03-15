@@ -26,6 +26,7 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created by Fredred on 21.10.2017.
@@ -53,14 +54,16 @@ public class BluetoothSensorManager {
     private int mConnectionState = STATE_DISCONNECTED;
     private boolean isAddressSet = false;
     private boolean areActiveSenorsSet = false;
+    private boolean firstTime = true;
 
-    private ArrayDeque<GeneralTISensor> descriptors = new ArrayDeque<>();
+   /* private ArrayDeque<GeneralTISensor> descriptors = new ArrayDeque<>();
     private ArrayDeque<GeneralTISensor> characteristics = new ArrayDeque<>();
-    private ArrayDeque<GeneralTISensor> frequencies = new ArrayDeque<>();
+    private ArrayDeque<GeneralTISensor> frequencies = new ArrayDeque<>();*/
     private List<GeneralTISensor> sensors = getBasicSetOfSensors();
     private List<GeneralTISensor> activeSensors = new ArrayList<>();
     private SparseIntArray listenFrequencies = new SparseIntArray();
     private List<GeneralTISensor> inactiveSensors = new ArrayList<>();
+    private Semaphore communicationSemaphore = new Semaphore(1,true);
 
     public BluetoothSensorManager(SensorService service){
         sensorService = service;
@@ -125,13 +128,18 @@ public class BluetoothSensorManager {
     }
 
     public void tryToReconnect(){
-        if(isAddressSet&&mConnectionState!=STATE_CONNECTED)connect(mBluetoothDeviceAddress);
+        if(mConnectionState==STATE_CONNECTED){
+            defaultListeningMode();
+            return;
+        }
+        if(isAddressSet)connect(mBluetoothDeviceAddress);//&&mConnectionState!=STATE_CONNECTED)
     }
 
     public void disconnect(){
         if(mBluetoothAdapter == null || mBluetoothGatt == null){
             return;
         }
+        Log.d(TAG, "disconnect: ");
         mBluetoothGatt.disconnect();
         mConnectionState = STATE_DISCONNECTED;
     }
@@ -157,6 +165,7 @@ public class BluetoothSensorManager {
                 mBluetoothGatt.discoverServices();
                 broadcastUpdate(BluetoothSensorManager.ACTION_GATT_CONNECTED);
             } else if(newState == BluetoothProfile.STATE_DISCONNECTED){
+                Log.d(TAG, "onConnectionStateChange: Disconnected");
                 mConnectionState = STATE_DISCONNECTED;
                 broadcastUpdate(BluetoothSensorManager.ACTION_GATT_DISCONNECTED);
             }
@@ -172,16 +181,17 @@ public class BluetoothSensorManager {
                     //Log.d(TAG, "onServicesDiscovered: Iterating services"+s.getUuid()+" their chara count is"+s.getCharacteristics().size());
                     for(GeneralTISensor sensor: sensors){
                         if(sensor.resolveService(s)){
-                            descriptors.add(sensor);
+                            /*descriptors.add(sensor);
                             characteristics.add(sensor);
-                            frequencies.add(sensor);
+                            frequencies.add(sensor);*/
                             activeSensors.add(sensor);
                             areActiveSenorsSet = true;
                             break;
                         }
                     }
                 }
-                getNextSensorNotificationGoing();
+                //getNextSensorNotificationGoing();
+                initializeSensors();
 
             } else {
                 Log.w(TAG, "onServicesDiscovered: " + status);
@@ -200,16 +210,50 @@ public class BluetoothSensorManager {
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             Log.d(TAG, "onDescriptorWrite: "+(descriptor.getValue() == BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)+" status = "+status);
-            getNextSensorNotificationGoing(); //TODO First enable notifications to all Services... then enable sensors. It is made this way so this function doesnt have to search for settings characteriscs.
+            communicationSemaphore.release();//getNextSensorNotificationGoing(); //TODO First enable notifications to all Services... then enable sensors. It is made this way so this function doesnt have to search for settings characteriscs.
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.d(TAG, "onCharacteristicWrite: "+characteristic.getUuid());
-            getNextSensorGoing();
+            communicationSemaphore.release();//getNextSensorGoing();
         }
     };
-    private void getNextSensorNotificationGoing(){
+
+    private void initializeSensors(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(GeneralTISensor sensor: sensors){
+                    if(activeSensors.contains(sensor)){
+                        configureSensor(sensor,true);
+                    }else{
+                        configureSensor(sensor,false);
+                    }
+                }
+            }
+        }).start();
+
+    }
+    private void configureSensor(GeneralTISensor sensor, boolean enable){
+        try {
+            if(firstTime){
+                communicationSemaphore.acquire();
+                firstTime = false;
+            }
+            sensor.configureNotifications(enable);
+            communicationSemaphore.acquire();
+            sensor.configureSensor(enable);
+            communicationSemaphore.acquire();
+            if (enable){
+                sensor.configureSensorFrequency(listenFrequencies.get(sensor.getSensorType(), 1000));
+                communicationSemaphore.acquire();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    /*private void getNextSensorNotificationGoing(){
         if(descriptors.isEmpty()){
             Log.d(TAG, "getNextSensorGoing: All sensor notifications enabled. Enabling sensors themselves");
             getNextSensorGoing();
@@ -222,6 +266,8 @@ public class BluetoothSensorManager {
             descriptors.pop().configureNotifications(false);
         }
     }
+
+
 
     private void getNextSensorGoing(){
         if(characteristics.isEmpty()){
@@ -246,12 +292,12 @@ public class BluetoothSensorManager {
             sensor.configureSensorFrequency(listenFrequencies.get(sensor.getSensorType(),1000));
         }
 
-    }
+    }*/
 
     private List<GeneralTISensor> getBasicSetOfSensors(){
         List<GeneralTISensor> sensors = new ArrayList<>();
-        sensors.add(new TIBarometricSensor(mBluetoothGatt));
         sensors.add(new TIHumiditySensor(mBluetoothGatt));
+        sensors.add(new TIBarometricSensor(mBluetoothGatt));
         sensors.add(new TIMovementSensor(mBluetoothGatt));
         sensors.add(new TIOpticalSensor(mBluetoothGatt));
         sensors.add(new TITemperatureSensor(mBluetoothGatt));
@@ -286,18 +332,18 @@ public class BluetoothSensorManager {
         for(GeneralTISensor sensor: sensors){
             if(sensorsTypes.contains(sensor.getSensorType())){
                 activeSensors.add(sensor);
-                frequencies.add(sensor);
+                //frequencies.add(sensor);
             }
-            descriptors.add(sensor);
-            characteristics.add(sensor);
+            /*descriptors.add(sensor);
+            characteristics.add(sensor);*/
         }
         if(sensorsTypes.contains(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType)||sensorsTypes.contains(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType)||sensorsTypes.contains(SensorsEnum.EXT_MOV_MAGNETIC.sensorType)){
             for(GeneralTISensor sensor: sensors){
                 if(sensor.getSensorType()==SensorsEnum.EXT_MOVEMENT.sensorType){
                     activeSensors.add(sensor);
-                    frequencies.add(sensor);
+                    /*frequencies.add(sensor);
                     descriptors.add(sensor);
-                    characteristics.add(sensor);
+                    characteristics.add(sensor);*/
                     break;
                 }
             }
@@ -316,26 +362,26 @@ public class BluetoothSensorManager {
      */
     public void startListening(){
         //if(!activeSensors.isEmpty())
-        getNextSensorNotificationGoing();//TODO keep watch
+        initializeSensors();//getNextSensorNotificationGoing();//TODO keep watch
     }
 
     public void defaultListeningMode(){
         clearQues();
         for(GeneralTISensor sensor: sensors){
             Log.d(TAG, "defaultListeningMode: "+sensor.getSensorType());
-            descriptors.add(sensor);
+            /*descriptors.add(sensor);
             characteristics.add(sensor);
-            frequencies.add(sensor);
+            frequencies.add(sensor);*/
             activeSensors.add(sensor);
         }
-        getNextSensorNotificationGoing();
+        initializeSensors();//getNextSensorNotificationGoing();
     }
 
     private void clearQues(){
         activeSensors.clear();
-        descriptors.clear();
+        /*descriptors.clear();
         characteristics.clear();
-        frequencies.clear();
+        frequencies.clear();*/
         listenFrequencies.clear();
     }
 }

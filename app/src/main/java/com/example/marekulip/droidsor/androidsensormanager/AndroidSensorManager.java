@@ -222,13 +222,13 @@ public class AndroidSensorManager implements SensorEventListener{
                 foundSensors.put(s.getType(),true);
             }
         }
-        if(toListenIds.size() != toListen.size()-1){
-            toListenIds.clear();
-            for(int i = 0; i<toListen.size();i++){
-                toListenIds.add(toListen.get(i).getType());
-            }
-            toListenIds.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
+        //if(toListenIds.size() != toListen.size()-1){
+        toListenIds.clear();
+        for(int i = 0; i<toListen.size();i++){
+            toListenIds.add(toListen.get(i).getType());
         }
+        if(foundSensors.get(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType,false) &&foundSensors.get(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType,false))toListenIds.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
+        //}
     }
 
     public void giveMeYourSensorTypes(List<Integer> sensorTypes){

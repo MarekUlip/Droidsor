@@ -46,6 +46,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     public static final String SHARED_PREFS_NAME = "droidsor_prefs";
     public static final String FAVORITE_LOG = "favorite_log";
     public static final int BT_DEVICE_REQUEST = 2;
+    private long profileId = -1;
     private SensorDataDispListFragment fragment;
     private FloatingActionButton fab;
     private SensorService mSensorService;
@@ -137,7 +138,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
     private void connectToService(){
         Intent intent = new Intent(this,SensorService.class);
-        if(!isMyServiceRunning(SensorService.class)){
+        if(!isMyServiceRunning(SensorService.class)||isServiceOff){
             Log.d("NtRn", "onCreate: NotRunning");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Log.d("sdd", "connectToService: Starting foreground");
@@ -176,6 +177,22 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_bluetooth_connect:
+                if(isServiceOff){
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            connectToService();
+                            try {
+                                serviceSemaphore.acquire();
+                                isServiceOff = false;
+                                startActivityForResult(new Intent(SensorDataDisplayerActivity.this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                    return true;
+                }
                 startActivityForResult(new Intent(this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
                 break;
             case R.id.action_bluetooth_disconnect:
@@ -429,8 +446,14 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 fragment.setNewData(sensorTypes, mSensorService.getSensorDataSparseArray());
                 //Log.d("Displ", "onReceive: Displaying data");
                 //displayData();
-            }else if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action) ||BluetoothSensorManager.ACTION_GATT_DISCONNECTED.equals(action) ) {
+            }else if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action)) {
                 invalidateOptionsMenu();
+            } else if(BluetoothSensorManager.ACTION_GATT_DISCONNECTED.equals(action) ){
+                invalidateOptionsMenu();
+                if(!mSensorService.isLogging()){
+                    mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
+                    fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                }
             } else if(SensorService.SERVICE_IS_TURNING_OFF.equals(action)){
                 isServiceOff = true;
                 setFabClickListener();
@@ -494,6 +517,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             mSensorService.startListeningSensors();
             setFabClickListener();
             fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            invalidateOptionsMenu();
             serviceSemaphore.release();
         }
 

@@ -155,7 +155,7 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         setListAdapter(mAdapter);
     }
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_create_new:
@@ -163,7 +163,7 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
                 break;
         }
         return true;
-    }
+    }*/
 
 
 
