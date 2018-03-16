@@ -163,7 +163,6 @@ public enum TISensor {
 	MAGNETOMETER(UUID_MAG_SERV, UUID_MAG_DATA, UUID_MAG_CONF) {
 		@Override
 		public Point3D convert(final byte [] value) {
-			//Point3D mcal = null;//TODO MagnetometerCalibrationCoefficients.INSTANCE.val;
 			// Multiply x and y with -1 so that the values correspond with the image in the app
 			float x = shortSignedAtOffset(value, 0) * (2000f / 65536f) * -1;
 			float y = shortSignedAtOffset(value, 2) * (2000f / 65536f) * -1;
@@ -271,7 +270,7 @@ public enum TISensor {
 	 * Constructor called by the Gyroscope and Accelerometer because it more than a boolean enable
 	 * code.
 	 */
-	private TISensor(UUID service, UUID data, UUID config, byte enableCode) {
+	TISensor(UUID service, UUID data, UUID config, byte enableCode) {
 		this.service = service;
 		this.data = data;
 		this.config = config;
@@ -281,7 +280,7 @@ public enum TISensor {
 	/**
 	 * Constructor called by all the sensors except Gyroscope
 	 * */
-	private TISensor(UUID service, UUID data, UUID config) {
+	TISensor(UUID service, UUID data, UUID config) {
 		this.service = service;
 		this.data = data;
 		this.config = config;
@@ -307,14 +306,4 @@ public enum TISensor {
 		return config;
 	}
 
-	public static TISensor getFromDataUuid(UUID uuid) {
-		for (TISensor s : TISensor.values()) {
-			if (s.getData().equals(uuid)) {
-				return s;
-			}
-		}
-		throw new RuntimeException("unable to find UUID.");
-	}
-
-	public static final TISensor[] TI_SENSOR_LIST = {IR_TEMPERATURE, ACCELEROMETER, MAGNETOMETER, LUXOMETER, GYROSCOPE, HUMIDITY, BAROMETER };
 }

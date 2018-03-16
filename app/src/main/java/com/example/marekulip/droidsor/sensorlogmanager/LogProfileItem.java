@@ -1,7 +1,5 @@
 package com.example.marekulip.droidsor.sensorlogmanager;
 
-import java.util.List;
-
 /**
  * Created by Fredred on 27.10.2017.
  */

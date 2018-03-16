@@ -13,7 +13,7 @@ public class SensorsDataDbHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "SensorsData.db";
 
     public SensorsDataDbHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);//TODO make settings to external SD
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
@@ -27,7 +27,6 @@ public class SensorsDataDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        //TODO make sure that data are transferred on upgrade
         sqLiteDatabase.execSQL(SensorLogsTable.DELETE_TABLE);
         sqLiteDatabase.execSQL(SensorDataTable.DELETE_TABLE);
         sqLiteDatabase.execSQL(LogProfilesTable.DELETE_TABLE);

@@ -68,16 +68,16 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensor_data_displ);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.mobile_sensors);
 
@@ -98,7 +98,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -152,7 +152,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     }
 
     private void disconnectFromService(){
-        if(mSensorService==null)return;//TODO solve service leakage on orientation change
+        if(mSensorService==null)return;
         if(!mSensorService.isLogging())mSensorService.stopListeningSensors();
         unregisterReceiver(mSensorServiceUpdateReceiver);
         unbindService(mServiceConnection);
@@ -229,7 +229,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private void tryToInitPosManager(){
         positionManager = new PositionManager(this);
         positionManager.setOnRecievedPositionListener(this);
-        positionManager.initPosManager(this);//TODO edit is optainable at start of this method
+        positionManager.initPosManager(this);
     }
 
     /**
@@ -272,7 +272,6 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             intent.putExtra(LogProfileActivity.IS_PICKING_NEXT_TO_LOG,true);
             Toast.makeText(this,R.string.pick_profile_to_log,Toast.LENGTH_SHORT).show();
             startActivityForResult(intent,LogProfileActivity.SET_NEXT_TO_LOG);
-            return;
         }
         /*isRecording = true;
         setFabClickListener();

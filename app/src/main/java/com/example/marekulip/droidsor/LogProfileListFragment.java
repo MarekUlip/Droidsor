@@ -1,9 +1,7 @@
 package com.example.marekulip.droidsor;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
@@ -11,18 +9,15 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
-import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 
 
 public class LogProfileListFragment extends ListFragment {

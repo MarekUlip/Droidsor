@@ -19,17 +19,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.example.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.SenorDataItemsCountTable;
 import com.example.marekulip.droidsor.database.SensorDataTable;
-import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
 import com.example.marekulip.droidsor.gpxfileexporter.LogExporter;
-import com.example.marekulip.droidsor.sensorlogmanager.Point3D;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorLog;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import com.github.mikephil.charting.components.YAxis;
@@ -50,11 +46,11 @@ import java.util.List;
 public class LogsDetailFragment extends ListFragment {
     private static final String TAG = LogsDetailFragment.class.toString();
     private LogDetailArrayAdapter adapter;
-    private List<LogDetailItem> items = new ArrayList<>();
+    private final List<LogDetailItem> items = new ArrayList<>();
     private long id = -1;
     private boolean isSelectionModeOn = false;
-    private List<Integer> idList = new ArrayList<>();
-    private SparseIntArray weights = new SparseIntArray();
+    private final List<Integer> idList = new ArrayList<>();
+    private final SparseIntArray weights = new SparseIntArray();
     private int prefferedCount = 750;
     private Context context;
     private Activity mActivity;
@@ -215,14 +211,14 @@ public class LogsDetailFragment extends ListFragment {
                 dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
                 dataSet.setColor(colors[j]);
                 dataSet.setDrawCircles(false);
-                dataSet.setDrawValues(false);//TODO change maybe
+                dataSet.setDrawValues(false);
                 dataSets.add(dataSet);
             }
             items.add(new LogDetailItem(SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorName(context),SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorUnitName(getContext()),new LineData(dataSets),lst.get(i).sensorType,lst.get(i).labels));
         }
     }
 
-    private void loadSensorDataWithWeight(long logId, int sensorType, int weight,int listPosition,int itemCount, final List<EntryHolder> lst){//TODO try to make only one query
+    private void loadSensorDataWithWeight(long logId, int sensorType, int weight,int listPosition,int itemCount, final List<EntryHolder> lst){
         Cursor cursor = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID + " = ? and "+SensorDataTable.SENSOR_TYPE+" = ? and "+SensorDataTable.SAMPLE_WEIGHT +" >= ?",new String[]{String.valueOf(logId),String.valueOf(sensorType),String.valueOf(weight)},null);
         if(cursor!=null && cursor.moveToFirst()){
             int size = lst.get(listPosition).entries.get(0).size();
@@ -429,9 +425,9 @@ public class LogsDetailFragment extends ListFragment {
     }
 
     private class EntryHolder{
-        int sensorType;
-        List<List<Entry>> entries = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
+        final int sensorType;
+        final List<List<Entry>> entries = new ArrayList<>();
+        final List<String> labels = new ArrayList<>();
         EntryHolder(int sensorType){
             this.sensorType = sensorType;
         }

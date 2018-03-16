@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.util.Log;
 
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
@@ -22,12 +21,12 @@ public abstract class GeneralTISensor {
     protected BluetoothGattCharacteristic dataCharacteristic;
     protected BluetoothGattCharacteristic periodCharacteristic;
     protected BluetoothGattService mGattService;
-    protected BluetoothGatt mBluetoothGatt;
-    protected UUID confUUID;
-    protected UUID dataUUID;
-    protected UUID periodUUID;
-    protected UUID serviceUUID;
-    protected int sensorType;
+    protected final BluetoothGatt mBluetoothGatt;
+    protected final UUID confUUID;
+    protected final UUID dataUUID;
+    protected final UUID periodUUID;
+    protected final UUID serviceUUID;
+    protected final int sensorType;
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
 
@@ -80,7 +79,7 @@ public abstract class GeneralTISensor {
     public void configureSensorFrequency(int frequency){
         if (frequency > 2450) frequency = 2450;
         if (frequency < 100) frequency = 100;
-        byte f = (byte)((frequency/10));//TODO first frequency for movement must be 1000
+        byte f = (byte)((frequency/10));//first frequency for movement must be 1000
         periodCharacteristic.setValue(new byte[]{f});
         mBluetoothGatt.writeCharacteristic(periodCharacteristic);
     }

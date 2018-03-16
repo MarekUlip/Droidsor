@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 
-import com.example.marekulip.droidsor.positionmanager.PositionManager;
-
 /**
  * Created by Marek Ulip on 09-Feb-18.
  */

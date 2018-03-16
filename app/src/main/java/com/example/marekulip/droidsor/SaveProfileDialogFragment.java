@@ -36,8 +36,8 @@ public class SaveProfileDialogFragment extends DialogFragment {
         void saveProfile(String name, int frequency, boolean scanGPS);
     }
     private int gpsFrequency = 1000;
-    private int minScan = 1000;
-    private int maxScan = 600000-minScan;
+    private final int minScan = 1000;
+    private final int maxScan = 600000-minScan;
     private SaveProfileDialogListener mListener;
 
     @Override

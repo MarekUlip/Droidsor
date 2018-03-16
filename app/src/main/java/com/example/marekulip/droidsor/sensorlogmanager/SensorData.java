@@ -9,7 +9,7 @@ import com.example.marekulip.droidsor.database.SensorDataTable;
  */
 
 public class SensorData {
-    public int sensorType;
+    public final int sensorType;
     public final Point3D values;
     public final long time;
     public double longitude;

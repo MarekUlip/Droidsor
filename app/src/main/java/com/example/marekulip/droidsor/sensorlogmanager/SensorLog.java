@@ -19,7 +19,7 @@ public class SensorLog {
     private final long logId;
     private List<Integer> sensorsToLog;
     private List<SensorData> sensorDataList;
-    private SparseIntArray countOfItems = new SparseIntArray();
+    private final SparseIntArray countOfItems = new SparseIntArray();
     private SensorLogManager sensorLogManager;
     public static final int[] weights = {10000,1000,100,10,1};
     public SensorLog(SensorLogManager slm, long id, List<Integer> sensorTypes){
@@ -34,11 +34,6 @@ public class SensorLog {
     }
 
     public void tryToAddItem(SensorData d){
-        if(d.sensorType==0) try {//TODO only for test puprposes
-            throw new Exception("Id not set for sensor Data");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         if(sensorsToLog.contains(d.sensorType)){
             //Log.d(TAG, "tryToAddItem: listening sensor found " + d.sensorType);
             sensorDataList.add(d);
@@ -47,7 +42,6 @@ public class SensorLog {
 
     public void writeToDatabase(){
         Log.d(TAG, "writeToDatabase: Writting to database");
-        //int writtenItems = sensorLogManager.getCountOfWrittenItems();
         List<SensorData> dataList = new ArrayList<>();
         dataList.addAll(sensorDataList);
         sensorDataList.clear();
@@ -79,7 +73,6 @@ public class SensorLog {
         }
         Log.d(TAG, "writeToDatabase: count of entries to write in bulk"+bulk.size());
         sensorLogManager.getContext().getContentResolver().bulkInsert(DroidsorProvider.SENSOR_DATA_URI,bulk.toArray(new ContentValues[bulk.size()]));
-        //sensorLogManager.setCountOfWrittenItems(writtenItems);
     }
 
     public void countSensorLogItems(){

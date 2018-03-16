@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ConfigurationInfo;
-import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -17,8 +16,6 @@ import android.util.Log;
 
 import com.example.marekulip.droidsor.SensorService;
 import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
-
-import java.util.List;
 
 public class OpenGLActivity extends AppCompatActivity {
     private GLSurfaceView mGLSurfaceView;

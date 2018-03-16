@@ -52,7 +52,7 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
     private static final String TAG = LogsFragment.class.toString();
     private LogsFragmentCursorAdapter mAdapter;
     private boolean isSelectionModeOn = false;
-    private List<Long> items = new ArrayList<>();
+    private final List<Long> items = new ArrayList<>();
 
 
     @Override
@@ -229,7 +229,7 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if(item.getItemId()==Menu.FIRST) LogExporter.exportLog(getContext(),info.id,null);//exportLog(info.id);
+        if(item.getItemId()==Menu.FIRST) LogExporter.exportLog(getContext(),info.id,null);
         if(item.getItemId()==Menu.FIRST+1) {
             deleteItemDialog(info.id);
             //deleteItem(info.id);
@@ -237,56 +237,6 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         }
         if(item.getItemId() == Menu.FIRST+2) renameItem(info.id);
         return super.onContextItemSelected(item);
-    }
-
-    private void exportLog(final long id){
-        Toast.makeText(getContext(),R.string.started_exporting,Toast.LENGTH_LONG).show();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                List<SensorData> data = new ArrayList<>();
-                Cursor c = getContext().getApplicationContext().getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,SensorDataTable.LOG_ID+ " = ?",new String[]{String.valueOf(id)},null);
-                if(c!=null && c.moveToFirst()) {
-                    data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
-                            ,new Point3D(
-                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
-                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
-                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
-                    ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
-                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
-                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
-                            c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE)),
-                            c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SPEED)),
-                            c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.ACCURACY))
-                    ));
-                    while (c.moveToNext()) {
-                        data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
-                                ,new Point3D(
-                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X)),
-                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y)),
-                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))
-                        ), c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)),
-                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LONGITUDE)),
-                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.LATITUDE)),
-                                c.getDouble(c.getColumnIndexOrThrow(SensorDataTable.ALTITUDE)),
-                                c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SPEED)),
-                                c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.ACCURACY))
-                        ));
-                    }
-                    c.close();
-                    TimeZone tz = TimeZone.getTimeZone("UTC");
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); // Quoted "Z" to indicate UTC, no timezone offset
-                    df.setTimeZone(tz);
-                    GPXExporter.exportLogItems(data, "Log "+ id + " Exported at "+df.format(new Date(System.currentTimeMillis())), getContext().getApplicationContext());
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getContext().getApplicationContext(), R.string.exporting_done, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-        }).start();
     }
 
     private void deleteItem(long id){

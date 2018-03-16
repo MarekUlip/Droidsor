@@ -23,7 +23,6 @@ import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TITemperat
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -45,7 +44,7 @@ public class BluetoothSensorManager {
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
-    private SensorService sensorService;
+    private final SensorService sensorService;
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
@@ -60,9 +59,8 @@ public class BluetoothSensorManager {
     private ArrayDeque<GeneralTISensor> characteristics = new ArrayDeque<>();
     private ArrayDeque<GeneralTISensor> frequencies = new ArrayDeque<>();*/
     private List<GeneralTISensor> sensors = getBasicSetOfSensors();
-    private List<GeneralTISensor> activeSensors = new ArrayList<>();
-    private SparseIntArray listenFrequencies = new SparseIntArray();
-    private List<GeneralTISensor> inactiveSensors = new ArrayList<>();
+    private final List<GeneralTISensor> activeSensors = new ArrayList<>();
+    private final SparseIntArray listenFrequencies = new SparseIntArray();
     private Semaphore communicationSemaphore = new Semaphore(1,true);
 
     public BluetoothSensorManager(SensorService service){
@@ -160,7 +158,7 @@ public class BluetoothSensorManager {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if(newState == BluetoothProfile.STATE_CONNECTED){
-                sensors = getBasicSetOfSensors();//TODO Hardcoded
+                sensors = getBasicSetOfSensors();
                 mConnectionState = STATE_CONNECTED;
                 mBluetoothGatt.discoverServices();
                 broadcastUpdate(BluetoothSensorManager.ACTION_GATT_CONNECTED);
@@ -210,13 +208,13 @@ public class BluetoothSensorManager {
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             Log.d(TAG, "onDescriptorWrite: "+(descriptor.getValue() == BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)+" status = "+status);
-            communicationSemaphore.release();//getNextSensorNotificationGoing(); //TODO First enable notifications to all Services... then enable sensors. It is made this way so this function doesnt have to search for settings characteriscs.
+            communicationSemaphore.release(); //First enable notifications to all Services... then enable sensors. It is made this way so this function doesnt have to search for settings characteriscs.
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             Log.d(TAG, "onCharacteristicWrite: "+characteristic.getUuid());
-            communicationSemaphore.release();//getNextSensorGoing();
+            communicationSemaphore.release();
         }
     };
 
@@ -349,7 +347,7 @@ public class BluetoothSensorManager {
             }
         }
         for(int i = 0; i<sensorsTypes.size();i++){
-            if(sensorsTypes.get(i)>=SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType&&sensorsTypes.get(i)<=SensorsEnum.EXT_MOV_MAGNETIC.sensorType){//TODO make boolean standalone
+            if(sensorsTypes.get(i)>=SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType&&sensorsTypes.get(i)<=SensorsEnum.EXT_MOV_MAGNETIC.sensorType){
                 listenFrequencies.put(SensorsEnum.EXT_MOVEMENT.sensorType,sensorFrequencies.get(i));
                 continue;
             }
@@ -361,8 +359,7 @@ public class BluetoothSensorManager {
      * Starts listening to sensors which were set in setSensorsToListen. Those which are not set will be turned off.
      */
     public void startListening(){
-        //if(!activeSensors.isEmpty())
-        initializeSensors();//getNextSensorNotificationGoing();//TODO keep watch
+        initializeSensors();//getNextSensorNotificationGoing();
     }
 
     public void defaultListeningMode(){

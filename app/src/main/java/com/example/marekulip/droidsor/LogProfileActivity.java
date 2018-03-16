@@ -45,7 +45,7 @@ public class LogProfileActivity extends AppCompatActivity implements LogProfileL
         isPickingFirstFavoriteProfile = getIntent().getBooleanExtra(IS_PICKING_FAVORITE_PROFILE,false);
         isPickingNextToLog = getIntent().getBooleanExtra(IS_PICKING_NEXT_TO_LOG,false);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         if(isPickingFirstFavoriteProfile||isPickingNextToLog){
             toolbar.setVisibility(View.GONE);
         }else{

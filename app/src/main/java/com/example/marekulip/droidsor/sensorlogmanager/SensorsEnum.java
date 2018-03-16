@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.util.Log;
 import android.util.SparseArray;
 
 import com.example.marekulip.droidsor.R;

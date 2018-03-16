@@ -1,38 +1,26 @@
 package com.example.marekulip.droidsor;
 
-import android.content.ComponentName;
 import android.content.ContentValues;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ListFragment;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.example.marekulip.droidsor.adapters.LogProfileItemArrAdapter;
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
-import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
-import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.content.Context.BIND_AUTO_CREATE;
 
 /**
  * Created by Fredred on 28.10.2017.
@@ -121,7 +109,7 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
                 item = new LogProfileItem(true,
                         c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),
                         c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
-                if(item.sensorType>=100 && item.sensorType <= 102){ //TODO make boolean isStandalone
+                if(item.sensorType>=100 && item.sensorType <= 102){
                     extBluetoothMovSensorStates.put(item.sensorType,true);
                     if(!extMovSet){
                         items.add(new LogProfileItem(true,SensorsEnum.EXT_MOVEMENT.sensorType,item.scanFrequency));
@@ -227,7 +215,7 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
                         continue;
                     }
                     cv = new ContentValues();
-                    if(item.sensorType==SensorsEnum.EXT_MOVEMENT.sensorType){//TODO try to generalize it
+                    if(item.sensorType==SensorsEnum.EXT_MOVEMENT.sensorType){
 
                         for(int i = 0, size = extBluetoothMovSensorStates.size(),key; i< size;i++){
                             key =extBluetoothMovSensorStates.keyAt(i);

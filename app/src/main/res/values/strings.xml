@@ -1,7 +1,6 @@
 <resources>
-    <string name="app_name">Droidsor</string>
+    <string name="app_name" translatable="false">Droidsor</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_main2">Main2Activity</string>
 
     <string name="ble_not_supported">BLE is not supported</string>
     <string name="label_data">Data:</string>
@@ -11,7 +10,7 @@
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="title_devices">BLE Device Scan</string>
-    <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
+    <string name="error_bluetooth_not_supported">Bluetooth not supported</string>
     <string name="save">Save</string>
     <string name="saved">Saved</string>
     <string name="updated">Updated</string>
@@ -24,12 +23,12 @@
     <string name="export_selected_logs">Export selected logs</string>
     <string name="export_log_item">Export log item</string>
     <string name="profile_name">Profile Name</string>
-    <string name="scan_gps_when_logging">Save position when logging.</string>
+    <string name="scan_gps_when_logging">Save position when logging</string>
     <string name="create_profile">Create New Profile</string>
-    <string name="pick_favorite_log">Pick Favorite Log</string>
-    <string name="favorite_log_picked">Favorite log picked.</string>
+    <string name="pick_favorite_log">Pick Favorite Profile</string>
+    <string name="favorite_log_picked">Favorite log picked</string>
     <string name="connect_bt_device">Connect BT Device</string>
-    <string name="no_favorite_log">No favorite log set. Please go to logs settings and pick your favorite log.</string>
+    <string name="no_favorite_log">No favorite profile set. Please pick your favorite profile at log profile settings.</string>
     <string name="mobile_sensors">Mobile Sensors</string>
     <string name="bluetooth_sensors">Bluetooth Sensors</string>
     <string name="all_sensors">All Sensors</string>
@@ -38,30 +37,30 @@
     <string name="logging">Logging</string>
     <string name="saved_logs">Saved Logs</string>
     <string name="log_profile_settings">Log Profile Settings</string>
-    <string name="unavailable_when_not_logging">This display mode is unavailable when app is not logging.</string>
-    <string name="unavailable_when_logging">This display mode is unavailable when app is logging.</string>
+    <string name="unavailable_when_not_logging">This display mode is unavailable when app is not logging</string>
+    <string name="unavailable_when_logging">This display mode is unavailable when app is logging</string>
     <string name="export_log">Export log</string>
     <string name="started_exporting">Started exporting of selected logs. We will inform you when exporting is done.</string>
-    <string name="exporting_done">Exporting done.</string>
+    <string name="exporting_done">Exporting done</string>
     <string name="create_temp_profile">After you are finished with creating temporary profile, click save button and the logging will automatically start.</string>
     <string name="mark_more">Mark more</string>
     <string name="disconnect_from_bt_when_not_needed">Bluetooth power saving</string>
     <string name="disconnect_from_bt_when_not_needed_summary">Disconnects from Bluetooth device when it is not necessary for use.</string>
     <string name="wait_for_gps">Wait for GPS position</string>
-    <string name="wait_for_gps_summary">Ensures that logging will not start without some known location.</string>
+    <string name="wait_for_gps_summary">Ensures that logging will not start without known location.</string>
     <string name="start_logging_button_behaviour">Start logging button behaviour</string>
     <string name="favorite_profile_gone">Your favorite profile does not exist anymore. Please pick a new one.</string>
-    <string name="pick_profile_to_log">Pick profile with which you want to make logging.</string>
+    <string name="pick_profile_to_log">Pick profile with which you want to start logging.</string>
     <string name="one_click_notification_exit">One click service stop</string>
     <string name="one_click_notification_exit_summary">Allows to turn off the service from notification field with one click.</string>
-    <string name="choose_new_log_name">Choose new log name.</string>
+    <string name="choose_new_log_name">Choose new log name</string>
     <string name="rename">Rename</string>
     <string name="loading_sensor_items">Loading sensor items</string>
-    <string name="no_logs">You have not made any logs yet.</string>
+    <string name="no_logs">No log made yet</string>
     <string name="count_of_points">Count of points at graph summary</string>
     <string name="count_of_points_summary">Count of points to display at graph summary. The more points to show the slower the loading of the log will be.</string>
     <string name="waiting_for_gps">Waiting for GPS</string>
-    <string name="waiting_for_gps_message">Do you fish to start logging without GPS?</string>
+    <string name="waiting_for_gps_message">Do you wish to start logging without GPS?</string>
     <string name="start_without_gps">Start without GPS</string>
     <string name="set">Set</string>
     <string name="connect_to_bluetooth_device">Connect to device</string>
@@ -86,19 +85,13 @@
 
 
     <string name="unknown_device">Unknown device</string>
-    <string name="unknown_characteristic">Unknown characteristic</string>
-    <string name="unknown_service">Unknown service</string>
 
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
-    <string name="menu_stop">Stop</string>
+    <string name="menu_stop" translatable="false">Stop</string>
     <string name="menu_refresh">Refresh</string>
-    <string name="title_activity_device_control">DeviceControlActivity</string>
-    <string name="title_activity_show_log">ShowLogActivity</string>
-    <string name="title_activity_location_test">LocationTestActivity</string>
-    <string name="title_activity_nav_drawer_test">NavDrawerTest</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -114,17 +107,17 @@
     <string name="movement">Movement</string>
     <string name="orientation">Orientation</string>
 
-    <string name="meter_per_sec_square_unit">m/s²</string>
-    <string name="celsius_degree_unit">°C</string>
-    <string name="fahrenheit_degree_unit">°F</string>
-    <string name="humidity_unit">%rH</string>
-    <string name="barometer_unit">mBar</string>
-    <string name="degrees_per_second">°/s</string>
-    <string name="optical_unit">Lux</string>
-    <string name="gyroscope_unit">rad/s</string>
-    <string name="magnetometer_unit">\u00B5T</string>
-    <string name="radian">rad</string>
-    <string name="milliseconds">ms</string>
+    <string name="meter_per_sec_square_unit" translatable="false">m/s²</string>
+    <string name="celsius_degree_unit" translatable="false">°C</string>
+    <string name="fahrenheit_degree_unit" translatable="false">°F</string>
+    <string name="humidity_unit" translatable="false">%rH</string>
+    <string name="barometer_unit" translatable="false">mBar</string>
+    <string name="degrees_per_second" translatable="false">°/s</string>
+    <string name="optical_unit" translatable="false">Lux</string>
+    <string name="gyroscope_unit" translatable="false">rad/s</string>
+    <string name="magnetometer_unit" translatable="false">\u00B5T</string>
+    <string name="radian" translatable="false">rad</string>
+    <string name="milliseconds" translatable="false">ms</string>
 
     <string name="internal">Internal</string>
     <string name="external">External</string>

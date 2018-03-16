@@ -45,10 +45,6 @@ public class SensorLogManager {
         return context;
     }
 
-    public int getCountOfWrittenItems() {
-        return countOfWrittenItems;
-    }
-
     public void startLog(String logName,List<Integer> sensorsToListen){
         /*if(logs.size() >= 10){
             return;
@@ -126,7 +122,4 @@ public class SensorLogManager {
 
     }*/
 
-    public void setCountOfWrittenItems(int countOfWrittenItems) {
-        this.countOfWrittenItems = countOfWrittenItems;
-    }
 }

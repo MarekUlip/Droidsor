@@ -39,9 +39,9 @@ public class GPXExporter {
     private static final String extensionsEndTag = "</extensions>";
     private static final String xValueStartTag = myNamespaceTagStart+"x>";
     private static final String xValueEndTag = myNamespaceTagEnd+"x>";
-    private static final String yValueStartTag = myNamespaceTagStart+"y>";;
+    private static final String yValueStartTag = myNamespaceTagStart+"y>";
     private static final String yValueEndTag = myNamespaceTagEnd+"y>";
-    private static final String zValueStartTag = myNamespaceTagStart+"z>";;
+    private static final String zValueStartTag = myNamespaceTagStart+"z>";
     private static final String zValueEndTag = myNamespaceTagEnd+"z>";
     private static final String eleStartTag = "<ele>";
     private static final String eleEndTag = "</ele>";

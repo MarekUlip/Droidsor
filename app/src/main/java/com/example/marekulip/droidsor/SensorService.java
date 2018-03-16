@@ -13,10 +13,8 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.util.SparseArray;
 import android.widget.Toast;
 
@@ -207,7 +205,7 @@ public class SensorService extends Service {
             }
         }
         androidSensorManager.setSensorsToListen(androidSensorTypes,androidSensorFrequencies);
-        androidSensorManager.startListening();//TODO Optimize
+        androidSensorManager.startListening();
         if(bluetoothSensorManager.isBluetoothDeviceOn()){
             bluetoothSensorManager.setSensorsToListen(bluetoothSensorTypes,bluetoothSensorFrequencies);
             bluetoothSensorManager.startListening();
@@ -298,10 +296,9 @@ public class SensorService extends Service {
         return sensorTypes;
     }
 
-    private boolean isSendable(List<SensorData> sensorDataList){
-        if(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType<100)return false;//It is enough to check only first sensor from list because ussualy only one value is present at list. When there are multiple values in the list they are from the same source
-        if(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType>100)return false;
-        return true;
+    private boolean isSendable(List<SensorData> sensorDataList) {
+        //It is enough to check only first sensor from list because ussualy only one value is present at list. When there are multiple values in the list they are from the same source
+        return !(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType < 100) && !(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType > 100); //TODO Possible error
     }
 
     private Notification createOrUpdateServiceNotification(String name, String contextText){
@@ -333,12 +330,6 @@ public class SensorService extends Service {
         return mNotifyBuilder.build();
     }
 
-    private void destroyServiceNotification(){
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(NOTIFICATION_ID);
-    }
-
     public void stop(boolean hardStop){
         if(isStopIntended || hardStop) {
             stop();
@@ -366,7 +357,6 @@ public class SensorService extends Service {
         sendBroadcast(new Intent(SERVICE_IS_TURNING_OFF));
         stopListeningSensors(true);
         stopForeground(true);
-        //destroyServiceNotification();
         stopSelf();
     }
 

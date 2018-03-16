@@ -13,7 +13,6 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.marekulip.droidsor.sensorlogmanager.PermissionHandlerIFace;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -138,7 +137,6 @@ public class PositionManager {
         } else {
             isPositionObtainable = false;
             ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MY_PERMISSIONS_REQUEST_LOCATION_FINE);
-            //((PermissionHandlerIFace)activity).requestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
         }
     }
 

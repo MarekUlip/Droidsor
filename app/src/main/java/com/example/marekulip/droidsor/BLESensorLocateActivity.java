@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -230,8 +229,8 @@ public class BLESensorLocateActivity extends ListActivity{
             if(view == null){
                 view = mInflator.inflate(R.layout.listitem_sensor_locate,null);
                 viewHolder = new ViewHolder();
-                viewHolder.deviceAdress = (TextView)view.findViewById(R.id.device_address);
-                viewHolder.deviceName = (TextView)view.findViewById(R.id.device_name);
+                viewHolder.deviceAdress = view.findViewById(R.id.device_address);
+                viewHolder.deviceName = view.findViewById(R.id.device_name);
                 view.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder)view.getTag();

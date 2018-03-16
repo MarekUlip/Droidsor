@@ -123,7 +123,7 @@ public class LogDetailItemActivity extends AppCompatActivity {
             }
             item.labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
             //lst.get(0).entries.add(new Entry(time,value));
-            int position;
+            //int position;
             int size = item.entries.get(0).size();
             while (c.moveToNext()){
                 size++;
@@ -198,9 +198,9 @@ public class LogDetailItemActivity extends AppCompatActivity {
     }
 
     private class EntryHolder{
-        int sensorType;
-        List<List<Entry>> entries = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
+        final int sensorType;
+        final List<List<Entry>> entries = new ArrayList<>();
+        final List<String> labels = new ArrayList<>();
         EntryHolder(int sensorType){
             this.sensorType = sensorType;
         }

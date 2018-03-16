@@ -13,11 +13,9 @@ import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
 
@@ -36,7 +34,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_bar_sensor_d_displ);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.sens_disp_fab);
@@ -150,7 +148,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     }
 
     private void disconnectFromService(){
-        if(!mSensorService.isLogging())mSensorService.stopListeningSensors();//TODO stop bluetooth sensors too
+        if(!mSensorService.isLogging())mSensorService.stopListeningSensors();
         unregisterReceiver(mSensorServiceUpdateReceiver);
         unbindService(mServiceConnection);
     }
