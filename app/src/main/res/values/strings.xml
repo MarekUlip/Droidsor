@@ -74,6 +74,9 @@
     <string name="service_is_off_resetting">Service is off. Please try it again.</string>
     <string name="logging_on">App is logging. Service will keep running.</string>
     <string name="permission_explain_write">This permission is required to store GPX file on your SD card.</string>
+    <string name="droidsor_service">Droidsor service</string>
+    <string name="service_is_running">Service is running</string>
+
 
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>

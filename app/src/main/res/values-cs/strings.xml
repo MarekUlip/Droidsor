@@ -86,4 +86,8 @@
     <string name="orientation">Orientace</string>
     <string name="internal">Interní</string>
     <string name="external">Externí</string>
+    <string name="logging_on">Probíhá záznam. Služba zůstane aktivní.</string>
+    <string name="permission_explain_write">Toto oprávnění je potřeba k uložení GPX souboru na SD kartu.</string>
+    <string name="droidsor_service">Služba Droidsor</string>
+    <string name="service_is_running">Služba běží</string>
 </resources>

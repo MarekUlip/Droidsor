@@ -85,7 +85,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
         fragment = new SensorDataDispListFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment, fragment).commit();
-        Toast.makeText(this,"4",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,"6",Toast.LENGTH_SHORT).show();
         /*Intent intent = new Intent(this,SensorService.class);
         if(!isMyServiceRunning(SensorService.class)){
             startService(intent);
@@ -101,7 +101,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
             if(mSensorService.isLogging()) {
-                Toast.makeText(this,"Logging on. Let Service Run",Toast.LENGTH_SHORT).show(); //TODO translate
+                Toast.makeText(this,getString(R.string.logging_on),Toast.LENGTH_SHORT).show(); //TODO translate
                 super.onBackPressed();
             }
             else {

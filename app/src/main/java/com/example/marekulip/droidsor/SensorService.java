@@ -322,8 +322,8 @@ public class SensorService extends Service {
         }
 
         NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("Droidsor Service")//TODO translate
-                .setContentText("Service is running")
+                .setContentTitle(getString(R.string.droidsor_service))
+                .setContentText(getString(R.string.service_is_running))
                 .setSmallIcon(R.drawable.notification_icon)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher))
                 .setOngoing(true);
