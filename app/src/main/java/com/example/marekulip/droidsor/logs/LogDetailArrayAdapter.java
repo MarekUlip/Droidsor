@@ -69,7 +69,6 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
             // enable scaling and dragging
             graphView.setDragEnabled(true);
             graphView.setScaleEnabled(true);
-            graphView.setPinchZoom(true);
 
             // set an alternative background color
             graphView.setBackgroundColor(Color.WHITE);
@@ -80,7 +79,7 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
 
                 @Override
                 public String getFormattedValue(float value, AxisBase axis) {
-                    if ((int) value > item.xLabels.size()) return "";
+                    if ((int) value >= item.xLabels.size()) return "";
                     return item.xLabels.get((int) value);
                 }
             };
@@ -89,11 +88,10 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
             xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
             xAxis.setValueFormatter(formatter);
 
-
             graphView.setData(item.lineData);
             graphView.invalidate();
 
-            graphView.setVisibleXRangeMaximum(numOfPoints);
+            graphView.setVisibleXRangeMaximum(item.xLabels.size());
         }
 
         sensorValue.setText(item.sensorName);

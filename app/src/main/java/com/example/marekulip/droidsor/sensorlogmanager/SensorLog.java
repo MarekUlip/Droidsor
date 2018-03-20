@@ -75,17 +75,24 @@ public class SensorLog {
         sensorLogManager.getContext().getContentResolver().bulkInsert(DroidsorProvider.SENSOR_DATA_URI,bulk.toArray(new ContentValues[bulk.size()]));
     }
 
-    public void countSensorLogItems(){
+    void initCountSensorLogItems(){
         ContentValues cv = new ContentValues();
-        for(int i = 0, size =countOfItems.size(); i<size;i++){
-            cv.put(SenorDataItemsCountTable.SENSOR_TYPE,countOfItems.keyAt(i));
+        for(int i = 0, size =sensorsToLog.size(); i<size;i++){
+            cv.put(SenorDataItemsCountTable.SENSOR_TYPE,sensorsToLog.get(i));
             cv.put(SenorDataItemsCountTable.LOG_ID,logId);
-            cv.put(SenorDataItemsCountTable.COUNT_OF_ITEMS,countOfItems.valueAt(i));
+            cv.put(SenorDataItemsCountTable.COUNT_OF_ITEMS,1);
             sensorLogManager.getContext().getContentResolver().insert(DroidsorProvider.SENSOR_DATA_COUNT_URI,cv);
         }
+    }
 
-
-
+    void countSensorLogItems(){
+        ContentValues cv = new ContentValues();
+        for(int i = 0, size =countOfItems.size(); i<size;i++){
+            //cv.put(SenorDataItemsCountTable.SENSOR_TYPE,countOfItems.keyAt(i));
+            //cv.put(SenorDataItemsCountTable.LOG_ID,logId);
+            cv.put(SenorDataItemsCountTable.COUNT_OF_ITEMS,countOfItems.valueAt(i));
+            sensorLogManager.getContext().getContentResolver().update(DroidsorProvider.SENSOR_DATA_COUNT_URI,cv,SenorDataItemsCountTable.LOG_ID+ " = ? and " + SenorDataItemsCountTable.SENSOR_TYPE + " = ?",new String[]{String.valueOf(logId),String.valueOf(countOfItems.keyAt(i))});
+        }
     }
 
 

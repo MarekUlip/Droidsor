@@ -2,6 +2,7 @@ package com.example.marekulip.droidsor.sensorlogmanager;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.os.PowerManager;
 import android.util.Log;
 
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
@@ -23,6 +24,7 @@ public class SensorLogManager {
     private SensorLog log;
     private boolean isLogging = false;
     private Context context;
+    private PowerManager.WakeLock wakeLock;
     //private SQLiteDatabase db;
     private Timer timer;
     public SensorLogManager(Context c){
@@ -49,6 +51,9 @@ public class SensorLogManager {
         /*if(logs.size() >= 10){
             return;
         }*/
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyWakelockTag");
+        wakeLock.acquire();
         ContentValues cv = new ContentValues();
         //Instant.
         cv.put(SensorLogsTable.DATE_OF_START, System.currentTimeMillis());
@@ -60,6 +65,7 @@ public class SensorLogManager {
         //logs.add(sensorLog);
         logId = Long.parseLong(context.getContentResolver().insert(DroidsorProvider.SENSOR_LOGS_URI,cv).getLastPathSegment()); //db.insert(SensorLogsTable.TABLE_NAME,null,cv);
         log = new SensorLog(this,logId,sensorsToListen);
+        log.initCountSensorLogItems();
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -74,6 +80,7 @@ public class SensorLogManager {
 
     public void endLog(){
         //logs.remove(logToRemove);
+        wakeLock.release();
         Log.d(TAG, "endLog: ending logging");
         isLogging = false;
         timer.cancel();

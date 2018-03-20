@@ -21,35 +21,35 @@ import java.util.UUID;
 
 public enum SensorsEnum {
 
-    INTERNAL_ACCELEROMETER(Sensor.TYPE_ACCELEROMETER,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.internal,3),
-    INTERNAL_MAGNETOMETER(Sensor.TYPE_MAGNETIC_FIELD,R.string.magnetometer,R.string.magnetometer_unit,R.string.internal,3),
-    INTERNAL_GYROSCOPE(Sensor.TYPE_GYROSCOPE,R.string.gyroscope,R.string.gyroscope_unit,R.string.internal,3),
-    INTERNAL_LIGHT(Sensor.TYPE_LIGHT,R.string.optical,R.string.optical_unit,R.string.internal,1),
-    INTERNAL_BAROMETER(Sensor.TYPE_PRESSURE,R.string.barometer,R.string.barometer_unit,R.string.internal,1),
-    INTERNAL_GRAVITY(Sensor.TYPE_GRAVITY,R.string.gravity,R.string.meter_per_sec_square_unit,R.string.internal,3),
-    INTERNAL_TEMPERATURE(Sensor.TYPE_AMBIENT_TEMPERATURE,R.string.thermometer,R.string.celsius_degree_unit,R.string.internal,1),
-    INTERNAL_HUMIDITY(Sensor.TYPE_RELATIVE_HUMIDITY,R.string.humidity,R.string.humidity_unit,R.string.internal,1),
-    INTERNAL_ORIENTATION(98,R.string.orientation,R.string.radian,R.string.internal,3){
+    INTERNAL_ACCELEROMETER(Sensor.TYPE_ACCELEROMETER,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.internal,R.string.accelerometer_xml,R.string.internal_xml,3),
+    INTERNAL_MAGNETOMETER(Sensor.TYPE_MAGNETIC_FIELD,R.string.magnetometer,R.string.magnetometer_unit,R.string.internal,R.string.magnetometer_xml,R.string.internal_xml,3),
+    INTERNAL_GYROSCOPE(Sensor.TYPE_GYROSCOPE,R.string.gyroscope,R.string.gyroscope_unit,R.string.internal,R.string.gyroscope_xml,R.string.internal_xml,3),
+    INTERNAL_LIGHT(Sensor.TYPE_LIGHT,R.string.optical,R.string.optical_unit,R.string.internal,R.string.optical_xml,R.string.internal_xml,1),
+    INTERNAL_BAROMETER(Sensor.TYPE_PRESSURE,R.string.barometer,R.string.barometer_unit,R.string.internal,R.string.barometer_xml,R.string.internal_xml,1),
+    INTERNAL_GRAVITY(Sensor.TYPE_GRAVITY,R.string.gravity,R.string.meter_per_sec_square_unit,R.string.internal,R.string.gravity_xml,R.string.internal_xml,3),
+    INTERNAL_TEMPERATURE(Sensor.TYPE_AMBIENT_TEMPERATURE,R.string.thermometer,R.string.celsius_degree_unit,R.string.internal,R.string.thermometer_xml,R.string.internal_xml,1),
+    INTERNAL_HUMIDITY(Sensor.TYPE_RELATIVE_HUMIDITY,R.string.humidity,R.string.humidity_unit,R.string.internal,R.string.humidity_xml,R.string.internal_xml,1),
+    INTERNAL_ORIENTATION(98,R.string.orientation,R.string.radian,R.string.internal,R.string.orientation_xml,R.string.internal_xml,3){
         //98 is used because Sensor.TYPE_ORIENTATION is deprecated so i wanted to avoid wrong type
         @Override
         public void resolveSensor(List<SensorData> sensorDataList, float[] data){
             sensorDataList.add(new SensorData(sensorType,new Point3D(data[0],data[1],data[2]),SensorData.getTime()));
         }
     },
-    EXT_MOV_ACCELEROMETER(100,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.external,3),
-    EXT_MOV_GYROSCOPE(101,R.string.gyroscope,R.string.degrees_per_second,R.string.external,3),
-    EXT_MOV_MAGNETIC(102,R.string.magnetometer,R.string.magnetometer_unit,R.string.external,3),
-    EXT_HUMIDITY(103,R.string.humidity,R.string.humidity_unit,R.string.external,1),
-    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,3){
+    EXT_MOV_ACCELEROMETER(100,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.external,R.string.accelerometer_xml,R.string.external_xml, 3),
+    EXT_MOV_GYROSCOPE(101,R.string.gyroscope,R.string.degrees_per_second,R.string.external,R.string.gyroscope_xml,R.string.external_xml,3),
+    EXT_MOV_MAGNETIC(102,R.string.magnetometer,R.string.magnetometer_unit,R.string.external,R.string.magnetometer_xml,R.string.external_xml,3),
+    EXT_HUMIDITY(103,R.string.humidity,R.string.humidity_unit,R.string.external,R.string.humidity_xml,R.string.external_xml,1),
+    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,R.string.thermometer_xml,R.string.external_xml,3){
         @Override
         protected String getSensorUnitName(Context context, int position) {
             if(position == 2) return context.getString(R.string.fahrenheit_degree_unit);
             return super.getSensorUnitName(context);
         }
     },
-    EXT_OPTICAL(105,R.string.optical,R.string.optical_unit,R.string.external,1),
-    EXT_BAROMETER(106,R.string.barometer,R.string.barometer_unit,R.string.external,1),
-    EXT_MOVEMENT(107,R.string.movement,R.string.meter_per_sec_square_unit,R.string.external,1);
+    EXT_OPTICAL(105,R.string.optical,R.string.optical_unit,R.string.external,R.string.optical_xml,R.string.external_xml,1),
+    EXT_BAROMETER(106,R.string.barometer,R.string.barometer_unit,R.string.external,R.string.barometer_xml,R.string.external_xml,1),
+    EXT_MOVEMENT(107,R.string.movement,R.string.meter_per_sec_square_unit,R.string.external,R.string.movement_xml,R.string.external_xml,1);
 
 
     public int sensorType;
@@ -58,9 +58,11 @@ public enum SensorsEnum {
     private String sensorNameXmlFriendly = null;
     private int sensorNameRes;
     private String sensorUnitName = null;
+    private int sensorNameResXml;
     private int sensorUnitNameRes;
     private String sPositionString = null;
     private int sPositionStringRes;
+    private int sPositionStringResXml;
     private DecimalFormat decimalFormat;
 
 
@@ -70,12 +72,14 @@ public enum SensorsEnum {
         for(SensorsEnum item: values()) map.put(item.sensorType,item);
     }
 
-    SensorsEnum(int sensorType, int sensorNameRes, int sensorUnitNameRes, int positionRes, int itemCount){
+    SensorsEnum(int sensorType, int sensorNameRes, int sensorUnitNameRes, int positionRes, int sensorNameResXml, int sPositionStringResXml, int itemCount){
         this.sensorType = sensorType;
         this.sensorNameRes = sensorNameRes;
         this.sensorUnitNameRes = sensorUnitNameRes;
         this.sPositionStringRes = positionRes;
         this.itemCount = itemCount;
+        this.sensorNameResXml = sensorNameResXml;
+        this.sPositionStringResXml = sPositionStringResXml;
         decimalFormat =  new DecimalFormat("##.##");
         decimalFormat.setRoundingMode(RoundingMode.DOWN);
     }
@@ -85,21 +89,21 @@ public enum SensorsEnum {
     }
 
     public String getSensorName(Context context){
-        if(sensorName == null){
+        if(sensorName == null && context!=null){
             sensorName = context.getString(sensorNameRes)+ " " + context.getString(sPositionStringRes);
         }
         return sensorName;
     }
 
     public String getSensorNameXmlFriendly(Context context){
-        if(sensorNameXmlFriendly == null){
-            sensorNameXmlFriendly = context.getString(sensorNameRes)+ "_" + context.getString(sPositionStringRes);
+        if(sensorNameXmlFriendly == null && context!=null){
+            sensorNameXmlFriendly = context.getString(sensorNameResXml)+ "_" + context.getString(sPositionStringResXml);
         }
         return sensorNameXmlFriendly;
     }
 
     public String getSensorUnitName(Context context){
-        if(sensorUnitName == null){
+        if(sensorUnitName == null && context!=null){
             sensorUnitName = context.getString(sensorUnitNameRes);
         }
         return sensorUnitName;

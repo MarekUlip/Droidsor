@@ -6,6 +6,8 @@ import android.preference.PreferenceManager;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +30,6 @@ import java.util.List;
 public class SensorDataDispArrAdapter extends ArrayAdapter<SensorItem> {
 
     private boolean show3DBut = true;
-
     public SensorDataDispArrAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<SensorItem> objects) {
         super(context, resource, objects);
         show3DBut = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DroidsorSettingsFramgent.SHOW_THREE_D_BUT,true);
@@ -63,7 +64,8 @@ public class SensorDataDispArrAdapter extends ArrayAdapter<SensorItem> {
                     intent.putExtra(OpenGLActivity.SENSOR_TYPE,item.sensorType);
                     getContext().startActivity(intent);
                 }
-            });
+                });
+
         }else {
             button.setVisibility(View.GONE);
         }

@@ -41,7 +41,7 @@
     <string name="unavailable_when_logging">This display mode is unavailable when app is logging</string>
     <string name="export_log">Export log</string>
     <string name="started_exporting">Started exporting of selected logs. We will inform you when exporting is done.</string>
-    <string name="exporting_done">Exporting done</string>
+    <string name="exporting_done">Exported file to folder </string>
     <string name="create_temp_profile">After you are finished with creating temporary profile, click save button and the logging will automatically start.</string>
     <string name="mark_more">Mark more</string>
     <string name="disconnect_from_bt_when_not_needed">Bluetooth power saving</string>
@@ -72,6 +72,8 @@
     <string name="channel_description">Channel for service notification</string>
     <string name="permission_fine_location_not_granted">Permission not granted. Without this permission we cannot search for Bluetooth devices.</string>
     <string name="service_is_off_resetting">Service is off. Please try it again.</string>
+    <string name="logging_on">App is logging. Service will keep running.</string>
+    <string name="permission_explain_write">This permission is required to store GPX file on your SD card.</string>
 
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>
@@ -107,6 +109,17 @@
     <string name="movement">Movement</string>
     <string name="orientation">Orientation</string>
 
+    <string name="accelerometer_xml" translatable="false">accelerometer</string>
+    <string name="gyroscope_xml" translatable="false">gyroscope</string>
+    <string name="barometer_xml" translatable="false">barometer</string>
+    <string name="thermometer_xml" translatable="false">thermometer</string>
+    <string name="optical_xml" translatable="false">optical</string>
+    <string name="humidity_xml" translatable="false">humidity</string>
+    <string name="magnetometer_xml" translatable="false">magnetometer</string>
+    <string name="gravity_xml" translatable="false">gravity</string>
+    <string name="movement_xml" translatable="false">movement</string>
+    <string name="orientation_xml" translatable="false">orientation</string>
+
     <string name="meter_per_sec_square_unit" translatable="false">m/s²</string>
     <string name="celsius_degree_unit" translatable="false">°C</string>
     <string name="fahrenheit_degree_unit" translatable="false">°F</string>
@@ -121,4 +134,6 @@
 
     <string name="internal">Internal</string>
     <string name="external">External</string>
+    <string name="internal_xml" translatable="false">internal</string>
+    <string name="external_xml" translatable="false">external</string>
 </resources>

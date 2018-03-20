@@ -82,12 +82,10 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         navigationView.setCheckedItem(R.id.mobile_sensors);
 
         fab = findViewById(R.id.sens_disp_fab);
-        setFabClickListener();
-
 
         fragment = new SensorDataDispListFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment, fragment).commit();
-
+        Toast.makeText(this,"4",Toast.LENGTH_SHORT).show();
         /*Intent intent = new Intent(this,SensorService.class);
         if(!isMyServiceRunning(SensorService.class)){
             startService(intent);
@@ -103,7 +101,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
             if(mSensorService.isLogging()) {
-                Toast.makeText(this,"Logging on. Let Service Run",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"Logging on. Let Service Run",Toast.LENGTH_SHORT).show(); //TODO translate
                 super.onBackPressed();
             }
             else {
@@ -127,6 +125,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             isRequestingDialog = false;
         }
         invalidateOptionsMenu();
+        setFabClickListener();
     }
 
     @Override
@@ -138,7 +137,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
     private void connectToService(){
         Intent intent = new Intent(this,SensorService.class);
-        if(!isMyServiceRunning(SensorService.class)||isServiceOff){
+        if(!isMyServiceRunning(SensorService.class) || SensorService.isServiceOff()){
             Log.d("NtRn", "onCreate: NotRunning");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Log.d("sdd", "connectToService: Starting foreground");
@@ -146,9 +145,20 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }else{
                 startService(intent);
             }
+            //startDroidsorService(intent);
         }
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
         registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
+    }
+
+    private void startDroidsorService(Intent intent){
+        Log.d("NtRn", "onCreate: NotRunning");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d("sdd", "connectToService: Starting foreground");
+            startForegroundService(intent);//startService(intent);
+        }else{
+            startService(intent);
+        }
     }
 
     private void disconnectFromService(){
@@ -177,14 +187,14 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_bluetooth_connect:
-                if(isServiceOff){
+                if(SensorService.isServiceOff()){
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             connectToService();
                             try {
                                 serviceSemaphore.acquire();
-                                isServiceOff = false;
+                                //isServiceOff = false;
                                 startActivityForResult(new Intent(SensorDataDisplayerActivity.this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
@@ -236,7 +246,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
      * Function to set up logging profile
      */
     private void startLogging(){
-        if(isServiceOff){
+        if(SensorService.isServiceOff()){
             Toast.makeText(this,R.string.service_is_off_resetting,Toast.LENGTH_SHORT).show();
             disconnectFromService();
             connectToService();
@@ -436,6 +446,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private final BroadcastReceiver mSensorServiceUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if(mSensorService == null)return;
             final String action = intent.getAction();
             if (SensorService.ACTION_DATA_AVAILABLE.equals(action)) {
                 /*if(mSensorService.getSensorDataQueue().isEmpty())return;
@@ -512,7 +523,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mSensorService = ((SensorService.LocalBinder)service).getService();
-            isServiceOff = false;
+            //isServiceOff = false; //TODO make it static For SensorService
             mSensorService.startListeningSensors();
             setFabClickListener();
             fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));

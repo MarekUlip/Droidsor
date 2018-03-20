@@ -68,13 +68,17 @@ public class LogsDetailFragment extends ListFragment {
         registerForContextMenu(getListView());
         id = getArguments().getInt("id");
         //showLogs();
-        //long time = System.currentTimeMillis();
-        //loadItems(id);
-        //Log.d(TAG, "onActivityCreated: Without weights: "+(System.currentTimeMillis()-time));
-        //items.clear();
-        //time = System.currentTimeMillis();
+        long time = System.currentTimeMillis();
+        /*loadItems(id);
+        Log.d(TAG, "onActivityCreated: Without weights: "+(System.currentTimeMillis()-time));
+        items.clear();
+        time = System.currentTimeMillis();
+        loadItemsWithWeightsOld(id);
+        Log.d(TAG, "onActivityCreated: With weights multiple queries: "+(System.currentTimeMillis()-time));
+        time = System.currentTimeMillis();*/
         prefferedCount = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(getContext()).getString(DroidsorSettingsFramgent.COUNT_OF_POINTS,"750"));
         loadItemsWithWeights(id);
+        Log.d(TAG, "onActivityCreated: With weights one query: "+(System.currentTimeMillis()-time));
         //Log.d(TAG, "onActivityCreatedd:  With weights: "+(System.currentTimeMillis()-time));
 
         //adapter = new LogDetailArrayAdapter(getContext(),R.layout.log_list_item,items);
@@ -144,6 +148,61 @@ public class LogsDetailFragment extends ListFragment {
             LogExporter.exportLog(getContext(),id,idList);//exportItems(-1);
     }
 
+    private void loadItemsWithWeightsOld(final long id){
+        Cursor c = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_COUNT_URI,null, SenorDataItemsCountTable.LOG_ID+" = ?",new String[]{String.valueOf(id)},null);
+        if(c!=null && c.moveToFirst()){
+            weights.put(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.SENSOR_TYPE)),resolveWeight(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.COUNT_OF_ITEMS))));
+            while (c.moveToNext()){
+                weights.put(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.SENSOR_TYPE)),resolveWeight(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.COUNT_OF_ITEMS))));
+            }
+            c.close();
+        }
+        else {
+            return;
+        }
+        getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.VISIBLE);
+        getActivity().findViewById(android.R.id.empty).setVisibility(View.GONE);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(getActivity()==null)return;
+                final List<EntryHolder> lst = new ArrayList<>();
+                for(int i = 0, size = weights.size(), key, itemCount, index; i<size; i++){
+                    key = weights.keyAt(i);
+                    itemCount = SensorsEnum.resolveEnum(key).itemCount;
+                    lst.add(new EntryHolder(key));
+                    index = lst.size()-1;
+                    switch (itemCount){
+                        case 3: lst.get(index).entries.add(new ArrayList<Entry>());
+                        case 2: lst.get(index).entries.add(new ArrayList<Entry>());
+                        case 1: lst.get(index).entries.add(new ArrayList<Entry>());
+                    }
+                    loadSensorDataWithWeight(id,key,weights.valueAt(i),index,itemCount,lst);
+                }
+                //loadItems();
+                prepItemsForGraph(lst);
+                 /*try {
+                     while(getActivity()==null){
+                         Log.d(TAG, "run: sleeping");
+                         Thread.sleep(100);
+                     }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }*/
+                 if(getActivity()==null)return;
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter = new LogDetailArrayAdapter(context,R.layout.log_list_item,items);
+                        getListView().setAdapter(adapter);
+                        getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.GONE);
+                    }
+                });
+            }
+        }).start();
+
+    }
+
     private void loadItemsWithWeights(final long id){
         Cursor c = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_COUNT_URI,null, SenorDataItemsCountTable.LOG_ID+" = ?",new String[]{String.valueOf(id)},null);
         if(c!=null && c.moveToFirst()){
@@ -185,7 +244,7 @@ public class LogsDetailFragment extends ListFragment {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }*/
-                 if(getActivity()==null)return;
+                if(getActivity()==null)return;
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -422,6 +481,9 @@ public class LogsDetailFragment extends ListFragment {
             c.close();
         }
         prepItemsForGraph(lst);
+        adapter = new LogDetailArrayAdapter(context,R.layout.log_list_item,items);
+        getListView().setAdapter(adapter);
+        getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.GONE);
     }
 
     private class EntryHolder{

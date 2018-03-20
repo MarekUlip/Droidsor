@@ -32,7 +32,7 @@ public class DroidsorExporter {
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             if (ActivityCompat.shouldShowRequestPermissionRationale((AppCompatActivity)context,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                Toast.makeText(context,"Just allow that" /*R.string.permission_explain_write*/, Toast.LENGTH_LONG).show();
+                Toast.makeText(context,R.string.permission_explain_write, Toast.LENGTH_LONG).show();
             }
             ActivityCompat.requestPermissions((AppCompatActivity)context,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, DroidsorExporter.WRITE_EXTERNAL_STORAGE_ID);
             return false;
@@ -48,7 +48,6 @@ public class DroidsorExporter {
                     boolean rv = folder.mkdir();
                 }
                 File file = new File(folder,fileName);
-                Log.d("sdd", "writeToFile: "+file.getPath());
                 //path.mkdirs();
                 //Log.d("sdd", "writeToFile: "+fileName);
                 file.createNewFile();

@@ -39,6 +39,7 @@ public class SensorService extends Service {
     public final static int ALL_SENSORS_MODE = 0;
     public final static int MOBILE_SENSORS_MODE = 1;
     public final static int BLUETOOTH_SENSORS_MODE = 2;
+    private static boolean isServiceOff = true;
 
     private final static int NOTIFICATION_ID = 101;
     private final static String NOTIFICATION_CHANNEL_ID = "droidsor_service_channel";
@@ -70,9 +71,12 @@ public class SensorService extends Service {
         positionManager.tryInitPosManager();
         //createOrUpdateServiceNotification("","");
         startForeground(NOTIFICATION_ID,createOrUpdateServiceNotification("",""));
+        isServiceOff = false;
         return super.onStartCommand(intent, flags, startId);
     }
-
+    public static boolean isServiceOff(){
+        return isServiceOff;
+    }
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -318,7 +322,7 @@ public class SensorService extends Service {
         }
 
         NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("Droidsor Service")
+                .setContentTitle("Droidsor Service")//TODO translate
                 .setContentText("Service is running")
                 .setSmallIcon(R.drawable.notification_icon)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher))
@@ -326,8 +330,15 @@ public class SensorService extends Service {
         Intent stopServiceIntent = new Intent(this, ServiceStopperService.class);
         PendingIntent stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
         mNotifyBuilder.setContentIntent(stopServicePendingIntent);
-        //PendingIntent.get
+        //mNotificationManager.notify(NOTIFICATION_ID,
+               // mNotifyBuilder.build());
         return mNotifyBuilder.build();
+    }
+
+    private void destroyServiceNotification(){
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(NOTIFICATION_ID);
     }
 
     public void stop(boolean hardStop){
@@ -357,6 +368,8 @@ public class SensorService extends Service {
         sendBroadcast(new Intent(SERVICE_IS_TURNING_OFF));
         stopListeningSensors(true);
         stopForeground(true);
+        //destroyServiceNotification();
+        isServiceOff = true;
         stopSelf();
     }
 
