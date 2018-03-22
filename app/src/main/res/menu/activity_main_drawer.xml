@@ -15,6 +15,9 @@
             android:id="@+id/all_sensors"
             android:icon="@drawable/ic_all_sensors"
             android:title="@string/all_sensors" />
+        <item
+            android:id="@+id/three_d"
+            android:title="@string/three_d_view"/>
         <item android:id="@+id/logged_sensors"
             android:icon="@drawable/ic_action_record"
             android:title="@string/logged_sensors"/>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_accelerometer_internal"
+        android:title="@string/accelerometer_internal"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_accelerometer_external"
+        android:title="@string/accelerometer_external"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_gyroscope_internal"
+        android:title="@string/gyroscope_internal"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_gyroscope_external"
+        android:title="@string/gyroscope_external"
+        android:visible="false"
+        app:showAsAction="never" />
+</menu>

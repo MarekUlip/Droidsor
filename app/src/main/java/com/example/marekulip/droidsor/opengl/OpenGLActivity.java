@@ -13,15 +13,18 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 
+import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.SensorService;
 import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 public class OpenGLActivity extends AppCompatActivity {
     private GLSurfaceView mGLSurfaceView;
     private DroidsorRenderer renderer;
     private SensorService mSensorService;
-    public final static String SENSOR_TYPE = "sensor_type";
     private int sensorType;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -40,7 +43,7 @@ public class OpenGLActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sensorType = getIntent().getIntExtra(SENSOR_TYPE,0);
+        sensorType = SensorsEnum.INTERNAL_ACCELEROMETER.sensorType;
         mGLSurfaceView = new GLSurfaceView(this);
 
         final ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -65,6 +68,28 @@ public class OpenGLActivity extends AppCompatActivity {
         }
 
         setContentView(mGLSurfaceView);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.opel_gl_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case R.id.action_accelerometer_internal: sensorType = SensorsEnum.INTERNAL_ACCELEROMETER.sensorType;
+                break;
+            case R.id.action_gyroscope_internal: sensorType = SensorsEnum.INTERNAL_GYROSCOPE.sensorType;
+                break;
+            case R.id.action_accelerometer_external: sensorType = SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType;
+                break;
+            case R.id.action_gyroscope_external: sensorType = SensorsEnum.EXT_MOV_GYROSCOPE.sensorType;
+                break;
+        }
+        return true;
     }
 
     @Override

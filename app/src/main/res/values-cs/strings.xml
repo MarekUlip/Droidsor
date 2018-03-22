@@ -96,4 +96,12 @@
         <item>Snímat s oblíbeným profilem</item>
         <item>Ukázat seznam všech profilů</item>
     </string-array>
+    <string name="accelerometer_internal">Akcelerometr interní</string>
+    <string name="accelerometer_external">Akcelerometr externí</string>
+    <string name="gyroscope_internal">Gyroskop interní</string>
+    <string name="gyroscope_external">Gyroskop externí</string>
+    <string name="scheduled_log_end">Nastavené ukončení záznamu</string>
+    <string name="scheduled_log_end_summary">Umožňuje ukončit záznam po určité době. Výchozí čas je jedna hodina.</string>
+    <string name="scheduled_log_time">Doba do ukončení</string>
+    <string name="scheduled_log_time_summary">Aplikace po určeném počtu minut ukončí záznam.</string>
 </resources>

@@ -33,6 +33,7 @@ import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
 import com.example.marekulip.droidsor.logs.LogsActivity;
+import com.example.marekulip.droidsor.opengl.OpenGLActivity;
 import com.example.marekulip.droidsor.positionmanager.PositionManager;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
@@ -399,6 +400,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 }
             } else if(SensorService.SERVICE_IS_TURNING_OFF.equals(action)){
                 setFabClickListener();
+            } else if(SensorService.SCHEDULED_LOG_STOP.equals(action)){
+                setFabClickListener();
+                setActualDisplayMode();
             }
         }
     };
@@ -447,13 +451,21 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 mSensorService.setMode(SensorService.ALL_SENSORS_MODE);
                 fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
             }
+        } else if(id == R.id.three_d){
+            if(mSensorService.isLogging()){
+                setActualDisplayMode();
+                isCorrect = false;
+                Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+            } else{
+                startActivity(new Intent(this, OpenGLActivity.class));
+            }
         } else if(id == R.id.logged_sensors){
             if(mSensorService.isLogging())fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
             else {
-                setActualDisplayMode();
-                isCorrect = false;
-                Toast.makeText(this,getString(R.string.unavailable_when_not_logging),Toast.LENGTH_LONG).show();
-            }
+                    setActualDisplayMode();
+                    isCorrect = false;
+                    Toast.makeText(this,getString(R.string.unavailable_when_not_logging),Toast.LENGTH_LONG).show();
+                }
         }
         else if (id == R.id.nav_logs) {
             startActivity(new Intent(this,LogsActivity.class));
@@ -488,6 +500,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             setFabClickListener();
             fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
             invalidateOptionsMenu();
+            setActualDisplayMode();
             serviceSemaphore.release();
         }
 
@@ -503,6 +516,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(SensorService.SERVICE_IS_TURNING_OFF);
+        intentFilter.addAction(SensorService.SCHEDULED_LOG_STOP);
         return intentFilter;
     }
 

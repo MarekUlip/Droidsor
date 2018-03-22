@@ -80,7 +80,6 @@ public class SensorLogManager {
 
     public void endLog(){
         //logs.remove(logToRemove);
-        wakeLock.release();
         Log.d(TAG, "endLog: ending logging");
         isLogging = false;
         timer.cancel();
@@ -95,6 +94,7 @@ public class SensorLogManager {
                 context.getContentResolver().update(DroidsorProvider.SENSOR_LOGS_URI,cv,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(logId)});
                 log.countSensorLogItems();
                 log = null;
+                wakeLock.release();
             }
         }).start();
 

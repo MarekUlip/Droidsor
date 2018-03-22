@@ -111,6 +111,10 @@
     <string name="gravity">Gravity</string>
     <string name="movement">Movement</string>
     <string name="orientation">Orientation</string>
+    <string name="scheduled_log_end">Scheduled log end</string>
+    <string name="scheduled_log_end_summary">Allows you to end logging after specified while. Default time is one hour.</string>
+    <string name="scheduled_log_time">Duration of scheduled log</string>
+    <string name="scheduled_log_time_summary">After the specified amount of minutes the log will stop.</string>
 
     <string name="accelerometer_xml" translatable="false">accelerometer</string>
     <string name="gyroscope_xml" translatable="false">gyroscope</string>
@@ -139,4 +143,9 @@
     <string name="external">External</string>
     <string name="internal_xml" translatable="false">internal</string>
     <string name="external_xml" translatable="false">external</string>
+
+    <string name="accelerometer_internal">Accelerometer internal</string>
+    <string name="accelerometer_external">Accelerometer external</string>
+    <string name="gyroscope_internal">Gyroscope internal</string>
+    <string name="gyroscope_external">Gyroscope external</string>
 </resources>

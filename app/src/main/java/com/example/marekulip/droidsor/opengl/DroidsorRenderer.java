@@ -13,6 +13,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
+import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 public class DroidsorRenderer implements GLSurfaceView.Renderer
 {
@@ -366,10 +367,28 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
             //Log.d(TAG, "onDrawFrame: x: "+orientationAngles[0]+" y: "+orientationAngles[1]);
             Matrix.setIdentityM(mModelMatrix, 0);
             Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -5.0f);
-            int enhancer = 25;
-            Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer, 1.0f, 0.0f, 0.0f);
-            Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer, 0.0f, 1.0f, 0.0f);
-            Matrix.rotateM(mModelMatrix, 0, (float)data.values.z * enhancer, 0.0f, 0.0f, 1.0f);
+            if(data.sensorType == SensorsEnum.INTERNAL_GYROSCOPE.sensorType){
+                int enhancer = 20;
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer, 1.0f, 0.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer, 0.0f, 1.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.z * enhancer, 0.0f, 0.0f, 1.0f);
+            } else if(data.sensorType == SensorsEnum.INTERNAL_ACCELEROMETER.sensorType){
+                int enhancer = 10;
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer, 1.0f, 0.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer*-1, 0.0f, 1.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, 0, 0.0f, 0.0f, 1.0f);
+            }/*
+            if(data.sensorType == SensorsEnum.EXT_MOV_GYROSCOPE.sensorType){
+                float enhancer = 0.5f;
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer, 1.0f, 0.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer*-1, 0.0f, 1.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.z * enhancer, 0.0f, 0.0f, 1.0f);
+            } else if(data.sensorType == SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType){
+                int enhancer = 80;
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer, 1.0f, 0.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer*-1, 0.0f, 1.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, 0, 0.0f, 0.0f, 1.0f);
+            }*/
             drawCube();
         }
     }

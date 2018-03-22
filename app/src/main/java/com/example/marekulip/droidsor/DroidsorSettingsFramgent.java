@@ -15,7 +15,8 @@ public class DroidsorSettingsFramgent extends PreferenceFragment{
     public static final String START_LOG_BUT_BEHAVIOUR_PREF = "start_log_but_behaviour";
     public static final String ONE_CLICK_NOTIFICATION_EXIT = "one_click_notification_exit";
     public static final String COUNT_OF_POINTS = "count_of_points";
-    public static final String SHOW_THREE_D_BUT = "show_three_d_but";
+    public static final String SCHEDULED_LOG_END = "scheduled_log_end";
+    public static final String SCHEDULED_LOG_END_TIME = "scheduled_log_end_time";
 
     public DroidsorSettingsFramgent() {
         // Required empty public constructor

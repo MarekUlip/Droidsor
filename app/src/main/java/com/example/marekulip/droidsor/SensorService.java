@@ -27,13 +27,21 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorLogManager;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class SensorService extends Service {
 
     public final static String ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE";
     public final static String SERVICE_IS_TURNING_OFF  = "SERVICE_IS_TURNING_OFF";
+    public final static String SCHEDULED_LOG_STOP = "SCHEDULED_LOG_STOP";
+
 
     public final static int NO_SENSORS_MODE = -1;
     public final static int ALL_SENSORS_MODE = 0;
@@ -58,6 +66,8 @@ public class SensorService extends Service {
 
     private SparseArray<SensorData> sensorDataSparseArray = new SparseArray<>();
     private List<Integer> sensorTypesOccured = new ArrayList<>();
+
+    private Timer logTimer;
     public SensorService() {
 
     }
@@ -227,10 +237,34 @@ public class SensorService extends Service {
                 "DroidsorWakelockTag");
         wakeLock.acquire();*/
         sensorLogManager.startLog(profile.getProfileName(),sensorsToLog);
+        if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SCHEDULED_LOG_END,false)) {
+            int time = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.SCHEDULED_LOG_END_TIME,"60"));
+            if(time > 0 )createLogStopper(time);
+        }
+    }
+
+    private void createLogStopper(int duration){
+        logTimer= new Timer();
+        logTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                stopLogging();
+                sendBroadcast(new Intent(SCHEDULED_LOG_STOP));
+            }
+        },duration*60*1000);
+    }
+
+    private void stopLogStopper(){
+        if(logTimer!=null){
+            logTimer.cancel();
+            logTimer.purge();
+            logTimer = null;
+        }
     }
 
     public void stopLogging(){
         if(isLogging()) {
+            stopLogStopper();
             sensorLogManager.endLog();
             positionManager.stopUpdates();
             androidSensorManager.stopListening();
@@ -251,18 +285,31 @@ public class SensorService extends Service {
         sensorFrequencies.add(20);
         sensorTypes.add(SensorsEnum.INTERNAL_GYROSCOPE.sensorType);
         sensorFrequencies.add(20);
-        sensorTypes.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
+        /*sensorTypes.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
         sensorFrequencies.add(20);
         sensorTypes.add(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType);
-        sensorFrequencies.add(20);
+        sensorFrequencies.add(20);*/
         androidSensorManager.setSensorsToListen(sensorTypes,sensorFrequencies);
         androidSensorManager.startListening();
+        /*if(isBluetoothDeviceOn()){
+            List<Integer> sensorTypesBluetooth = new ArrayList<>();
+            List<Integer> sensorFrequenciesBluetooth = new ArrayList<>();
+            sensorTypesBluetooth.add(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType);
+            sensorFrequenciesBluetooth.add(200);
+            sensorTypesBluetooth.add(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType);
+            sensorFrequenciesBluetooth.add(200);
+            bluetoothSensorManager.setSensorsToListen(sensorTypesBluetooth,sensorFrequenciesBluetooth);
+            bluetoothSensorManager.startListening();
+        }*/
     }
 
     public void stopOpenGLMode(){
         minSendInterval = 200;
         androidSensorManager.stopListening();
         androidSensorManager.resetManager();
+        /*if(isBluetoothDeviceOn()){
+            bluetoothSensorManager.defaultListeningMode();
+        }*/
     }
 
     public boolean isLogging(){

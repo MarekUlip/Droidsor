@@ -30,9 +30,19 @@
         android:title="@string/count_of_points"
         android:summary="@string/count_of_points_summary"
         android:maxLength="4"/>
-
     <CheckBoxPreference
-        android:key="show_three_d_but"
-        android:defaultValue="true"
-        android:title="@string/show_three_d_but"/>
+        android:key="scheduled_log_end"
+        android:defaultValue="false"
+        android:title="@string/scheduled_log_end"
+        android:summary="@string/scheduled_log_end_summary"
+        />
+    <EditTextPreference
+        android:key="scheduled_log_end_time"
+        android:defaultValue="60"
+        android:inputType="number"
+        android:dependency="scheduled_log_end"
+        android:title="@string/scheduled_log_time"
+        android:summary="@string/scheduled_log_time_summary"
+        android:maxLength="3"
+        />
 </PreferenceScreen>
