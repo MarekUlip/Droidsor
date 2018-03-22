@@ -67,7 +67,7 @@ public class LogExporter {
                         c.close();
                     }
                     GPXExporter.exportLogItems(data,  id +"_"+name + "_Exported_at_"+df.format(new Date(System.currentTimeMillis())), appContext);
-                    toast(appContext,appContext.getString(R.string.exporting_done) +" " + Environment.getExternalStorageDirectory() + "/"+ appContext.getString(R.string.app_name),Toast.LENGTH_SHORT);
+                    toast(appContext,appContext.getString(R.string.exporting_done) +" " + Environment.getExternalStorageDirectory() + "/"+ appContext.getString(R.string.app_name),Toast.LENGTH_LONG);
                 }
 
             }

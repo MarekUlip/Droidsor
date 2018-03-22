@@ -42,7 +42,7 @@
     <string name="export_log">Export log</string>
     <string name="started_exporting">Started exporting of selected logs. We will inform you when exporting is done.</string>
     <string name="exporting_done">Exported file to folder </string>
-    <string name="create_temp_profile">After you are finished with creating temporary profile, click save button and the logging will automatically start.</string>
+    <string name="create_temp_profile" translatable="false">After you are finished with creating temporary profile, click save button and the logging will automatically start.</string>
     <string name="mark_more">Mark more</string>
     <string name="disconnect_from_bt_when_not_needed">Bluetooth power saving</string>
     <string name="disconnect_from_bt_when_not_needed_summary">Disconnects from Bluetooth device when it is not necessary for use.</string>
@@ -83,7 +83,7 @@
         <item>Show list with all profiles</item>
     </string-array>
 
-    <string-array name="log_but_beh_str_val">
+    <string-array name="log_but_beh_str_val" translatable="false">
         <item>1</item>
         <item>2</item>
     </string-array>
@@ -98,8 +98,8 @@
     <string name="menu_stop" translatable="false">Stop</string>
     <string name="menu_refresh">Refresh</string>
 
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
 
     <string name="accelerometer">Accelerometer</string>
     <string name="gyroscope">Gyroscope</string>

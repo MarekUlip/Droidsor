@@ -31,6 +31,7 @@ import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorMana
 import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
+import com.example.marekulip.droidsor.gpxfileexporter.GPXExporter;
 import com.example.marekulip.droidsor.logs.LogsActivity;
 import com.example.marekulip.droidsor.positionmanager.PositionManager;
 import com.example.marekulip.droidsor.sensorlogmanager.LogProfile;
@@ -53,16 +54,12 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private PositionManager positionManager;
     private LogProfile profileHolder;
     private boolean isRecording = false;
-    /**
-     * Indicates when service has been closed off by user.
-     */
-    private boolean isServiceOff = true;
-    private boolean isWaitingToStartLog = false;
     private boolean recievedLocation = false;
     private boolean isRequestingDialog = false;
-    private Semaphore serviceSemaphore = new Semaphore(5,true);
+    private Semaphore serviceSemaphore = new Semaphore(0,true);
     private Semaphore dialogSemaphore = new Semaphore(1,true);
     private DialogFragment waitForGPSDialog;
+    private NavigationView drawerNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,24 +71,19 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        //drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        navigationView.setCheckedItem(R.id.mobile_sensors);
+        drawerNavigationView= findViewById(R.id.nav_view);
+        drawerNavigationView.setNavigationItemSelectedListener(this);
+        drawerNavigationView.setCheckedItem(R.id.all_sensors);
 
         fab = findViewById(R.id.sens_disp_fab);
 
         fragment = new SensorDataDispListFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment, fragment).commit();
-        Toast.makeText(this,"6",Toast.LENGTH_SHORT).show();
-        /*Intent intent = new Intent(this,SensorService.class);
-        if(!isMyServiceRunning(SensorService.class)){
-            startService(intent);
-            //startForegroundService(intent);
-        }
-        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);*/
+        //Toast.makeText(this,"9",Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -101,14 +93,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
             if(mSensorService.isLogging()) {
-                Toast.makeText(this,getString(R.string.logging_on),Toast.LENGTH_SHORT).show(); //TODO translate
+                Toast.makeText(this,getString(R.string.logging_on),Toast.LENGTH_SHORT).show();
                 super.onBackPressed();
             }
             else {
-                //Intent intent = new Intent(this,SensorService.class);
                 mSensorService.stop(true);
-                //unbindService(mServiceConnection);
-                //disconnectFromService();
                 finish();
             }
         }
@@ -117,7 +106,6 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        //registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
         connectToService();
         if(isRequestingDialog){
             Log.d("ds", "onResume: releasing");
@@ -132,7 +120,6 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         disconnectFromService();
-        //unregisterReceiver(mSensorServiceUpdateReceiver);
     }
 
     private void connectToService(){
@@ -145,20 +132,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }else{
                 startService(intent);
             }
-            //startDroidsorService(intent);
         }
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
         registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
-    }
-
-    private void startDroidsorService(Intent intent){
-        Log.d("NtRn", "onCreate: NotRunning");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.d("sdd", "connectToService: Starting foreground");
-            startForegroundService(intent);//startService(intent);
-        }else{
-            startService(intent);
-        }
     }
 
     private void disconnectFromService(){
@@ -222,6 +198,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                     isRecording = false;
                     //invalidateOptionsMenu();
                     setFabClickListener();
+                    setActualDisplayMode();
                     fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
                 }
             });
@@ -271,22 +248,13 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 return;
             }
             startLoggingWithPicked(p);
-            /*if(p.isSaveGPS())tryToInitPosManager();
-            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
-                profileHolder = p;
-                return;
-            }
-            mSensorService.startLogging(p);//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth*/
+            //mSensorService.startLogging(p);//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth*/
         } else if(pref.equals("2")){
             Intent intent = new Intent(this,LogProfileActivity.class);
             intent.putExtra(LogProfileActivity.IS_PICKING_NEXT_TO_LOG,true);
             Toast.makeText(this,R.string.pick_profile_to_log,Toast.LENGTH_SHORT).show();
             startActivityForResult(intent,LogProfileActivity.SET_NEXT_TO_LOG);
         }
-        /*isRecording = true;
-        setFabClickListener();
-        fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));*/
-
     }
 
     /**
@@ -311,6 +279,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         recievedLocation = false;
         //invalidateOptionsMenu();
         setFabClickListener();
+        setActualDisplayMode();
         fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
     }
 
@@ -369,52 +338,20 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 public void run() {
                     try {
                         serviceSemaphore.acquire();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                delayedOnActivityResult(requestCode,resultCode,data,true);
+                            }
+                        });
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            delayedOnActivityResult(requestCode,resultCode,data,true);
-                        }
-                    });
-
                 }
             }).start();
             return;
         }
         delayedOnActivityResult(requestCode,resultCode,data,false);
-        /*if(requestCode == BT_DEVICE_REQUEST){
-            if(resultCode==RESULT_OK) {
-                mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
-                mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
-                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
-            }else {
-                mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
-                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
-            }
-        } else if(requestCode == PositionManager.REQUEST_CHECK_SETTINGS){
-            if(resultCode==RESULT_OK) {
-                positionManager.initPosManager(this);
-            }
-        } else if(requestCode == PositionManager.MY_PERMISSIONS_REQUEST_LOCATION_FINE){
-            if(resultCode==RESULT_OK) {
-                positionManager.initPosManager(this);
-            }
-        } else if(requestCode == LogProfileSettingActivity.CREATE_TEMP_PROFILE){
-            if(resultCode==RESULT_OK){
-                //if(mSensorService.getTempLogProfile().isSaveGPS())tryToInitPosManager();
-                startLogging(true);
-            }
-        } else if(requestCode == LogProfileActivity.SET_FIRST_FAVORITE_PROFILE){
-            if(resultCode==RESULT_OK){
-                startLogging(false);
-            }
-        } else if (requestCode == LogProfileActivity.SET_NEXT_TO_LOG){
-            if(resultCode == RESULT_OK){
-                startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
-            }
-        }*/
     }
 
     private LogProfile getProfile(long id){
@@ -449,13 +386,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             if(mSensorService == null)return;
             final String action = intent.getAction();
             if (SensorService.ACTION_DATA_AVAILABLE.equals(action)) {
-                /*if(mSensorService.getSensorDataQueue().isEmpty())return;
-                fragment.setNewData(mSensorService.getSensorDataQueue());*/
                 List<Integer> sensorTypes = mSensorService.getSensorTypesOccured();
                 if(sensorTypes==null)return;
                 fragment.setNewData(sensorTypes, mSensorService.getSensorDataSparseArray());
-                //Log.d("Displ", "onReceive: Displaying data");
-                //displayData();
             }else if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action)) {
                 invalidateOptionsMenu();
             } else if(BluetoothSensorManager.ACTION_GATT_DISCONNECTED.equals(action) ){
@@ -465,20 +398,23 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                     fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
                 }
             } else if(SensorService.SERVICE_IS_TURNING_OFF.equals(action)){
-                isServiceOff = true;
                 setFabClickListener();
             }
         }
     };
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        boolean isCorrect = true;
 
         if (id == R.id.mobile_sensors) {
-            if(mSensorService.isLogging())Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+            if(mSensorService.isLogging()){
+                setActualDisplayMode();
+                isCorrect =false;
+                Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+            }
             else {
                 mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
                 fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
@@ -490,7 +426,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 return true;
             }
             if(mSensorService.isBluetoothDeviceOn()){
-                if(mSensorService.isLogging())Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+                if(mSensorService.isLogging()){
+                    setActualDisplayMode();
+                    isCorrect =false;
+                    Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+                }
                 else {
                     mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
                     fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
@@ -498,14 +438,22 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }
             else startActivityForResult(new Intent(this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
         } else if (id == R.id.all_sensors) {
-            if(mSensorService.isLogging())Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+            if(mSensorService.isLogging()){
+                setActualDisplayMode();
+                isCorrect = false;
+                Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
+            }
             else {
                 mSensorService.setMode(SensorService.ALL_SENSORS_MODE);
                 fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
             }
         } else if(id == R.id.logged_sensors){
             if(mSensorService.isLogging())fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
-            else Toast.makeText(this,getString(R.string.unavailable_when_not_logging),Toast.LENGTH_LONG).show();
+            else {
+                setActualDisplayMode();
+                isCorrect = false;
+                Toast.makeText(this,getString(R.string.unavailable_when_not_logging),Toast.LENGTH_LONG).show();
+            }
         }
         else if (id == R.id.nav_logs) {
             startActivity(new Intent(this,LogsActivity.class));
@@ -516,14 +464,26 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         }
 
         ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
-        return true;
+        return isCorrect;
+    }
+
+    private void setActualDisplayMode(){
+        int mode = mSensorService.getMode();
+        if(mSensorService.isLogging()){
+            drawerNavigationView.setCheckedItem(R.id.logged_sensors);
+        } else if(mode == SensorService.MOBILE_SENSORS_MODE){
+            drawerNavigationView.setCheckedItem(R.id.mobile_sensors);
+        } else if(mode == SensorService.BLUETOOTH_SENSORS_MODE){
+            drawerNavigationView.setCheckedItem(R.id.ble_sensors);
+        } else if(mode == SensorService.ALL_SENSORS_MODE){
+            drawerNavigationView.setCheckedItem(R.id.all_sensors);
+        }
     }
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mSensorService = ((SensorService.LocalBinder)service).getService();
-            //isServiceOff = false; //TODO make it static For SensorService
             mSensorService.startListeningSensors();
             setFabClickListener();
             fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
@@ -564,12 +524,15 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             waitForGPSDialog = null;
         }
         positionManager.cancelOnRecievedPositionListener();
+        if(positionManager.getLocation() != null){
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putFloat(GPXExporter.GPX_LATITUDE,(float)positionManager.getLocation().getLatitude())
+                .putFloat(GPXExporter.GPX_LONGITUDE,(float)positionManager.getLocation().getLongitude()).apply();
+        }
         recievedLocation = true;
         if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
             startLoggingWithPicked(profileHolder);
         }
-
-
     }
 
     @Override

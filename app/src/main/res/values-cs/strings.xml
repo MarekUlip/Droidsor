@@ -90,4 +90,10 @@
     <string name="permission_explain_write">Toto oprávnění je potřeba k uložení GPX souboru na SD kartu.</string>
     <string name="droidsor_service">Služba Droidsor</string>
     <string name="service_is_running">Služba běží</string>
+    <string name="gravity">Gravity</string>
+
+    <string-array name="log_but_beh_str_arr">
+        <item>Snímat s oblíbeným profilem</item>
+        <item>Ukázat seznam všech profilů</item>
+    </string-array>
 </resources>

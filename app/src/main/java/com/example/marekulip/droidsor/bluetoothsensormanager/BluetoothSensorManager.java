@@ -61,7 +61,7 @@ public class BluetoothSensorManager {
     private List<GeneralTISensor> sensors = getBasicSetOfSensors();
     private final List<GeneralTISensor> activeSensors = new ArrayList<>();
     private final SparseIntArray listenFrequencies = new SparseIntArray();
-    private Semaphore communicationSemaphore = new Semaphore(1,true);
+    private Semaphore communicationSemaphore = new Semaphore(0,true);
 
     public BluetoothSensorManager(SensorService service){
         sensorService = service;
@@ -235,10 +235,10 @@ public class BluetoothSensorManager {
     }
     private void configureSensor(GeneralTISensor sensor, boolean enable){
         try {
-            if(firstTime){
+            /*if(firstTime){
                 communicationSemaphore.acquire();
                 firstTime = false;
-            }
+            }*/
             sensor.configureNotifications(enable);
             communicationSemaphore.acquire();
             sensor.configureSensor(enable);

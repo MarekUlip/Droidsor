@@ -65,6 +65,11 @@ public class LogDetailActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
     public void onBackPressed() {
         if(isSelectionModeOn){
             cancelSelection();

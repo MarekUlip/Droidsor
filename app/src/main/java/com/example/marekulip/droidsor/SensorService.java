@@ -89,7 +89,7 @@ public class SensorService extends Service {
 
     public void broadcastUpdate(final String action, List<SensorData> sensorData){
         if(action.equals(ACTION_DATA_AVAILABLE)) {
-            if (sensorLogManager.isLogging()) {
+            if (isLogging()) {
                 Location location = positionManager.getLocation();
                 SensorData data;
                 for (int i = 0; i < sensorData.size(); i++) {
@@ -175,6 +175,10 @@ public class SensorService extends Service {
             case MOBILE_SENSORS_MODE:
 
         }*/
+    }
+
+    public int getMode(){
+        return displayMode;
     }
 
     public boolean isBluetoothDeviceOn(){

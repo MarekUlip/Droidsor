@@ -1,6 +1,8 @@
 package com.example.marekulip.droidsor.gpxfileexporter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.example.marekulip.droidsor.R;
@@ -55,6 +57,8 @@ public class GPXExporter {
     private static final String fixEndTag = "</fix>";
     private static final DecimalFormat decimalFormat;
     private static final int timeGap = 500;
+    public static final String GPX_LONGITUDE = "gpx_longitude";
+    public static final String GPX_LATITUDE = "gpx_latitude";
 
     static {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
@@ -120,11 +124,14 @@ public class GPXExporter {
         SensorsEnum sensorsEnum;
         long lastTime =  datas.get(0).time;
         String sensorXMLName;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        double longitude = prefs.getFloat(GPX_LONGITUDE,0);
+        double latitude = prefs.getFloat(GPX_LATITUDE,0);
         for(int i = 0; i<size;i++){
             data = datas.get(i);
             sb.append(trkptStartTag);
             if(data.latitude>=0)sb.append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">");
-            else sb.append("lat=\"").append(0.0).append("\" lon=\"").append(0.0).append("\">");
+            else sb.append("lat=\"").append(latitude).append("\" lon=\"").append(longitude).append("\">");
             sb.append(System.lineSeparator()).append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator());
             if(data.altitude >= 0)sb.append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator());
             sb.append(fixStartTag);
@@ -171,7 +178,7 @@ public class GPXExporter {
             //sbBody.append(entrieDivStart).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(entrieDivStartEnd).append(entries.get(i).getEntrieBody(false)).append(entrieDivEnd);
         }
         sb.append(trksegEndTag).append(trkEndTag).append("</gpx>");
-        Log.d("Result", "createHTMLfromEntries: "+sb);
+        //Log.d("Result", "createHTMLfromEntries: "+sb);
         return sb.toString();
     }
 

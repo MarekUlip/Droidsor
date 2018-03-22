@@ -67,8 +67,6 @@ public class LogDetailItemActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_save) {
             List<Integer> sensorTypes = new ArrayList<>();
             sensorTypes.add(sensorId);
@@ -77,86 +75,62 @@ public class LogDetailItemActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /*private void prepGUI(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                setItem();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        setUpGraph();
-                        findViewById(R.id.progress_bar).setVisibility(View.GONE);
-                        findViewById(R.id.log_chart).setVisibility(View.VISIBLE);
-                        ((TextView)findViewById(R.id.text_sensor_units)).setText(SensorsEnum.resolveEnum(sensorId).getSensorUnitName(LogDetailItemActivity.this));
-                        ((TextView)findViewById(R.id.text_sensor_name)).setText(SensorsEnum.resolveEnum(sensorId).getSensorName(LogDetailItemActivity.this));
-                    }
-                });
-            }
-        }).start();
-    }*/
-
-    private void setItem(){
-        Cursor c = getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null, SensorDataTable.LOG_ID + " = ? and "+SensorDataTable.SENSOR_TYPE + " = ?",new String[]{String.valueOf(logId),String.valueOf(sensorId)},null);
-        EntryHolder item = null;
-        int itemCount;
-        if(c!= null&& c.moveToFirst()){
-            int type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
-            item = new EntryHolder(sensorId);
-            //lst.get(0).entries.add(new ArrayList<Entry>());
-            itemCount = SensorsEnum.resolveEnum(type).itemCount;
-
-            switch (itemCount){
-
-                case 1: item.entries.add(new ArrayList<Entry>());
-                    item.entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
-                    break;
-                case 2:
-                    item.entries.add(new ArrayList<Entry>());
-                    item.entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
-                    item.entries.add(new ArrayList<Entry>());
-                    item.entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
-                    break;
-                case 3:
-                    item.entries.add(new ArrayList<Entry>());
-                    item.entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
-                    item.entries.add(new ArrayList<Entry>());
-                    item.entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
-                    item.entries.add(new ArrayList<Entry>());
-                    item.entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
-
-                /*case 3: lst.get(0).entries.add(new ArrayList<Entry>());
-                    lst.get(0).entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
-                case 2: lst.get(0).entries.add(new ArrayList<Entry>());
-                    lst.get(0).entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
-                case 1: lst.get(0).entries.add(new ArrayList<Entry>());
-                    lst.get(0).entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));*/
-            }
-            item.labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
-            //lst.get(0).entries.add(new Entry(time,value));
-            //int position;
-            int size = item.entries.get(0).size();
-            while (c.moveToNext()){
-                size++;
-                switch (itemCount){
-                    case 1: item.entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
-                        break;
-                    case 2: item.entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
-                        item.entries.get(1).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
-                        break;
-                    case 3: item.entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
-                        item.entries.get(1).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
-                        item.entries.get(2).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
-                        break;
-                    //case 2: lst.get(position).entries.get(1).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
-                    //case 1: lst.get(position).entries.get(2).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
-                }
-                item.labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
-            }
-            c.close();
+    private void prepItemsForGraph(EntryHolder entryHolder){
+        List<ILineDataSet> dataSets = new ArrayList<>();
+        LineDataSet dataSet;
+        String[] axisLabels = {"X", "Y", "Z"};
+        int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
+        for(int j = 0; j<entryHolder.entries.size(); j++){
+            dataSet = new LineDataSet(entryHolder.entries.get(j),axisLabels[j]);
+            dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+            dataSet.setColor(colors[j]);
+            dataSet.setDrawCircles(false);
+            dataSets.add(dataSet);
         }
-        prepItemsForGraph(item);
+        item = new LogDetailItem(SensorsEnum.resolveEnum(entryHolder.sensorType).getSensorName(this),SensorsEnum.resolveEnum(entryHolder.sensorType).getSensorUnitName(this),new LineData(dataSets),entryHolder.sensorType,entryHolder.labels);
 
+    }
+
+    private void setUpGraph(){
+        LineChart graphView =  findViewById(R.id.log_chart);
+        graphView.setTouchEnabled(true);
+        graphView.getDescription().setEnabled(false);
+        // enable scaling and dragging
+        graphView.setDragEnabled(true);
+        graphView.setScaleEnabled(true);
+
+        // set an alternative background color
+        graphView.setBackgroundColor(Color.WHITE);
+        graphView.getAxisRight().setEnabled(false);
+        graphView.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        IAxisValueFormatter formatter = new IAxisValueFormatter() {
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                if ((int) value >= item.xLabels.size()) return "";
+                return item.xLabels.get((int) value);
+            }
+        };
+
+        XAxis xAxis = graphView.getXAxis();
+        xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
+        xAxis.setValueFormatter(formatter);
+
+
+        graphView.setData(item.lineData);
+        graphView.invalidate();
+        graphView.zoom(4,0,0,0);
+        graphView.setVisibleXRangeMaximum(item.xLabels.size());
+    }
+
+    private class EntryHolder{
+        final int sensorType;
+        final List<List<Entry>> entries = new ArrayList<>();
+        final List<String> labels = new ArrayList<>();
+        EntryHolder(int sensorType){
+            this.sensorType = sensorType;
+        }
     }
 
     private class LoadChartTask extends AsyncTask<Void, Integer, Void> {
@@ -165,12 +139,31 @@ public class LogDetailItemActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             progressBar = findViewById(R.id.progress_bar);
+            setItem();
+
+            return null;
+        }
+        @Override
+        protected void onProgressUpdate(Integer... progress) {
+            progressBar.setProgress(progress[0]);//setProgressPercent(progress[0]);
+        }
+        @Override
+        protected void onPostExecute(Void voidRes) {
+            setUpGraph();
+            findViewById(R.id.progress_bar).setVisibility(View.GONE);
+            findViewById(R.id.log_chart).setVisibility(View.VISIBLE);
+            ((TextView)findViewById(R.id.text_sensor_units)).setText(SensorsEnum.resolveEnum(sensorId).getSensorUnitName(LogDetailItemActivity.this));
+            ((TextView)findViewById(R.id.text_sensor_name)).setText(SensorsEnum.resolveEnum(sensorId).getSensorName(LogDetailItemActivity.this));
+
+        }
+
+        private void setItem(){
             Cursor c = getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null, SensorDataTable.LOG_ID + " = ? and "+SensorDataTable.SENSOR_TYPE + " = ?",new String[]{String.valueOf(logId),String.valueOf(sensorId)},null);
             EntryHolder item = null;
             int itemCount;
             if(c!= null&& c.moveToFirst()){
                 int progress = c.getCount()/100;
-                if(progress<1)progress = 1;
+                if(progress<1) progress = 1;
                 int type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
                 item = new EntryHolder(sensorId);
                 //lst.get(0).entries.add(new ArrayList<Entry>());
@@ -228,80 +221,6 @@ public class LogDetailItemActivity extends AppCompatActivity {
                 c.close();
             }
             prepItemsForGraph(item);
-
-            return null;
-        }
-        @Override
-        protected void onProgressUpdate(Integer... progress) {
-            progressBar.setProgress(progress[0]);//setProgressPercent(progress[0]);
-        }
-        @Override
-        protected void onPostExecute(Void voidRes) {
-            setUpGraph();
-            findViewById(R.id.progress_bar).setVisibility(View.GONE);
-            findViewById(R.id.log_chart).setVisibility(View.VISIBLE);
-            ((TextView)findViewById(R.id.text_sensor_units)).setText(SensorsEnum.resolveEnum(sensorId).getSensorUnitName(LogDetailItemActivity.this));
-            ((TextView)findViewById(R.id.text_sensor_name)).setText(SensorsEnum.resolveEnum(sensorId).getSensorName(LogDetailItemActivity.this));
-
-        }
-    }
-
-
-    private void prepItemsForGraph(EntryHolder entryHolder){
-        List<ILineDataSet> dataSets = new ArrayList<>();
-        LineDataSet dataSet;
-        String[] axisLabels = {"X", "Y", "Z"};
-        int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
-        for(int j = 0; j<entryHolder.entries.size(); j++){
-            dataSet = new LineDataSet(entryHolder.entries.get(j),axisLabels[j]);
-            dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-            dataSet.setColor(colors[j]);
-            dataSet.setDrawCircles(false);
-            dataSets.add(dataSet);
-        }
-        item = new LogDetailItem(SensorsEnum.resolveEnum(entryHolder.sensorType).getSensorName(this),SensorsEnum.resolveEnum(entryHolder.sensorType).getSensorUnitName(this),new LineData(dataSets),entryHolder.sensorType,entryHolder.labels);
-
-    }
-
-    private void setUpGraph(){
-        LineChart graphView =  findViewById(R.id.log_chart);
-        graphView.setTouchEnabled(true);
-        graphView.getDescription().setEnabled(false);
-        // enable scaling and dragging
-        graphView.setDragEnabled(true);
-        graphView.setScaleEnabled(true);
-
-        // set an alternative background color
-        graphView.setBackgroundColor(Color.WHITE);
-        graphView.getAxisRight().setEnabled(false);
-        graphView.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-
-        IAxisValueFormatter formatter = new IAxisValueFormatter() {
-
-            @Override
-            public String getFormattedValue(float value, AxisBase axis) {
-                if ((int) value >= item.xLabels.size()) return "";
-                return item.xLabels.get((int) value);
-            }
-        };
-
-        XAxis xAxis = graphView.getXAxis();
-        xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
-        xAxis.setValueFormatter(formatter);
-
-
-        graphView.setData(item.lineData);
-        graphView.invalidate();
-        graphView.zoom(4,0,0,0);
-        graphView.setVisibleXRangeMaximum(item.xLabels.size());
-    }
-
-    private class EntryHolder{
-        final int sensorType;
-        final List<List<Entry>> entries = new ArrayList<>();
-        final List<String> labels = new ArrayList<>();
-        EntryHolder(int sensorType){
-            this.sensorType = sensorType;
         }
     }
 }
