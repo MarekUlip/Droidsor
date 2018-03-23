@@ -3,7 +3,6 @@ package com.example.marekulip.droidsor.gpxfileexporter;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
@@ -34,7 +33,7 @@ public class GPXExporter {
     private static final String trkptEndTag = "</trkpt>"; // also includes tag for div which encapsulates all entries
     private static final String timeStartTag = "<time>";
     private static final String timeEndTag = "</time>";
-    private static final String myNamespaceName = "myns";
+    private static final String myNamespaceName = "droidsor";
     private static final String myNamespaceTagStart = "<"+myNamespaceName+":";
     private static final String myNamespaceTagEnd = "</"+myNamespaceName+":";
     private static final String extensionsStartTag = "<extensions>";
@@ -123,13 +122,13 @@ public class GPXExporter {
         SensorData data;
         SensorsEnum sensorsEnum;
         long lastTime =  datas.get(0).time;
-        String sensorXMLName;
+        String[] sensorXMLName;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         double longitude = prefs.getFloat(GPX_LONGITUDE,0);
         double latitude = prefs.getFloat(GPX_LATITUDE,0);
         for(int i = 0; i<size;i++){
             data = datas.get(i);
-            sb.append(trkptStartTag);
+            sb.append(System.lineSeparator()).append(trkptStartTag);
             if(data.latitude>=0)sb.append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">");
             else sb.append("lat=\"").append(latitude).append("\" lon=\"").append(longitude).append("\">");
             sb.append(System.lineSeparator()).append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator());
@@ -152,8 +151,8 @@ public class GPXExporter {
                     break;
                 }
                 sensorsEnum = SensorsEnum.resolveEnum(data.sensorType);
-                sensorXMLName = sensorsEnum.getSensorNameXmlFriendly(context);
-                sb.append(myNamespaceTagStart).append(sensorXMLName).append(">");
+                sensorXMLName = sensorsEnum.getSensorNamesXmlFriendly(context);
+                sb.append(myNamespaceTagStart).append(sensorXMLName[0]).append(">").append(System.lineSeparator());
                 switch(sensorsEnum.itemCount){
                     case 1:
                         sb.append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator());
@@ -169,7 +168,7 @@ public class GPXExporter {
                     break;
 
                 }
-                sb.append(myNamespaceTagEnd).append(sensorXMLName).append(">");
+                sb.append(myNamespaceTagEnd).append(sensorXMLName[1]).append(">").append(System.lineSeparator());
             }
 
             sb.append(extensionsEndTag).append(trkptEndTag).append(System.lineSeparator());

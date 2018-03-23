@@ -55,7 +55,7 @@ public enum SensorsEnum {
     public int sensorType;
     public int itemCount;
     private String sensorName = null;
-    private String sensorNameXmlFriendly = null;
+    private String[] sensorNameXmlFriendly = null;
     private int sensorNameRes;
     private String sensorUnitName = null;
     private int sensorNameResXml;
@@ -95,9 +95,11 @@ public enum SensorsEnum {
         return sensorName;
     }
 
-    public String getSensorNameXmlFriendly(Context context){
+    public String[] getSensorNamesXmlFriendly(Context context){
         if(sensorNameXmlFriendly == null && context!=null){
-            sensorNameXmlFriendly = context.getString(sensorNameResXml)+ "_" + context.getString(sPositionStringResXml);
+            sensorNameXmlFriendly = new String[2];
+            sensorNameXmlFriendly[0] = context.getString(sensorNameResXml)+ " data_source=\"" + context.getString(sPositionStringResXml) +"\"";
+            sensorNameXmlFriendly[1] = context.getString(sensorNameResXml);
         }
         return sensorNameXmlFriendly;
     }

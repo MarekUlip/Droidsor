@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<xsd:schema targetNamespace="https://github.com/MarekUlip/Droidsor/tree/master/xml-schema"
+    elementFormDefault="qualified"
+    xmlns="https://github.com/MarekUlip/Droidsor/tree/master/xml-schema"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:annotation><xsd:documentation>
+    This schema defines Droidsor extensions to be used with the GPX 1.1 schema.
+    The root elements defined by this schema are intended to be used as child
+    elements of the "extensions" elements in the GPX 1.1 schema. The GPX 1.1
+    schema is available at http://www.topografix.com/GPX/1/1/gpx.xsd.
+    </xsd:documentation></xsd:annotation>
+
+    <xsd:element name="barometer" type="one_dimension" />
+    <xsd:element name="optical" type="one_dimension" />
+    <xsd:element name="humidity" type="one_dimension" />
+    <xsd:element name="accelerometer" type="three_dimension" />
+    <xsd:element name="gyroscope" type="three_dimension" />
+    <xsd:element name="thermometer" type="three_dimension" />
+    <xsd:element name="magnetometer" type="three_dimension" />
+    <xsd:element name="gravity" type="three_dimension" />
+    <xsd:element name="movement" type="three_dimension" />
+    <xsd:element name="orientation" type="three_dimension" />
+
+    <xsd:attribute name="data_source">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="internal"/>
+            <xs:enumeration value="external"/>
+        </xs:restriction>
+    </xsd:attribute>
+
+    <xsd:complexType name="three_dimension">
+        <xsd:attribute ref="data_source"/>
+        <xsd:sequence>
+            <xsd:element name="x" type="xsd:decimal"/>
+            <xsd:element name="y" type="xsd:decimal"/>
+            <xsd:element name="z" type="xsd:decimal"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="two_dimension">
+        <xsd:attribute ref="data_source"/>
+        <xsd:sequence>
+            <xsd:element name="x" type="xsd:decimal"/>
+            <xsd:element name="y" type="xsd:decimal"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="one_dimension">
+        <xsd:attribute ref="data_source"/>
+        <xsd:sequence>
+            <xsd:element name="x" type="xsd:decimal"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

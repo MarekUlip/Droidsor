@@ -3,5 +3,5 @@
     creator="Droidsor - github.com/MarekUlip/Droidsor"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://www.topografix.com/GPX/1/1"
-    xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd"
-    xmlns:myns="http://www.droidsor.com">
+    xsi:schemaLocation="http://www.topografix.com/GPX/1/1/gpx.xsd"
+    xmlns:droidsor="https://github.com/MarekUlip/Droidsor/tree/master/xml-schema">

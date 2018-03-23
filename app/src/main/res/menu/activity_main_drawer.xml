@@ -17,9 +17,10 @@
             android:title="@string/all_sensors" />
         <item
             android:id="@+id/three_d"
+            android:icon="@drawable/ic_three_d"
             android:title="@string/three_d_view"/>
         <item android:id="@+id/logged_sensors"
-            android:icon="@drawable/ic_action_record"
+            android:icon="@drawable/ic_logged_sensors"
             android:title="@string/logged_sensors"/>
 
     </group>
@@ -28,7 +29,7 @@
         <menu>
             <item
                 android:id="@+id/nav_logs"
-                android:icon="@drawable/ic_settings"
+                android:icon="@drawable/ic_drawable_save"
                 android:title="@string/saved_logs" />
             <item
                 android:id="@+id/nav_log_profiles_settings"
