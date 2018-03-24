@@ -9,7 +9,7 @@ import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
-import com.example.marekulip.droidsor.SensorService;
+import com.example.marekulip.droidsor.DroidsorService;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
@@ -22,7 +22,7 @@ import java.util.List;
  */
 
 public class AndroidSensorManager implements SensorEventListener{
-    private final SensorService sensorService;
+    private final DroidsorService droidsorService;
     private final SensorManager mSensorManager;
     private final List<Sensor> toListen = new ArrayList<>();
     private List<Integer> toListenIds;
@@ -54,8 +54,8 @@ public class AndroidSensorManager implements SensorEventListener{
      * Creates an instance of AndroidSensorManager and starts listening to all sensors. New data are sent to a service via broadcast.
      * @param service Service which should process the broadcast
      */
-    public AndroidSensorManager(SensorService service){
-        sensorService = service;
+    public AndroidSensorManager(DroidsorService service){
+        droidsorService = service;
         mSensorManager = (SensorManager)service.getSystemService(Context.SENSOR_SERVICE);
         resetManager();
     }
@@ -70,7 +70,7 @@ public class AndroidSensorManager implements SensorEventListener{
             lastSensorsTime.put(sensorType,time);
             List<SensorData> sensorDataList = new ArrayList<>();
             SensorsEnum.resolveSensor(sensorEvent,sensorDataList);
-            sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE,sensorDataList);
+            droidsorService.broadcastUpdate(DroidsorService.ACTION_DATA_AVAILABLE,sensorDataList);
         }
         if (!isAccelSet && sensorType == Sensor.TYPE_ACCELEROMETER) {
             System.arraycopy(sensorEvent.values, 0, mAccelerometerReading,
@@ -89,7 +89,7 @@ public class AndroidSensorManager implements SensorEventListener{
                 updateOrientationAngles();
                 List<SensorData> sensorDataList = new ArrayList<>();
                 SensorsEnum.INTERNAL_ORIENTATION.resolveSensor(sensorDataList, mOrientationAngles);
-                sensorService.broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE, sensorDataList);
+                droidsorService.broadcastUpdate(DroidsorService.ACTION_DATA_AVAILABLE, sensorDataList);
                 isMagFieldSet = false;
                 isAccelSet = false;
             }

@@ -17,26 +17,26 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.marekulip.droidsor.R;
-import com.example.marekulip.droidsor.SensorService;
+import com.example.marekulip.droidsor.DroidsorService;
 import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 public class OpenGLActivity extends AppCompatActivity {
     private GLSurfaceView mGLSurfaceView;
     private DroidsorRenderer renderer;
-    private SensorService mSensorService;
+    private DroidsorService mDroidsorService;
     private int sensorType;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mSensorService = ((SensorService.LocalBinder)service).getService();
-            mSensorService.startOpenGLMode();
-            mSensorService.setMode(SensorService.ALL_SENSORS_MODE);
+            mDroidsorService = ((DroidsorService.LocalBinder)service).getService();
+            mDroidsorService.startOpenGLMode();
+            mDroidsorService.setMode(DroidsorService.ALL_SENSORS_MODE);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            mSensorService = null;
+            mDroidsorService = null;
         }
     };
 
@@ -121,8 +121,8 @@ public class OpenGLActivity extends AppCompatActivity {
     }
 
     private void connectToService(){
-        Intent intent = new Intent(this,SensorService.class);
-        if(!isMyServiceRunning(SensorService.class)){
+        Intent intent = new Intent(this,DroidsorService.class);
+        if(!isMyServiceRunning(DroidsorService.class)){
             Log.d("NtRn", "onCreate: NotRunning");startService(intent);
         }
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
@@ -131,13 +131,13 @@ public class OpenGLActivity extends AppCompatActivity {
 
     private static IntentFilter makeUpdateIntentFilter(){
         final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(SensorService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(DroidsorService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
 
     private void disconnectFromService(){
-        if(mSensorService==null)return;
-        mSensorService.stopOpenGLMode();
+        if(mDroidsorService ==null)return;
+        mDroidsorService.stopOpenGLMode();
         unregisterReceiver(mSensorServiceUpdateReceiver);
         unbindService(mServiceConnection);
     }
@@ -145,8 +145,8 @@ public class OpenGLActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (SensorService.ACTION_DATA_AVAILABLE.equals(action)) {
-                renderer.setData(mSensorService.getSensorDataSparseArray().get(sensorType));
+            if (DroidsorService.ACTION_DATA_AVAILABLE.equals(action)) {
+                renderer.setData(mDroidsorService.getSensorDataSparseArray().get(sensorType));
             }else if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action) ||BluetoothSensorManager.ACTION_GATT_DISCONNECTED.equals(action) ) {
                 invalidateOptionsMenu();
             }

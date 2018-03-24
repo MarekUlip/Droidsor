@@ -27,7 +27,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service
-            android:name=".SensorService"
+            android:name=".DroidsorService"
             android:enabled="true"
             android:exported="true" />
 

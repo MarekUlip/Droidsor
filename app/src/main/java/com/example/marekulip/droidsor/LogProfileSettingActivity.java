@@ -25,7 +25,7 @@ import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.DEVICE_
 public class LogProfileSettingActivity extends AppCompatActivity implements SaveProfileDialogFragment.SaveProfileDialogListener, SetExtMovSensorDialogFragment.SetExtMovSensorIface{
 
     LogProfileSettingFragment fragment;
-    private SensorService mSensorService;
+    private DroidsorService mDroidsorService;
     public static final String LOG_PROFILE_ID = "log_id";
     public static final String IS_NEW = "is_new";
 
@@ -46,7 +46,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
             }
         });
 
-        /*Intent intent = new Intent(this,SensorService.class);
+        /*Intent intent = new Intent(this,DroidsorService.class);
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);*/
 
         fragment = LogProfileSettingFragment.newInstance(getIntent().getBooleanExtra(IS_NEW,true),getIntent().getIntExtra(LOG_PROFILE_ID,0));
@@ -56,8 +56,8 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_bluetooth_conn,menu);
-        if(mSensorService!=null){
-            if(mSensorService.isBluetoothDeviceOn()){
+        if(mDroidsorService !=null){
+            if(mDroidsorService.isBluetoothDeviceOn()){
                 menu.findItem(R.id.action_bluetooth_connect).setVisible(false);
                 menu.findItem(R.id.action_bluetooth_disconnect).setVisible(true);
             }else {
@@ -75,7 +75,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
                 startActivityForResult(new Intent(LogProfileSettingActivity.this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
                 break;
             case R.id.action_bluetooth_disconnect:
-                mSensorService.disconnectFromBluetoothDevice();
+                mDroidsorService.disconnectFromBluetoothDevice();
                 break;
         }
         return true;
@@ -85,7 +85,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == BT_DEVICE_REQUEST){
             if(resultCode==RESULT_OK) {
-                mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
+                mDroidsorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
                 fragment.restartFragment();
             }
         }
@@ -107,14 +107,14 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mSensorService = ((SensorService.LocalBinder)service).getService();
-            fragment.setSensorService(mSensorService);
+            mDroidsorService = ((DroidsorService.LocalBinder)service).getService();
+            fragment.setSensorService(mDroidsorService);
             invalidateOptionsMenu();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            mSensorService = null;
+            mDroidsorService = null;
         }
     };
 
@@ -135,10 +135,10 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     }
 
     private void connectToService(){
-        Intent intent = new Intent(this,SensorService.class);
-        if(!isMyServiceRunning(SensorService.class)){
+        Intent intent = new Intent(this,DroidsorService.class);
+        if(!isMyServiceRunning(DroidsorService.class) || DroidsorService.isServiceOff()){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent);//startService(intent);
+                startForegroundService(intent);
             }else{
                 startService(intent);
             }
@@ -148,7 +148,8 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     }
 
     private void disconnectFromService(){
-        if(!mSensorService.isLogging())mSensorService.stopListeningSensors();
+        if(mDroidsorService ==null)return;
+        if(!mDroidsorService.isLogging()) mDroidsorService.stopListeningSensors();
         unregisterReceiver(mSensorServiceUpdateReceiver);
         unbindService(mServiceConnection);
     }

@@ -13,7 +13,7 @@ import android.content.Context;
 import android.util.Log;
 import android.util.SparseIntArray;
 
-import com.example.marekulip.droidsor.SensorService;
+import com.example.marekulip.droidsor.DroidsorService;
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.GeneralTISensor;
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TIBarometricSensor;
 import com.example.marekulip.droidsor.bluetoothsensormanager.tisensor.TIHumiditySensor;
@@ -44,7 +44,7 @@ public class BluetoothSensorManager {
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
-    private final SensorService sensorService;
+    private final DroidsorService droidsorService;
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
@@ -63,8 +63,8 @@ public class BluetoothSensorManager {
     private final SparseIntArray listenFrequencies = new SparseIntArray();
     private Semaphore communicationSemaphore = new Semaphore(0,true);
 
-    public BluetoothSensorManager(SensorService service){
-        sensorService = service;
+    public BluetoothSensorManager(DroidsorService service){
+        droidsorService = service;
         initialize();
     }
 
@@ -72,16 +72,16 @@ public class BluetoothSensorManager {
         if(action.equals(ACTION_GATT_CONNECTED)){
             mConnectionState = STATE_CONNECTED;
         }
-        sensorService.broadcastUpdate(action);
+        droidsorService.broadcastUpdate(action);
     }
 
     public void broadcastUpdate(final String action, List<SensorData> sensorDataList){
-        sensorService.broadcastUpdate(action,sensorDataList);
+        droidsorService.broadcastUpdate(action,sensorDataList);
     }
 
     public boolean initialize() {
         if (mBluetoothManager == null) {
-            mBluetoothManager = (BluetoothManager) sensorService.getSystemService(Context.BLUETOOTH_SERVICE);
+            mBluetoothManager = (BluetoothManager) droidsorService.getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null) {
                 Log.e(TAG, "Unable to initialize BluetoothSensorManager.");
                 return false;
@@ -117,7 +117,7 @@ public class BluetoothSensorManager {
             return false;
         }
 
-        mBluetoothGatt = device.connectGatt(sensorService,false,myBluetoothGattCallback);
+        mBluetoothGatt = device.connectGatt(droidsorService,false,myBluetoothGattCallback);
         Log.d(TAG, "connect: GattAddedd");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
@@ -202,7 +202,7 @@ public class BluetoothSensorManager {
             for (GeneralTISensor sensor: activeSensors) {
                 if(sensor.processNewData(characteristic,dataPackage)) break;
             }
-            broadcastUpdate(SensorService.ACTION_DATA_AVAILABLE,dataPackage);
+            broadcastUpdate(DroidsorService.ACTION_DATA_AVAILABLE,dataPackage);
         }
 
         @Override

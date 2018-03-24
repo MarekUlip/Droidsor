@@ -51,7 +51,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     private long profileId = -1;
     private SensorDataDispListFragment fragment;
     private FloatingActionButton fab;
-    private SensorService mSensorService;
+    private DroidsorService mDroidsorService;
     private PositionManager positionManager;
     private LogProfile profileHolder;
     private boolean isRecording = false;
@@ -93,12 +93,12 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if(mSensorService.isLogging()) {
+            if(mDroidsorService.isLogging()) {
                 Toast.makeText(this,getString(R.string.logging_on),Toast.LENGTH_SHORT).show();
                 super.onBackPressed();
             }
             else {
-                mSensorService.stop(true);
+                mDroidsorService.stop(true);
                 finish();
             }
         }
@@ -123,13 +123,14 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         disconnectFromService();
     }
 
+    /**
+     * Starts Droidsor service or connects to it if it already runs.
+     */
     private void connectToService(){
-        Intent intent = new Intent(this,SensorService.class);
-        if(!isMyServiceRunning(SensorService.class) || SensorService.isServiceOff()){
-            Log.d("NtRn", "onCreate: NotRunning");
+        Intent intent = new Intent(this,DroidsorService.class);
+        if(!isMyServiceRunning(DroidsorService.class) || DroidsorService.isServiceOff()){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Log.d("sdd", "connectToService: Starting foreground");
-                startForegroundService(intent);//startService(intent);
+                startForegroundService(intent);
             }else{
                 startService(intent);
             }
@@ -138,9 +139,12 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
     }
 
+    /**
+     * Disconnects from Droidsor service but does not stop it.
+     */
     private void disconnectFromService(){
-        if(mSensorService==null)return;
-        if(!mSensorService.isLogging())mSensorService.stopListeningSensors();
+        if(mDroidsorService ==null)return;
+        if(!mDroidsorService.isLogging()) mDroidsorService.stopListeningSensors();
         unregisterReceiver(mSensorServiceUpdateReceiver);
         unbindService(mServiceConnection);
     }
@@ -148,8 +152,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_bluetooth_conn,menu);
-        if(mSensorService!=null){
-            if(mSensorService.isBluetoothDeviceOn()){
+        if(mDroidsorService !=null){
+            if(mDroidsorService.isBluetoothDeviceOn()){
                 menu.findItem(R.id.action_bluetooth_connect).setVisible(false);
                 menu.findItem(R.id.action_bluetooth_disconnect).setVisible(true);
             }else {
@@ -164,7 +168,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_bluetooth_connect:
-                if(SensorService.isServiceOff()){
+                if(DroidsorService.isServiceOff()){
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -183,24 +187,27 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 startActivityForResult(new Intent(this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
                 break;
             case R.id.action_bluetooth_disconnect:
-                mSensorService.disconnectFromBluetoothDevice();
+                mDroidsorService.disconnectFromBluetoothDevice();
                 break;
         }
         return true;
     }
 
+    /**
+     * Sets correct icon and action for Floating Action Button.
+     */
     private void setFabClickListener(){
-        if(mSensorService!=null && mSensorService.isLogging()){
+        if(mDroidsorService !=null && mDroidsorService.isLogging()){
             fab.setImageResource(R.drawable.ic_action_stop);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    mSensorService.stopLogging();
+                    mDroidsorService.stopLogging();
                     isRecording = false;
                     //invalidateOptionsMenu();
                     setFabClickListener();
                     setActualDisplayMode();
-                    fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                    fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
                 }
             });
         }else{
@@ -208,12 +215,15 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    startLogging();
+                    prepareForLogging();
                 }
             });
         }
     }
 
+    /**
+     * Attempt to get one position from GPS. Also used to get correct permissions.
+     */
     private void tryToInitPosManager(){
         positionManager = new PositionManager(this);
         positionManager.setOnRecievedPositionListener(this);
@@ -221,16 +231,16 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     }
 
     /**
-     * Function to set up logging profile
+     * Prepares for logging and ensures that logging will start correctly.
      */
-    private void startLogging(){
-        if(SensorService.isServiceOff()){
+    private void prepareForLogging(){
+        if(DroidsorService.isServiceOff()){
             Toast.makeText(this,R.string.service_is_off_resetting,Toast.LENGTH_SHORT).show();
             disconnectFromService();
             connectToService();
             return;
         }
-        if(mSensorService.isLogging())return;
+        if(mDroidsorService.isLogging())return;
         String pref = PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.START_LOG_BUT_BEHAVIOUR_PREF,"1");
         if (pref.equals("1")) {
             if (getSharedPreferences(SHARED_PREFS_NAME, 0).getLong(FAVORITE_LOG, 0) == 0) {
@@ -248,8 +258,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 startActivityForResult(intent,LogProfileActivity.SET_FIRST_FAVORITE_PROFILE);
                 return;
             }
-            startLoggingWithPicked(p);
-            //mSensorService.startLogging(p);//TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth*/
+            startLogging(p);
+            //TODO set up GPS check if some sensor is from bluetooth if so try to connect to bluetooth*/
         } else if(pref.equals("2")){
             Intent intent = new Intent(this,LogProfileActivity.class);
             intent.putExtra(LogProfileActivity.IS_PICKING_NEXT_TO_LOG,true);
@@ -260,10 +270,10 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
     /**
      * Starts the logging
-     * @param profile
+     * @param profile Profile with which the logging will be done
      */
-    private void startLoggingWithPicked(LogProfile profile){
-        if(mSensorService==null || mSensorService.isLogging())return;
+    private void startLogging(LogProfile profile){
+        if(mDroidsorService ==null || mDroidsorService.isLogging())return;
         if(profile.isSaveGPS()&&!recievedLocation){
             tryToInitPosManager();
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
@@ -275,65 +285,90 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }
         }
 
-        mSensorService.startLogging(profile);
+        mDroidsorService.startLogging(profile);
         isRecording = true;
         recievedLocation = false;
         //invalidateOptionsMenu();
         setFabClickListener();
         setActualDisplayMode();
-        fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(true));
+        fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(true));
     }
 
+    /**
+     * Method designed to handle service unavailability issues.
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     * @param waitedForService indicates whether semaphore for service has been used. If not and dialog is going to be used it is necessary to use dialog semaphore
+     */
     private void delayedOnActivityResult(final int requestCode, final int resultCode, final Intent data,boolean waitedForService){
         if(requestCode == BT_DEVICE_REQUEST){
             if(resultCode==RESULT_OK) {
-                mSensorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
-                mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
-                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                mDroidsorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
+                mDroidsorService.setMode(DroidsorService.BLUETOOTH_SENSORS_MODE);
+                fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
             }else {
-                mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
-                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                mDroidsorService.setMode(DroidsorService.MOBILE_SENSORS_MODE);
+                fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
             }
         } else if(requestCode == PositionManager.REQUEST_CHECK_SETTINGS){
             if(resultCode==RESULT_OK) {
-                positionManager.initPosManager(this);
+                if(positionManager==null) tryToInitPosManager();
+                else positionManager.initPosManager(this);
             }
         } else if(requestCode == PositionManager.MY_PERMISSIONS_REQUEST_LOCATION_FINE){
             if(resultCode==RESULT_OK) {
-                positionManager.initPosManager(this);
+                if(positionManager==null) tryToInitPosManager();
+                else positionManager.initPosManager(this);
             }
         }  else if(requestCode == LogProfileActivity.SET_FIRST_FAVORITE_PROFILE){
             if(resultCode==RESULT_OK){
-                startLogging();
+                prepareForLogging();
             }
         } else if (requestCode == LogProfileActivity.SET_NEXT_TO_LOG){
             if(resultCode == RESULT_OK){
                 if(!waitedForService){
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                isRequestingDialog = true;
-                                dialogSemaphore.acquire();
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
-                                    }
-                                });
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-                }else startLoggingWithPicked(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
+                    requestDialog(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0));
+                }else startLogging(getProfile(data.getLongExtra(LogProfileActivity.NEXT_LOG_ID,0)));
             }
         }
     }
 
+    /**
+     * Wait till displaying of dialog is possible. Then start logging with specified profile.
+     * @param id Profile id
+     */
+    private void requestDialog(final long id){
+        requestDialog(getProfile(id));
+    }
+
+    /**
+     * Wait till displaying of dialog is possible. Then start logging with specified profile. This is preferred method over requestDialog(int)
+     * @param profile Profile to log with
+     */
+    private void requestDialog(final LogProfile profile){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    isRequestingDialog = true;
+                    dialogSemaphore.acquire();
+                    SensorDataDisplayerActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            startLogging(profile);
+                        }
+                    });
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        if(mSensorService==null){
+        if(mDroidsorService ==null){
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -355,11 +390,17 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         delayedOnActivityResult(requestCode,resultCode,data,false);
     }
 
+    /**
+     * Load profile from database based on provided id.
+     * @param id Id of log profile.
+     * @return Loaded LogProfile object if log profile has been found. Otherwise returns null.
+     */
     private LogProfile getProfile(long id){
         if(id<0)id = getSharedPreferences(SHARED_PREFS_NAME,0).getLong(FAVORITE_LOG,0);
         LogProfile profile = new LogProfile();
         Cursor c = getContentResolver().query(DroidsorProvider.LOG_PROFILE_URI,null,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(id)},null);
         if(c!=null&&c.moveToFirst()){
+            profile.setId(c.getLong(c.getColumnIndexOrThrow(LogProfilesTable._ID)));
             profile.setProfileName(c.getString(c.getColumnIndexOrThrow(LogProfilesTable.PROFILE_NAME)));
             profile.setGPSFrequency(c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.GPS_FREQUENCY)));
             profile.setSaveGPS(c.getInt(c.getColumnIndexOrThrow(LogProfilesTable.SAVE_LOCATION))!=0);
@@ -381,26 +422,29 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         return profile;
     }
 
+    /**
+     * Receiver used to receive broadcasts from Droidsor service.
+     */
     private final BroadcastReceiver mSensorServiceUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(mSensorService == null)return;
+            if(mDroidsorService == null)return;
             final String action = intent.getAction();
-            if (SensorService.ACTION_DATA_AVAILABLE.equals(action)) {
-                List<Integer> sensorTypes = mSensorService.getSensorTypesOccured();
+            if (DroidsorService.ACTION_DATA_AVAILABLE.equals(action)) {
+                List<Integer> sensorTypes = mDroidsorService.getSensorTypesOccured();
                 if(sensorTypes==null)return;
-                fragment.setNewData(sensorTypes, mSensorService.getSensorDataSparseArray());
+                fragment.setNewData(sensorTypes, mDroidsorService.getSensorDataSparseArray());
             }else if (BluetoothSensorManager.ACTION_GATT_CONNECTED.equals(action)) {
                 invalidateOptionsMenu();
             } else if(BluetoothSensorManager.ACTION_GATT_DISCONNECTED.equals(action) ){
                 invalidateOptionsMenu();
-                if(!mSensorService.isLogging()){
-                    mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
-                    fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                if(!mDroidsorService.isLogging()){
+                    mDroidsorService.setMode(DroidsorService.MOBILE_SENSORS_MODE);
+                    fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
                 }
-            } else if(SensorService.SERVICE_IS_TURNING_OFF.equals(action)){
+            } else if(DroidsorService.SERVICE_IS_TURNING_OFF.equals(action)){
                 setFabClickListener();
-            } else if(SensorService.SCHEDULED_LOG_STOP.equals(action)){
+            } else if(DroidsorService.SCHEDULED_LOG_STOP.equals(action)){
                 setFabClickListener();
                 setActualDisplayMode();
             }
@@ -414,14 +458,14 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         boolean isCorrect = true;
 
         if (id == R.id.mobile_sensors) {
-            if(mSensorService.isLogging()){
+            if(mDroidsorService.isLogging()){
                 setActualDisplayMode();
                 isCorrect =false;
                 Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
             }
             else {
-                mSensorService.setMode(SensorService.MOBILE_SENSORS_MODE);
-                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                mDroidsorService.setMode(DroidsorService.MOBILE_SENSORS_MODE);
+                fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
             }
         } else if (id == R.id.ble_sensors) {
             if(BluetoothAdapter.getDefaultAdapter() == null){
@@ -429,30 +473,30 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 ((NavigationView) findViewById(R.id.nav_view)).setCheckedItem(R.id.all_sensors);
                 return true;
             }
-            if(mSensorService.isBluetoothDeviceOn()){
-                if(mSensorService.isLogging()){
+            if(mDroidsorService.isBluetoothDeviceOn()){
+                if(mDroidsorService.isLogging()){
                     setActualDisplayMode();
                     isCorrect =false;
                     Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
                 }
                 else {
-                    mSensorService.setMode(SensorService.BLUETOOTH_SENSORS_MODE);
-                    fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                    mDroidsorService.setMode(DroidsorService.BLUETOOTH_SENSORS_MODE);
+                    fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
                 }
             }
             else startActivityForResult(new Intent(this,BLESensorLocateActivity.class),BT_DEVICE_REQUEST);
         } else if (id == R.id.all_sensors) {
-            if(mSensorService.isLogging()){
+            if(mDroidsorService.isLogging()){
                 setActualDisplayMode();
                 isCorrect = false;
                 Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
             }
             else {
-                mSensorService.setMode(SensorService.ALL_SENSORS_MODE);
-                fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+                mDroidsorService.setMode(DroidsorService.ALL_SENSORS_MODE);
+                fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
             }
         } else if(id == R.id.three_d){
-            if(mSensorService.isLogging()){
+            if(mDroidsorService.isLogging()){
                 setActualDisplayMode();
                 isCorrect = false;
                 Toast.makeText(this,getString(R.string.unavailable_when_logging),Toast.LENGTH_LONG).show();
@@ -460,7 +504,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                 startActivity(new Intent(this, OpenGLActivity.class));
             }
         } else if(id == R.id.logged_sensors){
-            if(mSensorService.isLogging())fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            if(mDroidsorService.isLogging())fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
             else {
                     setActualDisplayMode();
                     isCorrect = false;
@@ -479,26 +523,32 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         return isCorrect;
     }
 
+    /**
+     * Highlights correct menu item in drawer menu.
+     */
     private void setActualDisplayMode(){
-        int mode = mSensorService.getMode();
-        if(mSensorService.isLogging()){
+        int mode = mDroidsorService.getMode();
+        if(mDroidsorService.isLogging()){
             drawerNavigationView.setCheckedItem(R.id.logged_sensors);
-        } else if(mode == SensorService.MOBILE_SENSORS_MODE){
+        } else if(mode == DroidsorService.MOBILE_SENSORS_MODE){
             drawerNavigationView.setCheckedItem(R.id.mobile_sensors);
-        } else if(mode == SensorService.BLUETOOTH_SENSORS_MODE){
+        } else if(mode == DroidsorService.BLUETOOTH_SENSORS_MODE){
             drawerNavigationView.setCheckedItem(R.id.ble_sensors);
-        } else if(mode == SensorService.ALL_SENSORS_MODE){
+        } else if(mode == DroidsorService.ALL_SENSORS_MODE){
             drawerNavigationView.setCheckedItem(R.id.all_sensors);
         }
     }
 
+    /**
+     * Connection to Droidsor service.
+     */
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mSensorService = ((SensorService.LocalBinder)service).getService();
-            mSensorService.startListeningSensors();
+            mDroidsorService = ((DroidsorService.LocalBinder)service).getService();
+            mDroidsorService.startListeningSensors();
             setFabClickListener();
-            fragment.setSensorsToShow(mSensorService.getMonitoredSensorsTypes(false));
+            fragment.setSensorsToShow(mDroidsorService.getMonitoredSensorsTypes(false));
             invalidateOptionsMenu();
             setActualDisplayMode();
             serviceSemaphore.release();
@@ -506,20 +556,25 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            mSensorService = null;
+            mDroidsorService = null;
         }
     };
 
     private static IntentFilter makeUpdateIntentFilter(){
         final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(SensorService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(DroidsorService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothSensorManager.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(SensorService.SERVICE_IS_TURNING_OFF);
-        intentFilter.addAction(SensorService.SCHEDULED_LOG_STOP);
+        intentFilter.addAction(DroidsorService.SERVICE_IS_TURNING_OFF);
+        intentFilter.addAction(DroidsorService.SCHEDULED_LOG_STOP);
         return intentFilter;
     }
 
+    /**
+     * Checks whether provided service is running. Note that this method is not reliable if the service has run before and app has not been turned off. Android system may still run the service although no connection to it is possible so it is necessary to start new one.
+     * @param serviceClass Service to be found
+     * @return true if service was found otherwise false.
+     */
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -531,21 +586,39 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(profileHolder != null){
+            outState.putLong("log_id",profileHolder.getId());
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        long id = savedInstanceState.getLong("log_id",-1);
+        if(id > 0)profileHolder = getProfile(id);
+    }
+
+    @Override
     public void positionRecieved() {
-        Log.d("posTest", "positionRecieved: ");
         if(waitForGPSDialog !=null){
             waitForGPSDialog.dismiss();
             waitForGPSDialog = null;
         }
-        positionManager.cancelOnRecievedPositionListener();
-        if(positionManager.getLocation() != null){
-        PreferenceManager.getDefaultSharedPreferences(this).edit()
-                .putFloat(GPXExporter.GPX_LATITUDE,(float)positionManager.getLocation().getLatitude())
-                .putFloat(GPXExporter.GPX_LONGITUDE,(float)positionManager.getLocation().getLongitude()).apply();
+        if(positionManager!=null) {
+            positionManager.cancelOnRecievedPositionListener();
+            if (positionManager.getLocation() != null) {
+                PreferenceManager.getDefaultSharedPreferences(this).edit()
+                        .putFloat(GPXExporter.GPX_LATITUDE, (float) positionManager.getLocation().getLatitude())
+                        .putFloat(GPXExporter.GPX_LONGITUDE, (float) positionManager.getLocation().getLongitude()).apply();
+            }
         }
-        recievedLocation = true;
         if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.WAIT_FOR_GPS_PREF,false)){
-            startLoggingWithPicked(profileHolder);
+            if(profileHolder!=null) {
+                recievedLocation = true;
+                startLogging(profileHolder);
+            }
         }
     }
 
@@ -556,6 +629,6 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
     @Override
     public void cancelLog() {
-        positionManager.cancelOnRecievedPositionListener();
+        if(positionManager!=null)positionManager.cancelOnRecievedPositionListener();
     }
 }

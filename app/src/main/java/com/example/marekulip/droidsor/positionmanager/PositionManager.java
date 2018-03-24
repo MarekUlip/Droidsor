@@ -28,7 +28,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 /**
- * Created by Fredred on 13.09.2017.
+ * Created by Marek Ulip on 13.09.2017.
  */
 
 public class PositionManager {
@@ -200,6 +200,8 @@ public class PositionManager {
         }
         return null;
     }
+
+
 
     public interface OnRecievedPositionListener{
         void positionRecieved();

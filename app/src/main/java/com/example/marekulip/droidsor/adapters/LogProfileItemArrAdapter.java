@@ -8,6 +8,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -88,7 +89,7 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
             }
         });
         //if(profile.getSensorType())
-        viewHolder.frequencyEditText.setText(String.valueOf(profile.scanFrequency+minimumValue));
+        viewHolder.frequencyEditText.setText(String.valueOf(profile.scanFrequency));
         viewHolder.frequencySeekBar.setProgress(profile.scanFrequency-minimumValue);
         viewHolder.itemName.setText(SensorsEnum.resolveEnum(profile.sensorType).getSensorName(getContext()));// "Sensor "+profile.getSensorType());
         return convertView;
@@ -157,7 +158,7 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
                     int value = Integer.parseInt(editable.toString());
                     if(value>maxValue)value = maxValue;
                     else if(value<minimumValue)value = minimumValue;
-                    items.get(v.position).setScanFrequency(value-minimumValue>=minimumValue?value-minimumValue:minimumValue);
+                    items.get(v.position).setScanFrequency(value);
                     v.frequencySeekBar.setProgress(value-minimumValue);
                 }
             }

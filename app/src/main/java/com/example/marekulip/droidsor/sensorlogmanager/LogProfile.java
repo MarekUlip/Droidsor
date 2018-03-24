@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Fredred on 28.10.2017.
+ * Created by Marek Ulip on 28.10.2017.
  */
 
 public class LogProfile {
+    private long id;
     private String profileName;
     private List<LogProfileItem> logItems;
     private boolean saveGPS;
@@ -52,5 +53,13 @@ public class LogProfile {
 
     public void setGPSFrequency(int GPSFrequency) {
         this.GPSFrequency = GPSFrequency;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

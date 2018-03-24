@@ -27,16 +27,12 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorLogManager;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-public class SensorService extends Service {
+public class DroidsorService extends Service {
 
     public final static String ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE";
     public final static String SERVICE_IS_TURNING_OFF  = "SERVICE_IS_TURNING_OFF";
@@ -68,7 +64,7 @@ public class SensorService extends Service {
     private List<Integer> sensorTypesOccured = new ArrayList<>();
 
     private Timer logTimer;
-    public SensorService() {
+    public DroidsorService() {
 
     }
 
@@ -427,8 +423,8 @@ public class SensorService extends Service {
 
 
     public class LocalBinder extends Binder {
-        public SensorService getService(){
-            return SensorService.this;
+        public DroidsorService getService(){
+            return DroidsorService.this;
         }
     }
 }

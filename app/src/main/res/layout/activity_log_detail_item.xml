@@ -12,7 +12,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:textColor="#000"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="Sensor Name"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/text_sensor_units"

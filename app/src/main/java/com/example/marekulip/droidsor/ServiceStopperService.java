@@ -10,15 +10,15 @@ import android.os.IBinder;
 
 public class ServiceStopperService extends Service {
 
-    private SensorService mSensorService;
+    private DroidsorService mDroidsorService;
 
     public ServiceStopperService() {
     }
 
     @Override
     public void onCreate(){
-        Intent intent = new Intent(this,SensorService.class);
-        if(isMyServiceRunning(SensorService.class)){
+        Intent intent = new Intent(this,DroidsorService.class);
+        if(isMyServiceRunning(DroidsorService.class)){
             bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
         }else {
             stopSelf();
@@ -33,15 +33,15 @@ public class ServiceStopperService extends Service {
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mSensorService = ((SensorService.LocalBinder)service).getService();
-            mSensorService.stop(false);
+            mDroidsorService = ((DroidsorService.LocalBinder)service).getService();
+            mDroidsorService.stop(false);
             unbindService(mServiceConnection);
             ServiceStopperService.this.stopSelf();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            mSensorService = null;
+            mDroidsorService = null;
         }
     };
 
