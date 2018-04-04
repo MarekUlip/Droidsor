@@ -9,7 +9,8 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import java.util.List;
 
 /**
- * Created by Fredred on 21.10.2017.
+ * Class represents Optical sensor from SensorTag CC2650
+ * Created by Marek Ulip on 21.10.2017.
  */
 
 public class TIOpticalSensor extends GeneralTISensor{

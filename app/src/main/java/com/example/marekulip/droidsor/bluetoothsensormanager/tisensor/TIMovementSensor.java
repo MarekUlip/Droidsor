@@ -9,7 +9,8 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import java.util.List;
 
 /**
- * Created by Fredred on 21.10.2017.
+ * Class representing Movement sensor from SensorTag CC2650
+ * Created by Marek Ulip on 21.10.2017.
  */
 
 public class TIMovementSensor extends GeneralTISensor{
@@ -26,6 +27,7 @@ public class TIMovementSensor extends GeneralTISensor{
 
     @Override
     public boolean processNewData(BluetoothGattCharacteristic data, List<SensorData> sensorDataList) {
+        //This sensor has three sub sensors so different behaviour has to be applied
         if(data.getUuid().equals(dataCharacteristic.getUuid())){
             sensorDataList.add(new SensorData(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType, TISensor.MOVEMENT_ACC.convert(data.getValue()),SensorData.getTime()));
             sensorDataList.add(new SensorData(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType, TISensor.MOVEMENT_GYRO.convert(data.getValue()),SensorData.getTime()));
