@@ -83,16 +83,37 @@ public class BluetoothSensorManager {
      */
     private boolean isAddressSet = false;
 
+    /**
+     * List of all supported sensors from BLE device
+     */
     private List<GeneralTISensor> sensors = getBasicSetOfSensors();
+    /**
+     * List of active sensors from BLE device. Active = sensors are sending sensor data.
+     */
     private final List<GeneralTISensor> activeSensors = new ArrayList<>();
+    /**
+     * Data sending frequencies of active sensors.
+     */
     private final SparseIntArray listenFrequencies = new SparseIntArray();
+    /**
+     * Semaphore used for communication with BLE device where it is required to wait for answer.
+     * So when device sends answer it also releases semaphore.
+     */
     private Semaphore communicationSemaphore = new Semaphore(0,true);
 
+    /**
+     * Initializes manager and connects to provided service
+     * @param service Service which should be able to process broadcast of this class
+     */
     public BluetoothSensorManager(DroidsorService service){
         droidsorService = service;
         initialize();
     }
 
+    /**
+     * Send broadcast to service with provided action
+     * @param action Action to be broadcasted
+     */
     public void broadcastUpdate(final String action){
         if(action.equals(ACTION_GATT_CONNECTED)){
             mConnectionState = STATE_CONNECTED;
@@ -100,10 +121,19 @@ public class BluetoothSensorManager {
         droidsorService.broadcastUpdate(action);
     }
 
+    /**
+     * Sends broadcast with data to service.
+     * @param action Action to be broadcasted. Use with ACTION_DATA_AVAILABLE from the Service so that data get processed.
+     * @param sensorDataList data to be send
+     */
     public void broadcastUpdate(final String action, List<SensorData> sensorDataList){
         droidsorService.broadcastUpdate(action,sensorDataList);
     }
 
+    /**
+     * Initilizes this class
+     * @return true if initialization was successful false if there were BT compatability errors.
+     */
     public boolean initialize() {
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) droidsorService.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -122,12 +152,16 @@ public class BluetoothSensorManager {
         return true;
     }
 
+    /**
+     * Connects to a device with specified address
+     * @param address Address of a device to connect to
+     * @return true if connecting is started
+     */
     public boolean connect(final String address) {
         if (mBluetoothAdapter == null || address == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
-
+        //If device was connected before just reconnect
         if(mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress) && mBluetoothGatt !=null){
             if(mBluetoothGatt.connect()){
                 mConnectionState = STATE_CONNECTING;
@@ -136,20 +170,21 @@ public class BluetoothSensorManager {
                 return false;
             }
         }
-        Log.d(TAG, "connect: NULL");
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         if(device == null){
             return false;
         }
-
+        // No previous connection establish it now
         mBluetoothGatt = device.connectGatt(droidsorService,false,myBluetoothGattCallback);
-        Log.d(TAG, "connect: GattAddedd");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
         isAddressSet = true;
         return true;
     }
 
+    /**
+     * Attempts to reconnect to disconnected device.
+     */
     public void tryToReconnect(){
         if(mConnectionState==STATE_CONNECTED){
             defaultListeningMode();
@@ -158,15 +193,20 @@ public class BluetoothSensorManager {
         if(isAddressSet)connect(mBluetoothDeviceAddress);//&&mConnectionState!=STATE_CONNECTED)
     }
 
+    /**
+     * disconnects from connected device.
+     */
     public void disconnect(){
         if(mBluetoothAdapter == null || mBluetoothGatt == null){
             return;
         }
-        Log.d(TAG, "disconnect: ");
         mBluetoothGatt.disconnect();
         mConnectionState = STATE_DISCONNECTED;
     }
 
+    /**
+     * Closes GATT client.
+     */
     public void close(){
         if(mBluetoothAdapter == null){
             return;
@@ -175,10 +215,17 @@ public class BluetoothSensorManager {
         mBluetoothGatt = null;
     }
 
+    /**
+     * Determines wheter the BLE device is connected
+     * @return true if connected otherwise false
+     */
     public boolean isBluetoothDeviceOn(){
         return mConnectionState == STATE_CONNECTED;
     }
 
+    /**
+     * Callback to process communication from BLE device.
+     */
     private final BluetoothGattCallback myBluetoothGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -188,7 +235,6 @@ public class BluetoothSensorManager {
                 mBluetoothGatt.discoverServices();
                 broadcastUpdate(BluetoothSensorManager.ACTION_GATT_CONNECTED);
             } else if(newState == BluetoothProfile.STATE_DISCONNECTED){
-                Log.d(TAG, "onConnectionStateChange: Disconnected");
                 mConnectionState = STATE_DISCONNECTED;
                 broadcastUpdate(BluetoothSensorManager.ACTION_GATT_DISCONNECTED);
             }
@@ -197,22 +243,15 @@ public class BluetoothSensorManager {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if(status == BluetoothGatt.GATT_SUCCESS){
-                clearQues();
-                //broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
-
+                clearArrays();
                 for (BluetoothGattService s : mBluetoothGatt.getServices()){
-                    //Log.d(TAG, "onServicesDiscovered: Iterating services"+s.getUuid()+" their chara count is"+s.getCharacteristics().size());
                     for(GeneralTISensor sensor: sensors){
                         if(sensor.resolveService(s)){
-                            /*descriptors.add(sensor);
-                            characteristics.add(sensor);
-                            frequencies.add(sensor);*/
                             activeSensors.add(sensor);
                             break;
                         }
                     }
                 }
-                //getNextSensorNotificationGoing();
                 initializeSensors();
 
             } else {
@@ -222,6 +261,7 @@ public class BluetoothSensorManager {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            // New data available process and send them
             List<SensorData> dataPackage = new ArrayList<>();
             for (GeneralTISensor sensor: activeSensors) {
                 if(sensor.processNewData(characteristic,dataPackage)) break;
@@ -231,18 +271,22 @@ public class BluetoothSensorManager {
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Log.d(TAG, "onDescriptorWrite: "+(descriptor.getValue() == BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)+" status = "+status);
-            communicationSemaphore.release(); //First enable notifications to all Services... then enable sensors. It is made this way so this function doesnt have to search for settings characteriscs.
+            // Release semaphore lock so another message can be send.
+            communicationSemaphore.release();
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.d(TAG, "onCharacteristicWrite: "+characteristic.getUuid());
             communicationSemaphore.release();
         }
     };
 
+    /**
+     * Initializes all desired sensors which were set via {@link #setSensorsToListen(List, List)} or {@link #defaultListeningMode()} methods.\
+     * In other word all sensors which are in {@link #activeSensors} will be activated.
+     */
     private void initializeSensors(){
+        // New thread for semaphore releases
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -261,17 +305,30 @@ public class BluetoothSensorManager {
         }).start();
 
     }
+
+    /**
+     * Enable or disable provided sensor
+     * @param sensor Sensor to be enabled or disabled
+     * @param enable true to enable false to disable
+     * @throws InterruptedException
+     */
     private void configureSensor(GeneralTISensor sensor, boolean enable) throws InterruptedException{
-            sensor.configureNotifications(enable);
+        // First enable notifications to all Services... then enable sensors.
+        sensor.configureNotifications(enable);
+        communicationSemaphore.acquire();
+        sensor.configureSensor(enable);
+        communicationSemaphore.acquire();
+        //No need to set frequency when sensor will not be enabled
+        if (enable){
+            sensor.configureSensorFrequency(listenFrequencies.get(sensor.getSensorType(), 1000));
             communicationSemaphore.acquire();
-            sensor.configureSensor(enable);
-            communicationSemaphore.acquire();
-            if (enable){
-                sensor.configureSensorFrequency(listenFrequencies.get(sensor.getSensorType(), 1000));
-                communicationSemaphore.acquire();
-            }
+        }
     }
 
+    /**
+     * Returns list of all supported sensors provided by BLE device
+     * @return list of all supported sensors
+     */
     private List<GeneralTISensor> getBasicSetOfSensors(){
         List<GeneralTISensor> sensors = new ArrayList<>();
         sensors.add(new TIHumiditySensor(mBluetoothGatt));
@@ -282,6 +339,10 @@ public class BluetoothSensorManager {
         return sensors;
     }
 
+    /**
+     * Returns all sensors which are actually listened
+     * @param sensorTypes list of all listened sensors
+     */
     public void getListenedSensorTypes(List<Integer> sensorTypes){
         for(GeneralTISensor sensor: activeSensors){
             if(sensor.getSensorType()== SensorsEnum.EXT_MOVEMENT.sensorType){
@@ -294,6 +355,10 @@ public class BluetoothSensorManager {
         }
     }
 
+    /**
+     * Returns ids of all supported BLE sensors
+     * @param sensorTypes list of supported sensors ids
+     */
     public void giveMeYourSensorTypesForProfile(List<Integer> sensorTypes){
         List<GeneralTISensor> toIterate = getBasicSetOfSensors();
         for(GeneralTISensor sensor: toIterate){
@@ -301,23 +366,23 @@ public class BluetoothSensorManager {
         }
     }
 
+    /**
+     * Set sensors to be listened. To start listening to the set sensors call {@link #startListening()}
+     * @param sensorsTypes ids of sensors to be activated
+     * @param sensorFrequencies frequencies of sensors to be activated
+     */
     public void setSensorsToListen(List<Integer> sensorsTypes,List<Integer> sensorFrequencies){
-        clearQues();
+        clearArrays();
         for(GeneralTISensor sensor: sensors){
             if(sensorsTypes.contains(sensor.getSensorType())){
                 activeSensors.add(sensor);
-                //frequencies.add(sensor);
             }
-            /*descriptors.add(sensor);
-            characteristics.add(sensor);*/
         }
+        // If there is some part of movement sensor activate movement sensor
         if(sensorsTypes.contains(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType)||sensorsTypes.contains(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType)||sensorsTypes.contains(SensorsEnum.EXT_MOV_MAGNETIC.sensorType)){
             for(GeneralTISensor sensor: sensors){
                 if(sensor.getSensorType()==SensorsEnum.EXT_MOVEMENT.sensorType){
                     activeSensors.add(sensor);
-                    /*frequencies.add(sensor);
-                    descriptors.add(sensor);
-                    characteristics.add(sensor);*/
                     break;
                 }
             }
@@ -335,26 +400,25 @@ public class BluetoothSensorManager {
      * Starts listening to sensors which were set in setSensorsToListen. Those which are not set will be turned off.
      */
     public void startListening(){
-        initializeSensors();//getNextSensorNotificationGoing();
+        initializeSensors();
     }
 
+    /**
+     * Resets listened sensors so that all sensors are again listened with frequency 1s
+     */
     public void defaultListeningMode(){
-        clearQues();
+        clearArrays();
         for(GeneralTISensor sensor: sensors){
-            Log.d(TAG, "defaultListeningMode: "+sensor.getSensorType());
-            /*descriptors.add(sensor);
-            characteristics.add(sensor);
-            frequencies.add(sensor);*/
             activeSensors.add(sensor);
         }
-        initializeSensors();//getNextSensorNotificationGoing();
+        initializeSensors();
     }
 
-    private void clearQues(){
+    /**
+     * Clears active sensors and listenFrequencies arrays
+     */
+    private void clearArrays(){
         activeSensors.clear();
-        /*descriptors.clear();
-        characteristics.clear();
-        frequencies.clear();*/
         listenFrequencies.clear();
     }
 }
