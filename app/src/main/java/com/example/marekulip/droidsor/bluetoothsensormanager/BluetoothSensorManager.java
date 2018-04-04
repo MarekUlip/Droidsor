@@ -310,7 +310,7 @@ public class BluetoothSensorManager {
      * Enable or disable provided sensor
      * @param sensor Sensor to be enabled or disabled
      * @param enable true to enable false to disable
-     * @throws InterruptedException
+     * @throws InterruptedException Exception which may be thrown from semaphore errors.
      */
     private void configureSensor(GeneralTISensor sensor, boolean enable) throws InterruptedException{
         // First enable notifications to all Services... then enable sensors.
