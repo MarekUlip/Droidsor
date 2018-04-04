@@ -313,12 +313,12 @@ public class DroidsorService extends Service {
         if(ignoreMode || displayMode == ALL_SENSORS_MODE||isLogging()){
             androidSensorManager.getListenedSensorTypes(sensorTypes);
             if(bluetoothSensorManager.isBluetoothDeviceOn())
-            bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
+            bluetoothSensorManager.getListenedSensorTypes(sensorTypes);
         }
         else {
             if(displayMode == BLUETOOTH_SENSORS_MODE){
                 //if(bluetoothSensorManager.isBluetoothDeviceOn())
-                bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
+                bluetoothSensorManager.getListenedSensorTypes(sensorTypes);
             }
             else if(displayMode == MOBILE_SENSORS_MODE){
                 androidSensorManager.getListenedSensorTypes(sensorTypes);

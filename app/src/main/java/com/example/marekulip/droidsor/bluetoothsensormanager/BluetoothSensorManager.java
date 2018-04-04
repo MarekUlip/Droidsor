@@ -28,15 +28,22 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 /**
- * Created by Fredred on 21.10.2017.
+ * Class used for communication with BLE device. Ensures proper connection, disconnection and data transfer between devices.
+ * Created by Marek Ulip on 21.10.2017.
  */
 
 public class BluetoothSensorManager {
     private static final String TAG = BluetoothSensorManager.class.toString();
 
 
+    /**
+     * Message to be send as broadcast when smartphone has connected with BLE device
+     */
     public final static String ACTION_GATT_CONNECTED =
             "ACTION_GATT_CONNECTED";
+    /**
+     * Message to be send as broadcast when smartphone has disconnected with BLE device
+     */
     public final static String ACTION_GATT_DISCONNECTED =
             "ACTION_GATT_DISCONNECTED";
 
@@ -44,20 +51,38 @@ public class BluetoothSensorManager {
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
+    /**
+     * Service which should process broadcasts of this class
+     */
     private final DroidsorService droidsorService;
+
+    /**
+     * BluetoothManager from Android system
+     */
     private BluetoothManager mBluetoothManager;
+    /**
+     * BluetoothAdapter from Android system
+     */
     private BluetoothAdapter mBluetoothAdapter;
+    /**
+     * Address of a connected device or address of a device to be connected with.
+     */
     private String mBluetoothDeviceAddress;
+    /**
+     * BluetoothGatt from Android system.
+     */
     private BluetoothGatt mBluetoothGatt;
 
+    /**
+     * State of connection between smartphone and BLE device. Can be {@link #STATE_DISCONNECTED}, {@link #STATE_CONNECTING} or {@link #STATE_CONNECTED}
+     * Default value is {@link #STATE_DISCONNECTED}
+     */
     private int mConnectionState = STATE_DISCONNECTED;
+    /**
+     * Indicates whether {@link #mBluetoothDeviceAddress} has been set correctly
+     */
     private boolean isAddressSet = false;
-    private boolean areActiveSenorsSet = false;
-    private boolean firstTime = true;
 
-   /* private ArrayDeque<GeneralTISensor> descriptors = new ArrayDeque<>();
-    private ArrayDeque<GeneralTISensor> characteristics = new ArrayDeque<>();
-    private ArrayDeque<GeneralTISensor> frequencies = new ArrayDeque<>();*/
     private List<GeneralTISensor> sensors = getBasicSetOfSensors();
     private final List<GeneralTISensor> activeSensors = new ArrayList<>();
     private final SparseIntArray listenFrequencies = new SparseIntArray();
@@ -183,7 +208,6 @@ public class BluetoothSensorManager {
                             characteristics.add(sensor);
                             frequencies.add(sensor);*/
                             activeSensors.add(sensor);
-                            areActiveSenorsSet = true;
                             break;
                         }
                     }
@@ -222,23 +246,22 @@ public class BluetoothSensorManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                for(GeneralTISensor sensor: sensors){
-                    if(activeSensors.contains(sensor)){
-                        configureSensor(sensor,true);
-                    }else{
-                        configureSensor(sensor,false);
+                try {
+                    for (GeneralTISensor sensor : sensors) {
+                        if (activeSensors.contains(sensor)) {
+                            configureSensor(sensor, true);
+                        } else {
+                            configureSensor(sensor, false);
+                        }
                     }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
 
     }
-    private void configureSensor(GeneralTISensor sensor, boolean enable){
-        try {
-            /*if(firstTime){
-                communicationSemaphore.acquire();
-                firstTime = false;
-            }*/
+    private void configureSensor(GeneralTISensor sensor, boolean enable) throws InterruptedException{
             sensor.configureNotifications(enable);
             communicationSemaphore.acquire();
             sensor.configureSensor(enable);
@@ -247,50 +270,7 @@ public class BluetoothSensorManager {
                 sensor.configureSensorFrequency(listenFrequencies.get(sensor.getSensorType(), 1000));
                 communicationSemaphore.acquire();
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
-    /*private void getNextSensorNotificationGoing(){
-        if(descriptors.isEmpty()){
-            Log.d(TAG, "getNextSensorGoing: All sensor notifications enabled. Enabling sensors themselves");
-            getNextSensorGoing();
-            return;
-        }
-        Log.d(TAG, "getNextSensorGoing: Activating next sensor. Total size is: "+descriptors.size());
-        if(activeSensors.contains(descriptors.peek())){
-            descriptors.pop().configureNotifications(true);
-        }else {
-            descriptors.pop().configureNotifications(false);
-        }
-    }
-
-
-
-    private void getNextSensorGoing(){
-        if(characteristics.isEmpty()){
-            Log.d(TAG, "getNextSensorGoing: Sensors are up and running");
-            setNextSensorFrequency();
-            return;
-        }
-        if(activeSensors.contains(characteristics.peek())){
-            characteristics.pop().configureSensor(true);
-        }else {
-            characteristics.pop().configureSensor(false);
-        }
-    }
-
-    private void setNextSensorFrequency(){
-        if(frequencies.isEmpty()){
-            Log.d(TAG, "setNextSensorFrequency: All required frequencies has been set");
-            return;
-        }
-        GeneralTISensor sensor = frequencies.pop();
-        if(activeSensors.contains(sensor)){
-            sensor.configureSensorFrequency(listenFrequencies.get(sensor.getSensorType(),1000));
-        }
-
-    }*/
 
     private List<GeneralTISensor> getBasicSetOfSensors(){
         List<GeneralTISensor> sensors = new ArrayList<>();
@@ -302,12 +282,8 @@ public class BluetoothSensorManager {
         return sensors;
     }
 
-    public void giveMeYourSensorTypes(List<Integer> sensorTypes){
-        //Log.d(TAG, "getListenedSensorTypes: "+activeSensors.size());
-        List<GeneralTISensor> toIterate;
-        if(!areActiveSenorsSet) toIterate = getBasicSetOfSensors();
-        else toIterate = activeSensors;
-        for(GeneralTISensor sensor: toIterate){
+    public void getListenedSensorTypes(List<Integer> sensorTypes){
+        for(GeneralTISensor sensor: activeSensors){
             if(sensor.getSensorType()== SensorsEnum.EXT_MOVEMENT.sensorType){
                 sensorTypes.add(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType);
                 sensorTypes.add(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType);
