@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ public class OpenGLActivity extends AppCompatActivity {
             mDroidsorService = ((DroidsorService.LocalBinder)service).getService();
             mDroidsorService.startOpenGLMode();
             mDroidsorService.setMode(DroidsorService.ALL_SENSORS_MODE);
+            invalidateOptionsMenu();
         }
 
         @Override
@@ -73,6 +75,10 @@ public class OpenGLActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.opel_gl_menu,menu);
+        //Check if gyroscope is present. Accelerometer should always be present so no need to check.
+        if(mDroidsorService!= null){
+            menu.findItem(R.id.action_gyroscope_internal).setVisible(mDroidsorService.isSensorPresent(SensorsEnum.INTERNAL_GYROSCOPE.sensorType));
+        }
         return true;
     }
 
@@ -122,8 +128,12 @@ public class OpenGLActivity extends AppCompatActivity {
 
     private void connectToService(){
         Intent intent = new Intent(this,DroidsorService.class);
-        if(!isMyServiceRunning(DroidsorService.class)){
-            Log.d("NtRn", "onCreate: NotRunning");startService(intent);
+        if(!isMyServiceRunning(DroidsorService.class) || DroidsorService.isServiceOff()){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            }else{
+                startService(intent);
+            }
         }
         bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
         registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());

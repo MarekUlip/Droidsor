@@ -285,27 +285,14 @@ public class DroidsorService extends Service {
         sensorFrequencies.add(20);
         sensorTypes.add(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType);
         sensorFrequencies.add(20);*/
-        androidSensorManager.setSensorsToListen(sensorTypes,sensorFrequencies);
+        androidSensorManager.setSensorsToListenSafe(sensorTypes,sensorFrequencies);
         androidSensorManager.startListening();
-        /*if(isBluetoothDeviceOn()){
-            List<Integer> sensorTypesBluetooth = new ArrayList<>();
-            List<Integer> sensorFrequenciesBluetooth = new ArrayList<>();
-            sensorTypesBluetooth.add(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType);
-            sensorFrequenciesBluetooth.add(200);
-            sensorTypesBluetooth.add(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType);
-            sensorFrequenciesBluetooth.add(200);
-            bluetoothSensorManager.setSensorsToListen(sensorTypesBluetooth,sensorFrequenciesBluetooth);
-            bluetoothSensorManager.startListening();
-        }*/
     }
 
     public void stopOpenGLMode(){
         minSendInterval = 200;
         androidSensorManager.stopListening();
         androidSensorManager.resetManager();
-        /*if(isBluetoothDeviceOn()){
-            bluetoothSensorManager.defaultListeningMode();
-        }*/
     }
 
     public boolean isLogging(){
@@ -324,7 +311,7 @@ public class DroidsorService extends Service {
     public List<Integer> getMonitoredSensorsTypes(boolean ignoreMode){
         List<Integer> sensorTypes = new ArrayList<>();
         if(ignoreMode || displayMode == ALL_SENSORS_MODE||isLogging()){
-            androidSensorManager.giveMeYourSensorTypes(sensorTypes);
+            androidSensorManager.getListenedSensorTypes(sensorTypes);
             if(bluetoothSensorManager.isBluetoothDeviceOn())
             bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
         }
@@ -334,7 +321,7 @@ public class DroidsorService extends Service {
                 bluetoothSensorManager.giveMeYourSensorTypes(sensorTypes);
             }
             else if(displayMode == MOBILE_SENSORS_MODE){
-                androidSensorManager.giveMeYourSensorTypes(sensorTypes);
+                androidSensorManager.getListenedSensorTypes(sensorTypes);
             }
         }
         return sensorTypes;
@@ -342,19 +329,24 @@ public class DroidsorService extends Service {
 
     public List<Integer> getSensorTypesForProfile(){
         List<Integer> sensorTypes = new ArrayList<>();
-        androidSensorManager.giveMeYourSensorTypes(sensorTypes);
+        androidSensorManager.getAllAvailableSensorTypes(sensorTypes);
         if(bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.giveMeYourSensorTypesForProfile(sensorTypes);
         return sensorTypes;
     }
 
     private boolean isSendable(List<SensorData> sensorDataList) {
         //It is enough to check only first sensor from list because ussualy only one value is present at list. When there are multiple values in the list they are from the same source
-        return !(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType < 100) && !(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType > 100); //TODO Possible error
+        return !(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType < 100) && !(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType > 100);
+    }
+
+    public boolean isSensorPresent(int type){
+        return androidSensorManager.isSensorPresent(type);
     }
 
     private Notification createOrUpdateServiceNotification(String name, String contextText){
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        //On Android Oreo there can be no notification without notification channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create the NotificationChannel
             CharSequence channelName = getString(R.string.app_name);

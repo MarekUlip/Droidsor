@@ -23,10 +23,10 @@
     <xsd:element name="orientation" type="three_dimension" />
 
     <xsd:attribute name="data_source">
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="internal"/>
-            <xs:enumeration value="external"/>
-        </xs:restriction>
+        <xsd:restriction base="xs:string">
+            <xsd:enumeration value="internal"/>
+            <xsd:enumeration value="external"/>
+        </xsd:restriction>
     </xsd:attribute>
 
     <xsd:complexType name="three_dimension">

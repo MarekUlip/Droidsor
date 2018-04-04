@@ -18,6 +18,7 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 import java.util.ArrayList;
@@ -89,9 +90,8 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
             xAxis.setValueFormatter(formatter);
 
             graphView.setData(item.lineData);
+            graphView.fitScreen();
             graphView.invalidate();
-
-            graphView.setVisibleXRangeMaximum(item.xLabels.size());
         }
 
         sensorValue.setText(item.sensorName);

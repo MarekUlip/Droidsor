@@ -303,7 +303,7 @@ public class BluetoothSensorManager {
     }
 
     public void giveMeYourSensorTypes(List<Integer> sensorTypes){
-        //Log.d(TAG, "giveMeYourSensorTypes: "+activeSensors.size());
+        //Log.d(TAG, "getListenedSensorTypes: "+activeSensors.size());
         List<GeneralTISensor> toIterate;
         if(!areActiveSenorsSet) toIterate = getBasicSetOfSensors();
         else toIterate = activeSensors;
