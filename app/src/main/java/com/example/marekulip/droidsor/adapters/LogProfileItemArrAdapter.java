@@ -28,13 +28,21 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import java.util.List;
 
 /**
- * Created by Fredred on 28.10.2017.
+ * Created by Marek Ulip on 28.10.2017.
+ * Adapter used to display and edit Profile items.
  */
 
 public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
 
     private List<LogProfileItem> items;
+    /**
+     * Reference to a fragment using this Adapter
+     */
     private FragmentActivity mActivity;
+    /**
+     * Sparse array that helps realise true nature of movement Sensor in SensorTag where movement sensor actually contains tree inner sensors
+     * This array is used to remeber which sensors from movement sensor were selected
+     */
     private SparseBooleanArray extBluetoothMovSensorStates = new SparseBooleanArray();
 
 
@@ -67,16 +75,15 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
             viewHolder = (ViewHolder)convertView.getTag();
             viewHolder.position = position;
         }
+        //Disable listener so setting checked state does not trigger it
         viewHolder.enableChB.setOnCheckedChangeListener(null);
         viewHolder.enableChB.setChecked(profile.isEnabled);
+        //Again enable listener on appropriate sensor type
         viewHolder.enableChB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(profile.sensorType==SensorsEnum.EXT_MOVEMENT.sensorType){
-                    /*if(isCheckProgrammatical){
-                        isCheckProgrammatical = false;
-                        return;
-                    }*/
+                    //This is sensor containing more sensors show dialog with contained sensors
                     DialogFragment dialogFragment = new SetExtMovSensorDialogFragment();
                     Bundle args = new Bundle();
                     args.putBoolean(SetExtMovSensorDialogFragment.MAG_SENSOR,extBluetoothMovSensorStates.get(SensorsEnum.EXT_MOV_MAGNETIC.sensorType,false));
@@ -88,7 +95,6 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
 
             }
         });
-        //if(profile.getSensorType())
         viewHolder.frequencyEditText.setText(String.valueOf(profile.scanFrequency));
         viewHolder.frequencySeekBar.setProgress(profile.scanFrequency-minimumValue);
         viewHolder.itemName.setText(SensorsEnum.resolveEnum(profile.sensorType).getSensorName(getContext()));// "Sensor "+profile.getSensorType());
@@ -99,10 +105,18 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
         this.items = items;
     }
 
+    /**
+     * Get items of this array adapter. Note that items of movement sensor must be obtained with {@link #getExtBluetoothMovSensorStates()} method
+     * @return Items of this array adapter
+     */
     public List<LogProfileItem> getItems(){
         return items;
     }
 
+    /**
+     * Get selected items of external movement sensor
+     * @return Items of external movement sensor
+     */
     public SparseBooleanArray getExtBluetoothMovSensorStates(){
         return extBluetoothMovSensorStates;
     }
@@ -117,13 +131,22 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
         SeekBar frequencySeekBar;
         EditText frequencyEditText;
     }
+
+    /**
+     * Minimal value of sensor logging frequency in ms
+     */
     private final int minimumValue = 200;
+    /**
+     * Maximum value of sensor logging frequency in ms
+     */
     private final int maxValue = 10000;
     private SeekBar.OnSeekBarChangeListener createSeekBarChangeListener(final ViewHolder v){
 
         return new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                // If user did the change set text of EditText View and also add
+                // minimum value so the final value is correct
                 if(b)v.frequencyEditText.setText(String.valueOf(i+minimumValue));
             }
 
@@ -156,9 +179,12 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
                 //Log.d("sd", "afterTextChanged: ");
                 if(editable.toString().length() != 0) {
                     int value = Integer.parseInt(editable.toString());
+                    // Keep value in bounds
                     if(value>maxValue)value = maxValue;
                     else if(value<minimumValue)value = minimumValue;
+                    // Set real value
                     items.get(v.position).setScanFrequency(value);
+                    // Set programmatic value so it reflects behaviour of seek bar
                     v.frequencySeekBar.setProgress(value-minimumValue);
                 }
             }
@@ -169,7 +195,11 @@ public class LogProfileItemArrAdapter extends ArrayAdapter<LogProfileItem>{
     private long focusTime = 0;                 // time of last touch
     private View focusTarget = null;
 
-    View.OnFocusChangeListener mOnFocusChangeListener = new View.OnFocusChangeListener() {
+    /**
+     * Focus change listener used so that number keyboard is displayed correctly
+     * and focus is obtained when user tries to write frequency via EditText
+     */
+    private View.OnFocusChangeListener mOnFocusChangeListener = new View.OnFocusChangeListener() {
         @Override
         public void onFocusChange(View view, boolean hasFocus) {
             long t = System.currentTimeMillis();

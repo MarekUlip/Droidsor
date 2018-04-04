@@ -1,30 +1,23 @@
 package com.example.marekulip.droidsor.adapters;
 
 import android.content.Context;
-import android.content.Intent;
-import android.preference.PreferenceManager;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.example.marekulip.droidsor.R;
 import com.example.marekulip.droidsor.SensorItem;
-import com.example.marekulip.droidsor.opengl.OpenGLActivity;
-import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.List;
 
 /**
  * Created by Marek Ulip on 19-Sep-17.
+ * Adapter used to display data from sensors on main page
  */
 
 public class SensorDataDispArrAdapter extends ArrayAdapter<SensorItem> {
