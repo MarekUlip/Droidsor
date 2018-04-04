@@ -4,16 +4,17 @@ import android.content.ContentResolver;
 import android.provider.BaseColumns;
 
 /**
- * Created by Fredred on 20.10.2017.
+ * Class represents table for log profiles
+ * Created by Marek Ulip on 20.10.2017.
  */
 
-public class LogProfilesTable  implements BaseColumns{
+public final class LogProfilesTable  implements BaseColumns{
 
     public static final String TABLE_NAME = "Log_profiles";
 
     public static final String PROFILE_NAME = "profile_name";
     /**
-     * GPS location
+     * Indicator whether to GPS location or not.
      */
     public static final String SAVE_LOCATION = "save_location";
     public static final String GPS_FREQUENCY = "gps_frequency";

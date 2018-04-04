@@ -4,10 +4,11 @@ import android.content.ContentResolver;
 import android.provider.BaseColumns;
 
 /**
+ * Class representing table with count of sensor items in log. This table is used for faster load of log summary.
  * Created by Marek Ulip on 28-Jan-18.
  */
 
-public class SenorDataItemsCountTable implements BaseColumns {
+public final class SenorDataItemsCountTable implements BaseColumns {
     public static final String TABLE_NAME = "Sensor_data_count";
 
     public static final String SENSOR_TYPE = "sensor_type";

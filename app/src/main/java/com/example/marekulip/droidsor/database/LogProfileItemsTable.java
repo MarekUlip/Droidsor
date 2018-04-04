@@ -4,10 +4,11 @@ import android.content.ContentResolver;
 import android.provider.BaseColumns;
 
 /**
- * Created by Fredred on 20.10.2017.
+ * Class represents table single items in log profile
+ * Created by Marek Ulip on 20.10.2017.
  */
 
-public class LogProfileItemsTable implements BaseColumns{
+public final class LogProfileItemsTable implements BaseColumns{
     public static final String TABLE_NAME = "Log_profile_items";
 
     public static final String SENSOR_TYPE = "sensor_type";

@@ -5,7 +5,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * Created by Fredred on 21.08.2017.
+ * Database helper for Droidsor database.
+ * Created by Marek Ulip on 21.08.2017.
  */
 
 public class SensorsDataDbHelper extends SQLiteOpenHelper {
