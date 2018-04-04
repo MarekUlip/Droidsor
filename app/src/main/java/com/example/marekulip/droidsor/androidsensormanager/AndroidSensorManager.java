@@ -84,7 +84,7 @@ public class AndroidSensorManager implements SensorEventListener{
     public AndroidSensorManager(DroidsorService service){
         droidsorService = service;
         mSensorManager = (SensorManager)service.getSystemService(Context.SENSOR_SERVICE);
-        resetManager();
+        initManager();
     }
 
 
@@ -155,10 +155,18 @@ public class AndroidSensorManager implements SensorEventListener{
     }
 
     /**
-     * Resets set sensors by setting all available sensors to listen.
+     * Initializes this manager by finding all available sensors
+     */
+    private void initManager(){
+        initToListenIds();
+        filterToListenIds();
+    }
+
+    /**
+     * Resets sensors by setting all available sensors to listen.
      */
     public void resetManager(){
-        initToListenIds();
+        //initToListenIds();
         filterToListenIds();
         listenFrequencies.clear();
     }
@@ -265,6 +273,13 @@ public class AndroidSensorManager implements SensorEventListener{
      * Filters sensors that are supported but are not present on the device
      */
     private void filterToListenIds(){
+        //If this has been done before just reset toListenIds with all present sensors
+        if(!toListen.isEmpty()){
+            toListenIds.clear();
+            getAllAvailableSensorTypes(toListenIds);
+            return;
+        }
+        //Otherwise find all present sensors
         toListen.clear();
         presentSensors = new SparseBooleanArray();
         List<Sensor>  sensors= mSensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -278,7 +293,11 @@ public class AndroidSensorManager implements SensorEventListener{
         for(int i = 0; i<toListen.size();i++){
             toListenIds.add(toListen.get(i).getType());
         }
-        if(presentSensors.get(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType,false) &&presentSensors.get(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType,false))toListenIds.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
+        // If accelerometer and magentometer are present orientation can be measured too
+        if(presentSensors.get(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType,false) &&presentSensors.get(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType,false)){
+            presentSensors.put(orientationId,true);
+            toListenIds.add(orientationId);
+        }
     }
 
     /**
