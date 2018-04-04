@@ -166,7 +166,6 @@ public class AndroidSensorManager implements SensorEventListener{
      * Resets sensors by setting all available sensors to listen.
      */
     public void resetManager(){
-        //initToListenIds();
         filterToListenIds();
         listenFrequencies.clear();
     }
