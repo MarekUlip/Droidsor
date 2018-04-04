@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 /**
+ * Class used to export Sensor logs.
  * Created by Marek Ulip on 05-Feb-18.
  */
 
@@ -76,8 +77,8 @@ public class LogExporter {
 
     /**
      * Heleper method to add item from cursor into the list.
-     * @param c
-     * @param data
+     * @param c cursor with items
+     * @param data list to which data from cursor should be added
      */
     private static void addItemToListFromCursor(Cursor c, List<SensorData> data){
         data.add(new SensorData(c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE))
@@ -94,6 +95,12 @@ public class LogExporter {
         ));
     }
 
+    /**
+     * Helper method to display toast from other than UI thread
+     * @param context should be application context
+     * @param text text to be shown
+     * @param length duration of toast
+     */
     private static void toast(final Context context, final String text, final int length) {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
@@ -110,7 +117,7 @@ public class LogExporter {
      */
     private static String makePlaceholders(int len) {
         if (len < 1) {
-            // It will lead to an invalid query anyway ..
+            // It will lead to an invalid query
             throw new RuntimeException("No placeholders");
         } else {
             StringBuilder sb = new StringBuilder(len * 2 - 1);
@@ -121,9 +128,15 @@ public class LogExporter {
             return sb.toString();
         }
     }
+
+    /**
+     * Used to set parameters for placeholders in SQLITE IN clause
+     * @param params array to which params should be added
+     * @param idList source of params
+     */
     private static void makeParameters(String[] params,List<Integer> idList) {
         if (params.length < 2) {
-            // It will lead to an invalid query anyway ..
+            // It will lead to an invalid query
             throw new RuntimeException("No placeholders");
         } else {
             for (int i = 1; i <= idList.size(); i++) {

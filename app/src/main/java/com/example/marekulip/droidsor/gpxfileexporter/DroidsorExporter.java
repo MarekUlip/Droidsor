@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 /**
+ * Class used for exporting files from the app.
  * Created by Marek Ulip on 29-Oct-17.
  */
 
@@ -28,6 +29,11 @@ public class DroidsorExporter {
     public static final int READ_EXTERNAL_STORAGE_ID = 2;
     private final static File path = Environment.getExternalStorageDirectory();//Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
 
+    /**
+     * Checks whether the app has permission to write to an external storage. If not it tries to obtain required permission.
+     * @param context Context of an activity which will be used to ask for permission
+     * @return true if permission is already granted
+     */
     public static boolean checkForWritePermission(Context context){
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             if (ActivityCompat.shouldShowRequestPermissionRationale((AppCompatActivity)context,
@@ -40,6 +46,13 @@ public class DroidsorExporter {
         return true;
     }
 
+    /**
+     * Writes specified string to a specified file
+     * @param dataToSave Text to save to a file
+     * @param fileName Name of a file
+     * @param context Context used for making file immediately visible from computer. This context should be Application. If not null pointer exceptions may arise.
+     * @return true if file write was successful
+     */
     public static boolean writeToFile(String dataToSave,String fileName,Context context){
         if(isExternalStorageWritable()) {
             try {
@@ -48,14 +61,13 @@ public class DroidsorExporter {
                     boolean rv = folder.mkdir();
                 }
                 File file = new File(folder,fileName);
-                //path.mkdirs();
-                //Log.d("sdd", "writeToFile: "+fileName);
                 file.createNewFile();
                 FileOutputStream fOut = new FileOutputStream(file);
                 OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
                 myOutWriter.append(dataToSave);
                 myOutWriter.close();
                 fOut.close();
+                //Make file visible on PC
                 MediaScannerConnection.scanFile(context,new String[]{file.getPath()},null,null);
                 return true;
             } catch (IOException e) {

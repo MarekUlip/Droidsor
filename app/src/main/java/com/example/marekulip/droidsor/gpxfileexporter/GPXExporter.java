@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 /**
+ * Class for creating GPX format file.
  * Created by Marek Ulip on 29-Oct-17.
  */
 
@@ -60,65 +61,37 @@ public class GPXExporter {
     public static final String GPX_LATITUDE = "gpx_latitude";
 
     static {
+        //Init decimal formatting
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
         decimalFormat =  new DecimalFormat("##.#####",symbols);
         decimalFormat.setRoundingMode(RoundingMode.DOWN);
-        //decimalFormat.setDe
     }
 
 
+    /**
+     * Exports provided sensor data to a file
+     * @param entries List of sensor data to be exported
+     * @param fileName Name of a file
+     * @param context Should be application context when using with large files
+     */
     public static void exportLogItems(List<SensorData> entries, String fileName, Context context){
         DroidsorExporter.writeToFile(createGPXfromDatas(entries,context),fileName+".gpx",context);
     }
 
-    /*private static void prepDateFormat(){
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
-        df.setTimeZone(tz);
-        String nowAsISO = df.format(new Date());
-    }*/
-
-    /*private static String createGPXfromDatas(List<SensorData> datas,Context context){
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
-        df.setTimeZone(tz);
-        int size = datas.size();
-        StringBuilder sb = new StringBuilder(loadBaseHTMLFromFile(context));
-        //StringBuilder sbBody = new StringBuilder("");
-        sb.append(trkStartTag);
-        sb.append(trksegStartTag).append(System.lineSeparator());
-        //
-        SensorData data;
-        for(int i = 0; i<size;i++){
-            data = datas.get(i);
-            sb.append(trkptStartTag).append("lat=\"").append(data.latitude).append("\" lon=\"").append(data.longitude).append("\">").append(System.lineSeparator())
-                    //.append(timeStartTag).append(DateFormat.getDateTimeInstance().format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator())
-                    .append(timeStartTag).append(df.format(new Date(data.time))).append(timeEndTag).append(System.lineSeparator());
-                    if(data.altitude != 0)sb.append(eleStartTag).append(data.altitude).append(eleEndTag).append(System.lineSeparator());
-                    sb.append(extensionsStartTag).append(System.lineSeparator())
-                    .append(xValueStartTag).append(decimalFormat.format(data.values.x)).append(xValueEndTag).append(System.lineSeparator())
-                    .append(yValueStartTag).append(decimalFormat.format(data.values.y)).append(yValueEndTag).append(System.lineSeparator())
-                    .append(zValueStartTag).append(decimalFormat.format(data.values.z)).append(zValueEndTag).append(System.lineSeparator())
-                    .append(extensionsEndTag).append(trkptEndTag).append(System.lineSeparator());
-
-            //sb.append(trkStartTag).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(listItemEnd);
-            //sbBody.append(entrieDivStart).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(entrieDivStartEnd).append(entries.get(i).getEntrieBody(false)).append(entrieDivEnd);
-        }
-        sb.append(trksegEndTag).append(trkEndTag).append("</gpx>");
-        Log.d("Result", "createHTMLfromEntries: "+sb);
-        return sb.toString();
-    }*/
-
+    /**
+     * Create formated GPX string from provided data
+     * @param datas Data to be transformed into GPX
+     * @param context should be application context. It is used to get sensor names from strings resources file.
+     * @return GPX formatted  string
+     */
     private static String createGPXfromDatas(List<SensorData> datas,Context context){
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         int size = datas.size();
         StringBuilder sb = new StringBuilder(loadBaseHTMLFromFile(context));
-        //StringBuilder sbBody = new StringBuilder("");
         sb.append(trkStartTag);
         sb.append(trksegStartTag).append(System.lineSeparator());
-        //
         SensorData data;
         SensorsEnum sensorsEnum;
         long lastTime =  datas.get(0).time;
@@ -173,14 +146,16 @@ public class GPXExporter {
 
             sb.append(extensionsEndTag).append(trkptEndTag).append(System.lineSeparator());
 
-            //sb.append(trkStartTag).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(listItemEnd);
-            //sbBody.append(entrieDivStart).append(i+1).append(trkEndTag).append(i+1).append(". ").append(entries.get(i).getEntrieName()).append(entrieDivStartEnd).append(entries.get(i).getEntrieBody(false)).append(entrieDivEnd);
         }
         sb.append(trksegEndTag).append(trkEndTag).append("</gpx>");
-        //Log.d("Result", "createHTMLfromEntries: "+sb);
         return sb.toString();
     }
 
+    /**
+     * Loads header of GPX file from resources.
+     * @param context context to be used to load the resource
+     * @return GPX header
+     */
     private static String loadBaseHTMLFromFile(Context context){
         StringBuilder builder = new StringBuilder("");
         try {
