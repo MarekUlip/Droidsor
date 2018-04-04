@@ -21,6 +21,7 @@ import com.example.marekulip.droidsor.database.SensorLogsTable;
 import com.example.marekulip.droidsor.database.SensorsDataDbHelper;
 
 /**
+ * Class for accessing database via ContentProvide
  * Created by Marek Ulip on 23-Jan-18.
  */
 
@@ -28,15 +29,45 @@ public class DroidsorProvider extends ContentProvider {
 
     private SensorsDataDbHelper database;
 
+    /**
+     * Indicator for whole log_profile table
+     */
     private static final int LOG_PROFILE = 1;
+    /**
+     * Indicator for one row in log_profile table
+     */
     private static final int LOG_PROFILE_ID = 2;
+    /**
+     * Indicator for whole log_profile_items table
+     */
     private static final int LOG_PROFILE_ITEMS = 3;
+    /**
+     * Indicator for one row in log_profile_items table
+     */
     private static final int LOG_PROFILE_ITEMS_ID = 4;
+    /**
+     * Indicator for whole sensor_logs table
+     */
     private static final int SENSOR_LOGS = 5;
+    /**
+     * Indicator for one row in sensor_logs table
+     */
     private static final int SENSOR_LOGS_ID = 6;
+    /**
+     * Indicator for whole sensor_data table
+     */
     private static final int SENSOR_DATA = 7;
+    /**
+     * Indicator for one row in sensor_data table
+     */
     private static final int SENSOR_DATA_ID = 8;
+    /**
+     * Indicator for whole sensor_data_count table
+     */
     private static final int SENSOR_DATA_COUNT = 9;
+    /**
+     * Indicator for one row in sensor_data_count table
+     */
     private static final int SENSOR_DATA_COUNT_ID = 10;
 
 
@@ -44,10 +75,25 @@ public class DroidsorProvider extends ContentProvider {
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
+    /**
+     * Uri for log_profile table
+     */
     public static final Uri LOG_PROFILE_URI = Uri.parse("content://"+ AUTHORITY+"/"+LogProfilesTable.TABLE_NAME);
+    /**
+     * Uri for log_profile_items table
+     */
     public static final Uri LOG_PROFILE_ITEMS_URI = Uri.parse("content://"+ AUTHORITY+"/"+LogProfileItemsTable.TABLE_NAME);
+    /**
+     * Uri for sensor_logs table
+     */
     public static final Uri SENSOR_LOGS_URI = Uri.parse("content://"+ AUTHORITY+"/"+SensorLogsTable.TABLE_NAME);
+    /**
+     * Uri for sensor_data table
+     */
     public static final Uri SENSOR_DATA_URI = Uri.parse("content://"+ AUTHORITY+"/"+SensorDataTable.TABLE_NAME);
+    /**
+     * Uri for sensor_data_count table
+     */
     public static final Uri SENSOR_DATA_COUNT_URI = Uri.parse("content://"+ AUTHORITY+"/"+ SenorDataItemsCountTable.TABLE_NAME);
 
 
