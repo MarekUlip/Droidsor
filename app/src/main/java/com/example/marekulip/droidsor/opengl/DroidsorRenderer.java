@@ -15,10 +15,16 @@ import android.util.Log;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
+/**
+ * Renderer used to draw 3D cube which shows how data from sensors look in space
+ */
 public class DroidsorRenderer implements GLSurfaceView.Renderer
 {
     private static final String TAG = "DroidsorRenderer";
 
+    /**
+     * Data from sensors which should be applied on the cube
+     */
     private SensorData data;
 
 
@@ -71,7 +77,7 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
     /**
      * Initialize the model data.
      */
-    public DroidsorRenderer()
+    DroidsorRenderer()
     {
         // Define points for a cube.
         // X, Y, Z
@@ -183,61 +189,6 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
                         1.0f, 0.0f, 1.0f, 1.0f
                 };
 
-        // X, Y, Z
-        // The normal is used in light calculations and is a vector which points
-        // orthogonal to the plane of the surface. For a cube model, the normals
-        // should be orthogonal to the points of each face.
-        final float[] cubeNormalData =
-                {
-                        // Front face
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-
-                        // Right face
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-
-                        // Back face
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-
-                        // Left face
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-
-                        // Top face
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-
-                        // Bottom face
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f
-                };
-
         // Initialize the buffers.
         mCubePositions = ByteBuffer.allocateDirect(cubePositionData.length * mBytesPerFloat)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -275,7 +226,7 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
                 + "}                                                                     \n";
     }
 
-    protected String getFragmentShader()
+    private String getFragmentShader()
     {
 
         return "precision mediump float;       \n"		// Set the default precision to medium. We don't need as high of a
@@ -363,8 +314,6 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
             mPositionHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Position");
             mColorHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Color");
 
-
-            //Log.d(TAG, "onDrawFrame: x: "+orientationAngles[0]+" y: "+orientationAngles[1]);
             Matrix.setIdentityM(mModelMatrix, 0);
             Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -5.0f);
             if(data.sensorType == SensorsEnum.INTERNAL_GYROSCOPE.sensorType){
@@ -377,18 +326,7 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
                 Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer, 1.0f, 0.0f, 0.0f);
                 Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer*-1, 0.0f, 1.0f, 0.0f);
                 Matrix.rotateM(mModelMatrix, 0, 0, 0.0f, 0.0f, 1.0f);
-            }/*
-            if(data.sensorType == SensorsEnum.EXT_MOV_GYROSCOPE.sensorType){
-                float enhancer = 0.5f;
-                Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer, 1.0f, 0.0f, 0.0f);
-                Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer*-1, 0.0f, 1.0f, 0.0f);
-                Matrix.rotateM(mModelMatrix, 0, (float)data.values.z * enhancer, 0.0f, 0.0f, 1.0f);
-            } else if(data.sensorType == SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType){
-                int enhancer = 80;
-                Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer, 1.0f, 0.0f, 0.0f);
-                Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer*-1, 0.0f, 1.0f, 0.0f);
-                Matrix.rotateM(mModelMatrix, 0, 0, 0.0f, 0.0f, 1.0f);
-            }*/
+            }
             drawCube();
         }
     }

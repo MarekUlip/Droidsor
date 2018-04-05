@@ -22,11 +22,29 @@ import com.example.marekulip.droidsor.DroidsorService;
 import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
 import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
+/**
+ * Acitivty used to display 3D cube to show how data from sensors look in space.
+ */
 public class OpenGLActivity extends AppCompatActivity {
+    /**
+     * Surface view from Android
+     */
     private GLSurfaceView mGLSurfaceView;
+    /**
+     * Renderer that does actual drawing
+     */
     private DroidsorRenderer renderer;
+    /**
+     * Service used to retrieve data from sensors
+     */
     private DroidsorService mDroidsorService;
+    /**
+     * Type of a sensor to get data from
+     */
     private int sensorType;
+    /**
+     * Connection to service.
+     */
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -116,6 +134,11 @@ public class OpenGLActivity extends AppCompatActivity {
         mGLSurfaceView.onPause();
     }
 
+    /**
+     * Determines whether specified service is running. Not 100% reliable. Usable at approximately 80% use cases.
+     * @param serviceClass Service to check
+     * @return true if service runs otherwise false
+     */
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -126,6 +149,9 @@ public class OpenGLActivity extends AppCompatActivity {
         return false;
     }
 
+    /**
+     * Connects to service or truns service on if it is not running
+     */
     private void connectToService(){
         Intent intent = new Intent(this,DroidsorService.class);
         if(!isMyServiceRunning(DroidsorService.class) || DroidsorService.isServiceOff()){
