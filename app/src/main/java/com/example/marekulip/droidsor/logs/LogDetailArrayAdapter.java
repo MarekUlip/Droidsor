@@ -18,26 +18,30 @@ import com.example.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Adapter used to display details from log
  * Created by Marek Ulip on 24-Sep-17.
  */
 
 public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
 
+    /**
+     * Ids of items selected by mark more feature
+     */
     private List<Integer> selectedIds = new ArrayList<>();
+    /**
+     * Indicates whether mark more feature is enabled
+     * It is static because sometimes it happens that this value is returned to default value
+     */
     private static boolean isSelectionModeOn=false;
-    private final int numOfPoints;
 
     public LogDetailArrayAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<LogDetailItem> objects) {
         super(context, resource, objects);
-        numOfPoints = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(getContext()).getString(DroidsorSettingsFramgent.COUNT_OF_POINTS,"500"));
-
     }
 
     @NonNull
@@ -49,6 +53,7 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.log_list_item,parent,false);
         }
 
+        //Make sure items highlight is correct
         if(isSelectionModeOn){
             if(selectedIds.contains(item.sensorType))convertView.setBackgroundColor(Color.GRAY);
             else convertView.setBackgroundColor(Color.TRANSPARENT);
@@ -61,6 +66,7 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
         TextView sensorUnit = convertView.findViewById(R.id.text_sensor_units);
         View graphWrapper = convertView.findViewById(R.id.graph_wrapper);
         if(isSelectionModeOn){
+            //Graph should not be visible when selecting items
             graphWrapper.setVisibility(View.GONE);
         }else {
             graphWrapper.setVisibility(View.VISIBLE);
@@ -99,10 +105,18 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
         return convertView;
     }
 
+    /**
+     * Sets the list of selected ids. This ids will be highlighted
+     * @param list list of selected ids
+     */
     public void setSelectedIds(List<Integer> list){
         selectedIds = list;
     }
 
+    /**
+     * Sets mark more feature
+     * @param selectionModeOn true to turn on false to turn off
+     */
     public void setSelectionModeOn(boolean selectionModeOn){
         isSelectionModeOn = selectionModeOn;
     }

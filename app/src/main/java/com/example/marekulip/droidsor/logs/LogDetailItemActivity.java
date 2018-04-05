@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,13 +31,29 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Activity used to display detail of data from one sensor from the log
+ */
+
 public class LogDetailItemActivity extends AppCompatActivity {
 
+    /**
+     * Id of the log
+     */
     private long logId;
+    /**
+     * Id of the sensor within the log
+     */
     private int sensorId;
     public static final String SENSOR_ID = "sensor_id";
     public static final String LOG_ID = "log_id";
+    /**
+     * LogDetailItem for chart.
+     */
     private LogDetailItem item;
+    /**
+     * Chart async task used to display progress
+     */
     LoadChartTask chartTask;
 
     @Override
@@ -49,7 +64,6 @@ public class LogDetailItemActivity extends AppCompatActivity {
         sensorId = getIntent().getIntExtra(SENSOR_ID,0);
         chartTask = new LoadChartTask();
         chartTask.execute();
-        //prepGUI();
     }
 
     @Override
@@ -75,12 +89,17 @@ public class LogDetailItemActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Prepares items so that they can be displayed in the chart
+     * @param entryHolder holder for item
+     */
     private void prepItemsForGraph(EntryHolder entryHolder){
         List<ILineDataSet> dataSets = new ArrayList<>();
         LineDataSet dataSet;
         String[] axisLabels = {"X", "Y", "Z"};
         int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
         for(int j = 0; j<entryHolder.entries.size(); j++){
+            //Create LineDataSet for every point.
             dataSet = new LineDataSet(entryHolder.entries.get(j),axisLabels[j]);
             dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
             dataSet.setColor(colors[j]);
@@ -91,6 +110,9 @@ public class LogDetailItemActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Prepares chart and sets items to it. This method should be called after the items were prepared in async task.
+     */
     private void setUpGraph(){
         LineChart graphView =  findViewById(R.id.log_chart);
         graphView.setTouchEnabled(true);
@@ -124,28 +146,44 @@ public class LogDetailItemActivity extends AppCompatActivity {
         graphView.setVisibleXRangeMaximum(item.xLabels.size());
     }
 
+    /**
+     * Holder of all items to ease transport between. After it is filled it is used to create chart data.
+     */
     private class EntryHolder{
+        /**
+         * Sensor type id
+         */
         final int sensorType;
+        /**
+         * List containing lists. Each contained list represents one chart line.
+         */
         final List<List<Entry>> entries = new ArrayList<>();
+        /**
+         * List of time labels All chart lines should have same time at the point so it is not necessary
+         * to create list of lists here.
+         */
         final List<String> labels = new ArrayList<>();
         EntryHolder(int sensorType){
             this.sensorType = sensorType;
         }
     }
 
+    /**
+     * AsyncTaks to load chart data and display progress while loading it.
+     */
     private class LoadChartTask extends AsyncTask<Void, Integer, Void> {
         private ProgressBar progressBar;
 
         @Override
         protected Void doInBackground(Void... voids) {
             progressBar = findViewById(R.id.progress_bar);
-            setItem();
+            setupEntryHolder();
 
             return null;
         }
         @Override
         protected void onProgressUpdate(Integer... progress) {
-            progressBar.setProgress(progress[0]);//setProgressPercent(progress[0]);
+            progressBar.setProgress(progress[0]);
         }
         @Override
         protected void onPostExecute(Void voidRes) {
@@ -157,7 +195,10 @@ public class LogDetailItemActivity extends AppCompatActivity {
 
         }
 
-        private void setItem(){
+        /**
+         * Prepares EntryHolder so it can be then used to setUpGraph
+         */
+        private void setupEntryHolder(){
             Cursor c = getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null, SensorDataTable.LOG_ID + " = ? and "+SensorDataTable.SENSOR_TYPE + " = ?",new String[]{String.valueOf(logId),String.valueOf(sensorId)},null);
             EntryHolder item = null;
             int itemCount;
@@ -166,9 +207,8 @@ public class LogDetailItemActivity extends AppCompatActivity {
                 if(progress<1) progress = 1;
                 int type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
                 item = new EntryHolder(sensorId);
-                //lst.get(0).entries.add(new ArrayList<Entry>());
                 itemCount = SensorsEnum.resolveEnum(type).itemCount;
-
+                //Determines how many chart lines should be drawn and
                 switch (itemCount){
 
                     case 1: item.entries.add(new ArrayList<Entry>());
@@ -187,22 +227,13 @@ public class LogDetailItemActivity extends AppCompatActivity {
                         item.entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
                         item.entries.add(new ArrayList<Entry>());
                         item.entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
-
-                /*case 3: lst.get(0).entries.add(new ArrayList<Entry>());
-                    lst.get(0).entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
-                case 2: lst.get(0).entries.add(new ArrayList<Entry>());
-                    lst.get(0).entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
-                case 1: lst.get(0).entries.add(new ArrayList<Entry>());
-                    lst.get(0).entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));*/
                 }
                 item.labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
-                //lst.get(0).entries.add(new Entry(time,value));
-                //int position;
                 int size = item.entries.get(0).size();
                 while (c.moveToNext()){
                     size++;
                     if(size%progress == 0)publishProgress(size/progress);
-                    switch (itemCount){
+                    switch (itemCount){//Add lines point
                         case 1: item.entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
                             break;
                         case 2: item.entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
@@ -212,10 +243,7 @@ public class LogDetailItemActivity extends AppCompatActivity {
                             item.entries.get(1).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
                             item.entries.get(2).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
                             break;
-                        //case 2: lst.get(position).entries.get(1).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
-                        //case 1: lst.get(position).entries.get(2).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
                     }
-                    Log.d("AsyncTask", "doInBackground: PRoccess");
                     item.labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
                 }
                 c.close();

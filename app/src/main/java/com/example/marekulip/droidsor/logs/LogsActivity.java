@@ -5,8 +5,14 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.example.marekulip.droidsor.R;
 
+/**
+ * Activity used do display list of all recorded logs
+ */
 public class LogsActivity extends AppCompatActivity {
 
+    /**
+     * Fragment which displays the logs
+     */
     private LogsFragment fragment;
 
     @Override
@@ -19,6 +25,7 @@ public class LogsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        //If mark more feature is enable simply disable it and stay in activity
         if(fragment.isSelectionModeOn()){
             fragment.setSelectionMode(false);
         }

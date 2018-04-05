@@ -76,6 +76,8 @@
     <string name="permission_explain_write">This permission is required to store GPX file on your SD card.</string>
     <string name="droidsor_service">Droidsor service</string>
     <string name="service_is_running">Service is running</string>
+    <string name="time">Time: </string>
+    <string name="unknown_duration">Unknown duration</string>
 
 
     <string-array name="log_but_beh_str_arr">

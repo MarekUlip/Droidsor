@@ -8,11 +8,18 @@ import android.view.MenuItem;
 import com.example.marekulip.droidsor.R;
 
 /**
+ * Activity for displaying detail of a log
  * Created by Marek Ulip on 24-Sep-17.
  */
 
 public class LogDetailActivity extends AppCompatActivity {
+    /**
+     * Fragment in which actual detail will be shown.
+     */
     private LogsDetailFragment fragment;
+    /**
+     * Indicates whether selection of more items feature is enabled.
+     */
     private boolean isSelectionModeOn = false;
 
     @Override
@@ -50,7 +57,7 @@ public class LogDetailActivity extends AppCompatActivity {
             isSelectionModeOn = true;
             fragment.setSelectionMode(true);
         } else if(id == R.id.action_export_selected){
-            fragment.exportSelected();
+            fragment.exportSelectedItems();
             cancelSelection();
         } else if (id == R.id.action_cancel){
             cancelSelection();
@@ -59,6 +66,9 @@ public class LogDetailActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Disables mark more feature
+     */
     private void cancelSelection(){
         isSelectionModeOn = false;
         fragment.setSelectionMode(false);
@@ -71,6 +81,7 @@ public class LogDetailActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        //If mark more feature is enable just disable it and stay in this activity
         if(isSelectionModeOn){
             cancelSelection();
             invalidateOptionsMenu();

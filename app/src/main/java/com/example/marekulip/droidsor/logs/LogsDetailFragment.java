@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.example.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.example.marekulip.droidsor.R;
@@ -43,22 +42,51 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * Fragment used to display log summary for all sensors
  * Created by Marek Ulip on 24-Sep-17.
  */
 
 public class LogsDetailFragment extends ListFragment {
     private static final String TAG = LogsDetailFragment.class.toString();
+    /**
+     * Adapter for displaying list of charts
+     */
     private LogDetailArrayAdapter adapter;
+    /**
+     * Adapter items
+     */
     private final List<LogDetailItem> items = new ArrayList<>();
+    /**
+     * Id of the log to be displayed
+     */
     private long id = -1;
+    /**
+     * Indicator whether mark more feature is enabled
+     */
     private boolean isSelectionModeOn = false;
+    /**
+     * List used with mark more feature so multiple sensors can be exported
+     */
     private final List<Integer> idList = new ArrayList<>();
+    /**
+     * Weights used to speed up chart loading - only part of log items is loaded
+     * number of items is determined by weight
+     */
     private final SparseIntArray weights = new SparseIntArray();
+    /**
+     * Count of points to be displayed in chart. 750 is only temporary value in case this count would
+     * be needed sooner than count from the settings has been loaded
+     */
     private int prefferedCount = 750;
+    /**
+     * Application context used to ensure that there is reference to context even when orientation changes.
+     * Context itself is used to access database
+     */
     private Context context;
-    private Activity mActivity;
+    /**
+     * Async task used to load chart items and display progress while loading it
+     */
     private LoadChartsTask loadChartsTask;
-    long time;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -86,7 +114,6 @@ public class LogsDetailFragment extends ListFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         this.context = context.getApplicationContext();
-        mActivity = getActivity();
     }
 
     @Override
@@ -94,15 +121,16 @@ public class LogsDetailFragment extends ListFragment {
         super.onListItemClick(l, v, position, id);
         int type = items.get(position).sensorType;
         if(isSelectionModeOn){
+            //If item is selected deselect it
             if(idList.contains(type)){
                 idList.remove((Integer)type);
                 v.setBackgroundColor(Color.TRANSPARENT);
             }else{
-                Log.d(TAG, "onListItemClick: Adding sensor type "+type);
                 idList.add(type);
                 v.setBackgroundColor(Color.GRAY);
             }
         }else {
+            //If mark more feature is disabled show sensor detail
             Intent i = new Intent(getActivity(), LogDetailItemActivity.class);
             i.putExtra(LogDetailItemActivity.LOG_ID,this.id);
             i.putExtra(LogDetailItemActivity.SENSOR_ID,type);
@@ -128,8 +156,13 @@ public class LogsDetailFragment extends ListFragment {
         return super.onContextItemSelected(item);
     }
 
+    /**
+     * Enables or disables mark more feature
+     * @param isSelectionModeOn true for enable false for disable
+     */
     public void setSelectionMode(boolean isSelectionModeOn){
         if(isSelectionModeOn){
+            //init list for mark more feature
             idList.clear();
             adapter.setSelectedIds(idList);
         }
@@ -138,12 +171,20 @@ public class LogsDetailFragment extends ListFragment {
         adapter.notifyDataSetChanged();
     }
 
-    public void exportSelected(){
+    /**
+     * Exports selected sensor items into GPX file. Name of a file is determined by name of a log.
+     */
+    public void exportSelectedItems(){
         if(!idList.isEmpty())
-            LogExporter.exportLog(getContext(),id,idList);//exportItems(-1);
+            LogExporter.exportLog(getContext(),id,idList);
     }
 
+    /**
+     * Loads items using weights.
+     * @param id id of a log to be loaded
+     */
     private void loadItemsWithWeights(final long id){
+        // First load weights. Based on weights sensor types are found.
         Cursor c = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_COUNT_URI,null, SenorDataItemsCountTable.LOG_ID+" = ?",new String[]{String.valueOf(id)},null);
         if(c!=null && c.moveToFirst()){
             weights.put(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.SENSOR_TYPE)),resolveWeight(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.COUNT_OF_ITEMS))));
@@ -161,10 +202,18 @@ public class LogsDetailFragment extends ListFragment {
         loadChartsTask.execute();
     }
 
+    /**
+     * Stops async task. Used when activity is stopping and async task has not finished yet.
+     */
     public void stopLoadingChart(){
         if(loadChartsTask!=null)loadChartsTask.cancel(true);
     }
 
+    /**
+     * Transforms provided list of EntryHolders into list that is understandable by adapter and usable
+     * within chart
+     * @param lst list to be transformed
+     */
     private void prepItemsForGraph(List<EntryHolder> lst){
         List<ILineDataSet> dataSets;
         LineDataSet dataSet;
@@ -184,8 +233,13 @@ public class LogsDetailFragment extends ListFragment {
         }
     }
 
+    /**
+     * Determines which weight should be loaded for provided count
+     * @param count Count of sensors in the log
+     * @return Weight that should be used with this sensor
+     */
     private int resolveWeight(int count){
-        //Log.d(TAG, "resolveWeight: "+count);
+        //If count is lesser than preferred count we can load all points
         if(count<prefferedCount)return 1;
         for(int i = 0; i< SensorLog.weights.length;i++){
             if(count/SensorLog.weights[i]>=70&&count/SensorLog.weights[i]<700)return SensorLog.weights[i];
@@ -193,9 +247,22 @@ public class LogsDetailFragment extends ListFragment {
         return 1;
     }
 
+    /**
+     * Entry holder used to transfer items intended for chart between methods
+     */
     private class EntryHolder{
+        /**
+         * Sensor type id
+         */
         final int sensorType;
+        /**
+         * List containing lists. Each contained list represents one chart line.
+         */
         final List<List<Entry>> entries = new ArrayList<>();
+        /**
+         * List of time labels All chart lines should have same time at the point so it is not necessary
+         * to create list of lists here.
+         */
         final List<String> labels = new ArrayList<>();
         EntryHolder(int sensorType){
             this.sensorType = sensorType;
@@ -219,6 +286,12 @@ public class LogsDetailFragment extends ListFragment {
         }
         return sb.toString();
     }
+
+    /**
+     * Used to set parameters for placeholders in SQLITE IN clause
+     * @param params array to which params should be added
+     * @param items Sparse array from which items should be taken
+     */
     private void makeParameters(SparseIntArray items, String[] params) {
         if (params.length < 2) {
             // It will lead to an invalid query anyway ..
@@ -235,6 +308,9 @@ public class LogsDetailFragment extends ListFragment {
         }
     }
 
+    /**
+     * Async task used to load chart items and display progress while loading it
+     */
     private class LoadChartsTask extends AsyncTask<Void, Integer, Void> {
         private ProgressBar progressBar;
 
@@ -246,7 +322,7 @@ public class LogsDetailFragment extends ListFragment {
         }
         @Override
         protected void onProgressUpdate(Integer... progress) {
-            progressBar.setProgress(progress[0]);//setProgressPercent(progress[0]);
+            progressBar.setProgress(progress[0]);
         }
         @Override
         protected void onPostExecute(Void voidRes) {
@@ -254,25 +330,31 @@ public class LogsDetailFragment extends ListFragment {
             getListView().setAdapter(adapter);
             getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.GONE);
         }
+
+        /**
+         * Loads all items from specified log using found weights.
+         */
         private void loadItems(){
+            // Create placeholders for IN clause
             String where = SensorDataTable.LOG_ID + " = ? and (";
             where += makePlaceholders(weights.size());
             where +=")";
+            // Set items for the placeholders
             String[] params = new String[weights.size()*2+1];
             params[0] = String.valueOf(id);
             makeParameters(weights,params);
+            // Load items with weights
             Cursor c = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,where,params,null);
             List<EntryHolder> lst = new ArrayList<>();
             int itemCount;
             if(c!= null&& c.moveToFirst()){
                 int progress = c.getCount()/100;
                 if(progress<1)progress = 1;
-                Log.d(TAG, "loadItems: starting");
                 int type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
                 lst.add(new EntryHolder(type));
-                //lst.get(0).entries.add(new ArrayList<Entry>());
                 itemCount = SensorsEnum.resolveEnum(type).itemCount;
 
+                // item count determines how many lines will be in the chart
                 switch (itemCount){
 
                     case 1: lst.get(0).entries.add(new ArrayList<Entry>());
@@ -302,6 +384,7 @@ public class LogsDetailFragment extends ListFragment {
                     for(position = 0; position<lst.size();position++){
                         if(lst.get(position).sensorType==type)break;
                     }
+                    // If this sensor chart does not exist yet create it
                     if(position==lst.size()){
                         lst.add(new EntryHolder(type));
                         position = lst.size()-1;
@@ -327,7 +410,6 @@ public class LogsDetailFragment extends ListFragment {
                     }
                     lst.get(position).labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
                 }
-                Log.d(TAG, "loadItems: closing");
                 c.close();
             }
             prepItemsForGraph(lst);
