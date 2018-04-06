@@ -12,6 +12,10 @@ public class Point3D {
     this.z = z;
   }
 
+  /**
+   * Returns object of this class with all point set to 0.0
+   * @return
+   */
   public static Point3D getDefaultPoint3D(){
     return new Point3D(0.0,0.0,0.0);
   }
