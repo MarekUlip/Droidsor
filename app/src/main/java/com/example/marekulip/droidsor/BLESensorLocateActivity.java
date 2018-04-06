@@ -26,12 +26,27 @@ import com.example.marekulip.droidsor.positionmanager.PositionManager;
  */
 public class BLESensorLocateActivity extends AppCompatActivity implements BLESensorLocateFragment.OnFragmentInteractionListener{
 
+    /**
+     * Fragment that displays list of found devices
+     */
     private BLESensorLocateFragment fragment;
+    /**
+     * Android BT adapter used to check whether BT is available.
+     */
     private BluetoothAdapter mBluetoothAdapter;
+    /**
+     * Handler used for delayed stop of BLE device scan
+     */
     private Handler mHanlder;
 
+    /**
+     * Id used for requesting permission to enable BT chip.
+     */
     private static final int REQUEST_ENABLE_BT = 1;
-    // Stops scanning after 10 seconds.
+
+    /**
+     * Period after which scanning for BLE devices will stop
+     */
     private static final long SCAN_PERIOD = 10000;
 
     @Override
@@ -39,6 +54,7 @@ public class BLESensorLocateActivity extends AppCompatActivity implements BLESen
         super.onCreate(savedInstanceState);
         mHanlder = new Handler();
 
+        // Check if BLE is available
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, getString(R.string.ble_not_supported), Toast.LENGTH_SHORT).show();
             finish();
@@ -47,6 +63,8 @@ public class BLESensorLocateActivity extends AppCompatActivity implements BLESen
         final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
+        // Check if BT is available
+        // It seems unnecessary but Android examples show it this way and one can never be too sure
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, getString(R.string.error_bluetooth_not_supported), Toast.LENGTH_SHORT).show();
             finish();
@@ -115,12 +133,16 @@ public class BLESensorLocateActivity extends AppCompatActivity implements BLESen
         startScan();
     }
 
+    /**
+     * Checks if BT is enabled and if so starts scanning fo BLE devices
+     */
     private void startScan(){
         if(!mBluetoothAdapter.isEnabled()){
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent,REQUEST_ENABLE_BT);
         }
         fragment.initAdapter();
+        scanLeDevice(true);
     }
 
     @Override
@@ -140,6 +162,11 @@ public class BLESensorLocateActivity extends AppCompatActivity implements BLESen
     }
 
 
+    /**
+     * Starts or stops scanning for BLE devices. This method only tells fragment to do actual starting or stopping.
+     * If starting scan then it also sets {@link #mHanlder} to stop scanning after 10 seconds
+     * @param enable true for enable false for disable
+     */
     private void scanLeDevice(boolean enable){
         if(enable){
             mHanlder.postDelayed(new Runnable() {

@@ -37,6 +37,9 @@ public class BLESensorLocateFragment extends ListFragment {
      */
     private OnFragmentInteractionListener mListener;
 
+    /**
+     * Constructor
+     */
     public BLESensorLocateFragment() {
         // Required empty public constructor
     }
@@ -51,6 +54,7 @@ public class BLESensorLocateFragment extends ListFragment {
 
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if(device == null) return;
+        // Tell the activity that BLE device has been selected
         mListener.onDeviceSelected(device);
     }
 
@@ -73,10 +77,19 @@ public class BLESensorLocateFragment extends ListFragment {
         mListener = null;
     }
 
+    /**
+     * Indicates whether scanning for BLE device is active
+     * @return True if scanning is active otherwise false
+     */
     public boolean isScanning(){
         return isScanning;
     }
 
+    /**
+     * Starts or stops BLE device scan. Should be called after {@link #initAdapter()} method otherwise
+     * items won't have a place to display at.
+     * @param enable true for start false for stop
+     */
     public void scanLeDevice(boolean enable){
         if(enable){
             isScanning = true;
@@ -87,37 +100,66 @@ public class BLESensorLocateFragment extends ListFragment {
         }
     }
 
+    /**
+     * Clears items from list adapter
+     */
     public void clearAdapter(){
         mLeDeviceListAdapter.clear();
     }
 
+    /**
+     * Initializes or restarts adapter call {@link #scanLeDevice(boolean)} after this method to start scan.
+     */
     public void initAdapter(){
         mLeDeviceListAdapter = new LeDeviceListAdapter();
         setListAdapter(mLeDeviceListAdapter);
-        scanLeDevice(true);
     }
 
+    /**
+     * Adapter used for displaying found BLE devices.
+     */
     private class LeDeviceListAdapter extends BaseAdapter {
 
+        /**
+         * ArrayList of found BLE devices
+         */
         private ArrayList<BluetoothDevice> mLeDevices;
+        /**
+         * Inflater used to inflate list view items
+         */
         private LayoutInflater mInflator;
 
+        /**
+         * Simple constructor. Takes inflater from wrapping Activity or Fragment.
+         */
         LeDeviceListAdapter(){
             super();
             mLeDevices = new ArrayList<>();
             mInflator = getLayoutInflater();
         }
 
+        /**
+         * Adds found device into the list adapter
+         * @param device Device to be added
+         */
         public void addDevice(BluetoothDevice device){
             if(!mLeDevices.contains(device)){
                 mLeDevices.add(device);
             }
         }
 
-        BluetoothDevice getDevice(int postion){
-            return mLeDevices.get(postion);
+        /**
+         * Gets device from specified position. Careful for {@link ArrayIndexOutOfBoundsException}.
+         * @param position Position from which BT device should be acquired
+         * @return BT device from position
+         */
+        BluetoothDevice getDevice(int position){
+            return mLeDevices.get(position);
         }
 
+        /**
+         * Clears array list of this adapter.
+         */
         void clear(){
             mLeDevices.clear();
         }
@@ -154,9 +196,11 @@ public class BLESensorLocateFragment extends ListFragment {
 
             BluetoothDevice device = mLeDevices.get(i);
             final String deviceName = device.getName();
+            // If device has a name use it
             if(deviceName != null && deviceName.length()>0){
                 viewHolder.deviceName.setText(deviceName);
             }else {
+                // Otherwise tell user that you don't know what that is
                 viewHolder.deviceName.setText(R.string.unknown_device);
             }
             viewHolder.deviceAdress.setText(device.getAddress());
@@ -165,6 +209,9 @@ public class BLESensorLocateFragment extends ListFragment {
         }
     }
 
+    /**
+     * Callback called after each found BT device.
+     */
     private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(final BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
@@ -187,7 +234,10 @@ public class BLESensorLocateFragment extends ListFragment {
      * Interface used for notifying activity that device has been selected
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
+        /**
+         * Method for notifying that BT device was selected
+         * @param device Device that was selected.
+         */
         void onDeviceSelected(BluetoothDevice device);
     }
 }
