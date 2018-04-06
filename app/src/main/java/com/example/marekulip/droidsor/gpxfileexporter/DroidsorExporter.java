@@ -56,6 +56,7 @@ public class DroidsorExporter {
     public static boolean writeToFile(String dataToSave,String fileName,Context context){
         if(isExternalStorageWritable()) {
             try {
+                fileName = getAndroidFriendlyFileName(fileName);
                 File folder = new File(path, context.getString(R.string.app_name));
                 if(!folder.exists()){
                     boolean rv = folder.mkdir();
@@ -76,6 +77,15 @@ public class DroidsorExporter {
             return false;
         }
         return false;
+    }
+
+    /**
+     * Formats provided string so it is usable in Android environment
+     * @param toFormat string to be formatted
+     * @return formatted Android friendly string
+     */
+    private static String getAndroidFriendlyFileName(String toFormat){
+        return toFormat.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
     }
 
     /** Checks if external storage is available for read and write */
