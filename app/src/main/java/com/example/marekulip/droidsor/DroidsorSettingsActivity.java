@@ -3,6 +3,9 @@ package com.example.marekulip.droidsor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+/**
+ * Activity for settings
+ */
 public class DroidsorSettingsActivity extends AppCompatActivity {
 
     @Override
