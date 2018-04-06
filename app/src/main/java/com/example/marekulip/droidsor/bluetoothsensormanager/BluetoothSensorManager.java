@@ -90,7 +90,7 @@ public class BluetoothSensorManager {
     /**
      * List of active sensors from BLE device. Active = sensors are sending sensor data.
      */
-    private final List<GeneralTISensor> activeSensors = new ArrayList<>();
+    private final List<GeneralTISensor> activeSensors = getBasicSetOfSensors();
     /**
      * Data sending frequencies of active sensors.
      */
