@@ -32,37 +32,112 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Service used to handle all sensor data. It sends data to activities that are listening. I also takes care
+ * of logging feature - it sens data to SensorLogManager.
+ */
 public class DroidsorService extends Service {
 
+    /**
+     * Action indicating that service has new data and if some activity wants them then it can get them.
+     */
     public final static String ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE";
+    /**
+     * Action indicating that service is about to be stopped. After sending this action service is stopped.
+     */
     public final static String SERVICE_IS_TURNING_OFF  = "SERVICE_IS_TURNING_OFF";
+    /**
+     * Action indicating that log has exceeded maximum log length set in settings and it has been stopped.
+     */
     public final static String SCHEDULED_LOG_STOP = "SCHEDULED_LOG_STOP";
 
 
+    /**
+     * Mode where no sensors are viewed.
+     */
     public final static int NO_SENSORS_MODE = -1;
+    /**
+     * Mode where all available sensors are displayed at once
+     */
     public final static int ALL_SENSORS_MODE = 0;
+    /**
+     * Mode where only smartphone sensors are displayed
+     */
     public final static int MOBILE_SENSORS_MODE = 1;
+    /**
+     * Mode where only BT sensors are displayed
+     */
     public final static int BLUETOOTH_SENSORS_MODE = 2;
+    /**
+     * Indicates whether service was stopped or is still contactable. It was created because methods
+     * which were checking if this service is running were not 100% reliable. They are still used thought.
+     */
     private static boolean isServiceOff = true;
 
+    /**
+     * Id of notification this service displays.
+     */
     private final static int NOTIFICATION_ID = 101;
+    /**
+     * Channel of this notification. Without channel no notification would be displayed
+     * on Android 8.0 and higher
+     */
     private final static String NOTIFICATION_CHANNEL_ID = "droidsor_service_channel";
+    /**
+     * Minimum interval at which this service should notify its listeners that new data are available.
+     */
     private int minSendInterval = 200;
+    /**
+     * Last time in milliseconds that new data from sensors were detected.
+     */
     private long lastTime;
 
+    /**
+     * Manager used for starting and stopping logs
+     */
     private SensorLogManager sensorLogManager;
+    /**
+     * Manager used for BT device manipulation
+     */
     private BluetoothSensorManager bluetoothSensorManager;
+    /**
+     * Manager used for Android sensor manipulation
+     */
     private AndroidSensorManager androidSensorManager;
+    /**
+     * Manager used for getting GPS position.
+     */
     private PositionManager positionManager;
+    /**
+     * Binder used to enable Activities to connect to this service.
+     */
     private final IBinder mBinder = new LocalBinder();
+    /**
+     * Indicates actual display mode.
+     */
     private int displayMode = ALL_SENSORS_MODE;
 
+    /**
+     * Indicator used to stop service from notification.
+     */
     private boolean isStopIntended = false;
+    /**
+     * Indicator used to determine whether this service is listening to any sensors
+     */
     private boolean isListening = false;
 
+    /**
+     * SparseArray containing data from sensors
+     */
     private SparseArray<SensorData> sensorDataSparseArray = new SparseArray<>();
+    /**
+     * Array of sensor types that occurred since last {@link #ACTION_DATA_AVAILABLE} broadcast
+     */
     private List<Integer> sensorTypesOccured = new ArrayList<>();
 
+    /**
+     * Timer used to stop logs after time specified in settings
+     */
     private Timer logTimer;
     public DroidsorService() {
 
@@ -74,12 +149,18 @@ public class DroidsorService extends Service {
         bluetoothSensorManager = new BluetoothSensorManager(this);
         androidSensorManager = new AndroidSensorManager(this);
         positionManager = new PositionManager(this);
+        // Try to get position if all settings are correct
         positionManager.tryInitPosManager();
         //createOrUpdateServiceNotification("","");
-        startForeground(NOTIFICATION_ID,createOrUpdateServiceNotification("",""));
+        startForeground(NOTIFICATION_ID,createOrUpdateServiceNotification());
         isServiceOff = false;
         return super.onStartCommand(intent, flags, startId);
     }
+
+    /**
+     * Indicates whether this service has been started or stopped
+     * @return false - this service is running, true - this service is stopped
+     */
     public static boolean isServiceOff(){
         return isServiceOff;
     }
@@ -88,18 +169,26 @@ public class DroidsorService extends Service {
         return mBinder;
     }
 
+    /**
+     * Sends broadcast with specified action
+     * @param action action to be broadcasted
+     */
     public void broadcastUpdate(final String action){
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
     }
 
+    /**
+     * Sends broadcast with specified action and data.
+     * @param action action to be broadcasted
+     * @param sensorData Sensordata to be broadcasted they are also added to log if logging is active
+     */
     public void broadcastUpdate(final String action, List<SensorData> sensorData){
         if(action.equals(ACTION_DATA_AVAILABLE)) {
             if (isLogging()) {
                 Location location = positionManager.getLocation();
                 SensorData data;
                 for (int i = 0; i < sensorData.size(); i++) {
-                    //dataPackage.getDatas().get(i).setLocationData(location.getLongitude(), location.getLatitude(), location.getAltitude());
                     data = sensorData.get(i);
                     if(location!= null){
                         data.setLocationData(location.getLongitude(),location.getLatitude());
@@ -107,8 +196,6 @@ public class DroidsorService extends Service {
                         if(location.hasAccuracy()) data.accuracy = location.getAccuracy();
                         if(location.hasSpeed()) data.speed = location.getSpeed();
                     }
-                    //else sensorData.get(i).setLocationData(0,0);
-                    //Log.d("test", "broadcastUpdate: "+data.sensorType);
                     sensorLogManager.postNewData(data);
                 }
             }
@@ -116,13 +203,13 @@ public class DroidsorService extends Service {
                 SensorData data;
                 if(sensorData.size()==1){
                     data = sensorData.get(0);
-                    sensorDataSparseArray.put(data.sensorType,data);//sensorDataQueue.push(sensorData.get(0));
+                    sensorDataSparseArray.put(data.sensorType,data);
                     if(!sensorTypesOccured.contains(data.sensorType))sensorTypesOccured.add(data.sensorType);
                 }
                 else{
                     for(int i =0;i<sensorData.size();i++) {
                         data = sensorData.get(i);
-                        sensorDataSparseArray.put(data.sensorType,data);//sensorDataQueue.push(sensorData.get(i));
+                        sensorDataSparseArray.put(data.sensorType,data);
                         if(!sensorTypesOccured.contains(data.sensorType))sensorTypesOccured.add(data.sensorType);
                     }
                 }
@@ -138,10 +225,9 @@ public class DroidsorService extends Service {
         }
     }
 
-    public void initialize(){
-
-    }
-
+    /**
+     * Starts listening to all specified sensors provided that its not already listening.
+     */
     public void startListeningSensors(){
         if(!isListening){
             androidSensorManager.startListening();
@@ -150,14 +236,22 @@ public class DroidsorService extends Service {
         }
     }
 
+    /**
+     * Stops listening to sensors
+     */
     public void stopListeningSensors(){
         stopListeningSensors(false);
     }
 
+    /**
+     * Stops listening to sensors
+     * @param fullStop If set to true it will also disconnect from BT device if connected.
+     */
     private void stopListeningSensors(boolean fullStop){
         if(isListening) {
             androidSensorManager.stopListening();
             if(bluetoothSensorManager.isBluetoothDeviceOn()) {
+                // Setting empty arrays will cause that all sensors will be turned off.
                 bluetoothSensorManager.setSensorsToListen(new ArrayList<Integer>(), new ArrayList<Integer>());
                 bluetoothSensorManager.startListening();
                 if (fullStop || PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.DISCONNECT_FROM_BT_PREF, false))
@@ -170,35 +264,49 @@ public class DroidsorService extends Service {
     }
 
     /**
-     * Used when broadcasting when thing that are not supposed to be shown are not broadcasted and discarded instead.
-     * I could just turn the sensors off but at the display mode they can come on any second as user filters the sensors
-     * so its better to just ignore broadcasts instead of turning listeners down.
-     * @param mode
+     * Used for broadcasting when sensors that are not supposed to be shown are not broadcasted and discarded instead.
+     * Its made this way to ensure that no phantom sensors will during mode switch
+     * @param mode Mode to set. Can be  {@link #ALL_SENSORS_MODE}, {@link #MOBILE_SENSORS_MODE} or {@link #BLUETOOTH_SENSORS_MODE}. Any other mode will cause no data sending.
      */
     public void setMode(int mode){
         displayMode = mode;
-        /*switch (mode){
-            case MOBILE_SENSORS_MODE:
-
-        }*/
     }
 
+    /**
+     * Returns actual display mode
+     * @return actula display mode
+     */
     public int getMode(){
         return displayMode;
     }
 
+    /**
+     * Indicates whether BT device is connected
+     * @return true if connected otherwise false
+     */
     public boolean isBluetoothDeviceOn(){
         return bluetoothSensorManager.isBluetoothDeviceOn();
     }
 
+    /**
+     * Connects to BT device with specified address.
+     * @param address Address of the device to be connected with.
+     */
     public void connectToBluetoothDevice(final String address){
         bluetoothSensorManager.connect(address);
     }
 
+    /**
+     * Disconnects from connected device.
+     */
     public void disconnectFromBluetoothDevice(){
         bluetoothSensorManager.disconnect();
     }
 
+    /**
+     * Starts logging based on provided profile.
+     * @param profile Profile containing sensors and frequencies to be used in the log
+     */
     public void startLogging(LogProfile profile){
         if(profile.isSaveGPS()) {
             positionManager.setIntervals(profile.getGPSFrequency());
@@ -208,6 +316,7 @@ public class DroidsorService extends Service {
         List<Integer> androidSensorFrequencies = new ArrayList<>();
         List<Integer> bluetoothSensorTypes = new ArrayList<>();
         List<Integer> bluetoothSensorFrequencies = new ArrayList<>();
+        // Stop listening so new sensors can be safely set
         androidSensorManager.stopListening();
         for(LogProfileItem item : profile.getLogItems()){
             if(item.getSensorType()<100){
@@ -224,21 +333,21 @@ public class DroidsorService extends Service {
             bluetoothSensorManager.setSensorsToListen(bluetoothSensorTypes,bluetoothSensorFrequencies);
             bluetoothSensorManager.startListening();
         }
-        //bluetoothSensorManager.
         List<Integer> sensorsToLog = new ArrayList<>();
         sensorsToLog.addAll(androidSensorTypes);
         sensorsToLog.addAll(bluetoothSensorTypes);
-        /*PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "DroidsorWakelockTag");
-        wakeLock.acquire();*/
         sensorLogManager.startLog(profile.getProfileName(),sensorsToLog);
+        // Create log stopper if set in settings
         if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SCHEDULED_LOG_END,false)) {
             int time = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.SCHEDULED_LOG_END_TIME,"60"));
             if(time > 0 )createLogStopper(time);
         }
     }
 
+    /**
+     * Sets timer to stop log after specified duration
+     * @param duration Time in minutes
+     */
     private void createLogStopper(int duration){
         logTimer= new Timer();
         logTimer.schedule(new TimerTask() {
@@ -250,6 +359,9 @@ public class DroidsorService extends Service {
         },duration*60*1000);
     }
 
+    /**
+     * Stops log stopper before it is executed.
+     */
     private void stopLogStopper(){
         if(logTimer!=null){
             logTimer.cancel();
@@ -258,6 +370,9 @@ public class DroidsorService extends Service {
         }
     }
 
+    /**
+     * Stops logging
+     */
     public void stopLogging(){
         if(isLogging()) {
             stopLogStopper();
@@ -272,6 +387,10 @@ public class DroidsorService extends Service {
         }
     }
 
+    /**
+     * Starts OpenGL mode causing the service to send {@link #ACTION_DATA_AVAILABLE} much faster in 20 ms intervals
+     * it also initializes required smartphone sensors.
+     */
     public void startOpenGLMode(){
         androidSensorManager.stopListening();
         minSendInterval = 20;
@@ -281,25 +400,37 @@ public class DroidsorService extends Service {
         sensorFrequencies.add(20);
         sensorTypes.add(SensorsEnum.INTERNAL_GYROSCOPE.sensorType);
         sensorFrequencies.add(20);
-        /*sensorTypes.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
-        sensorFrequencies.add(20);
-        sensorTypes.add(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType);
-        sensorFrequencies.add(20);*/
         androidSensorManager.setSensorsToListenSafe(sensorTypes,sensorFrequencies);
         androidSensorManager.startListening();
     }
 
+    /**
+     * Stops OpenGL mode and sets sending intervals back to normal
+     */
     public void stopOpenGLMode(){
         minSendInterval = 200;
         androidSensorManager.stopListening();
         androidSensorManager.resetManager();
     }
 
+    /**
+     * Indicates whether this service is logging.
+     * @return true if logging otherwise false
+     */
     public boolean isLogging(){
         return sensorLogManager.isLogging();
     }
 
+    /**
+     * Returns array of all gathered sensor data
+     * @return SparseArray of all gathered sensor data
+     */
     public SparseArray<SensorData> getSensorDataSparseArray(){return sensorDataSparseArray;}
+
+    /**
+     * Returns list of all occurred sensor type ids after last {@link #ACTION_DATA_AVAILABLE} broadcast
+     * @return list of occurred sensors or null if no new sensors occurred.
+     */
     public List<Integer> getSensorTypesOccured(){
         if(sensorTypesOccured.isEmpty())return null;
         List<Integer> listToSend = new ArrayList<>();
@@ -308,6 +439,11 @@ public class DroidsorService extends Service {
         return listToSend;
     }
 
+    /**
+     * Returns all currently monitored sensor types based on actual display mode
+     * @param ignoreMode if set to true it will return all sensors not caring about display mode
+     * @return list of monitored sensors
+     */
     public List<Integer> getMonitoredSensorsTypes(boolean ignoreMode){
         List<Integer> sensorTypes = new ArrayList<>();
         if(ignoreMode || displayMode == ALL_SENSORS_MODE||isLogging()){
@@ -317,7 +453,6 @@ public class DroidsorService extends Service {
         }
         else {
             if(displayMode == BLUETOOTH_SENSORS_MODE){
-                //if(bluetoothSensorManager.isBluetoothDeviceOn())
                 bluetoothSensorManager.getListenedSensorTypes(sensorTypes);
             }
             else if(displayMode == MOBILE_SENSORS_MODE){
@@ -327,6 +462,11 @@ public class DroidsorService extends Service {
         return sensorTypes;
     }
 
+    /**
+     * Returns all sensor type ids safe for use in profile - no ids are missing due to active logging
+     * if BT device is connected sensors from this device are included
+     * @return list of all available sensor type ids
+     */
     public List<Integer> getSensorTypesForProfile(){
         List<Integer> sensorTypes = new ArrayList<>();
         androidSensorManager.getAllAvailableSensorTypes(sensorTypes);
@@ -334,16 +474,30 @@ public class DroidsorService extends Service {
         return sensorTypes;
     }
 
+    /**
+     * Determines whether this sensor data package can be sent to activity base on display mode
+     * @param sensorDataList SensorData list to be judged
+     * @return true if it is sendable otherwise false
+     */
     private boolean isSendable(List<SensorData> sensorDataList) {
         //It is enough to check only first sensor from list because ussualy only one value is present at list. When there are multiple values in the list they are from the same source
         return !(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType < 100) && !(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType > 100);
     }
 
+    /**
+     * Determines whether provided sensor type id is present on current device
+     * @param type sensor type id of sensor to be determined
+     * @return true if present otherwise false
+     */
     public boolean isSensorPresent(int type){
         return androidSensorManager.isSensorPresent(type);
     }
 
-    private Notification createOrUpdateServiceNotification(String name, String contextText){
+    /**
+     * Creates notification for this service capable of closing it on click or double click based on settings
+     * @return displayable notification
+     */
+    private Notification createOrUpdateServiceNotification(){
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         //On Android Oreo there can be no notification without notification channel
@@ -369,17 +523,23 @@ public class DroidsorService extends Service {
         Intent stopServiceIntent = new Intent(this, ServiceStopperService.class);
         PendingIntent stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
         mNotifyBuilder.setContentIntent(stopServicePendingIntent);
-        //mNotificationManager.notify(NOTIFICATION_ID,
-               // mNotifyBuilder.build());
         return mNotifyBuilder.build();
     }
 
+    /**
+     * Destroys notification issued by this service. Not used since foreground service destroys notification
+     * automatically. But kept back if it will be ever needed.
+     */
     private void destroyServiceNotification(){
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(NOTIFICATION_ID);
     }
 
+    /**
+     * Stops this service if all requirements are met.
+     * @param hardStop if set to true it ignores all requirements and just stops the service
+     */
     public void stop(boolean hardStop){
         if(isStopIntended || hardStop) {
             stop();
@@ -402,6 +562,9 @@ public class DroidsorService extends Service {
         }
     }
 
+    /**
+     * Ends any currently running logs and stops the service.
+     */
     private void stop(){
         if (isLogging()) sensorLogManager.endLog();
         sendBroadcast(new Intent(SERVICE_IS_TURNING_OFF));
@@ -413,7 +576,9 @@ public class DroidsorService extends Service {
     }
 
 
-
+    /**
+     * Binder used to bind to this service.
+     */
     public class LocalBinder extends Binder {
         public DroidsorService getService(){
             return DroidsorService.this;
