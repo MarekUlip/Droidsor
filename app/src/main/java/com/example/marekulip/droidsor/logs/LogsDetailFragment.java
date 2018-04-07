@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.example.marekulip.droidsor.R;
@@ -88,9 +89,11 @@ public class LogsDetailFragment extends ListFragment {
      */
     private LoadChartsTask loadChartsTask;
 
+    private TextView progressTextView;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.list_fragment_layout, container, false);
+        return inflater.inflate(R.layout.fragment_log_detail_layout, container, false);
     }
 
     @Override
@@ -102,6 +105,7 @@ public class LogsDetailFragment extends ListFragment {
         id = getArguments().getInt("id");
         prefferedCount = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(getContext()).getString(DroidsorSettingsFramgent.COUNT_OF_POINTS,"750"));
         if(prefferedCount <=0)prefferedCount = 1;
+        progressTextView = getActivity().findViewById(R.id.textview_progress_bar_text);
         loadItemsWithWeights(id);
     }
 
@@ -185,6 +189,7 @@ public class LogsDetailFragment extends ListFragment {
      * @param id id of a log to be loaded
      */
     private void loadItemsWithWeights(final long id){
+        progressTextView.setText(R.string.searching_data);
         // First load weights. Based on weights sensor types are found.
         Cursor c = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_COUNT_URI,null, SenorDataItemsCountTable.LOG_ID+" = ?",new String[]{String.valueOf(id)},null);
         if(c!=null && c.moveToFirst()){
@@ -199,6 +204,7 @@ public class LogsDetailFragment extends ListFragment {
         }
         getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.VISIBLE);
         getActivity().findViewById(android.R.id.empty).setVisibility(View.GONE);
+        progressTextView.setText(R.string.fetching_data);
         loadChartsTask = new LoadChartsTask();
         loadChartsTask.execute();
     }
@@ -242,24 +248,22 @@ public class LogsDetailFragment extends ListFragment {
     private int resolveWeight(int count){
         //If count is lesser than preferred count we can load all points
         if(count<prefferedCount)return 1;
-        /*int minCount = 70;
-        if(minCount > prefferedCount) minCount = 1;*/
         boolean hasValidIndex = false;
         int validIndex = 0;
         for(int i = 0, countedCount; i< SensorLog.weights.length;i++){
-            Log.d(TAG, "resolveWeight: " + count/SensorLog.weights[i] + " min 1 max "+ prefferedCount+" count "+ count);
+            //Log.d(TAG, "resolveWeight: " + count/SensorLog.weights[i] + " min 1 max "+ prefferedCount+" count "+ count);
             countedCount = count/SensorLog.weights[i];
             if(countedCount>=1 && countedCount<prefferedCount){
                 hasValidIndex = true;
-                validIndex = i;//return SensorLog.weights[i];
+                validIndex = i;
                 continue;
             }
             if(hasValidIndex){
-                Log.d(TAG, "resolveWeight: indexed " + SensorLog.weights[validIndex]);
+                //Log.d(TAG, "resolveWeight: indexed " + SensorLog.weights[validIndex]);
                 return SensorLog.weights[validIndex];
             }
             if(countedCount > prefferedCount) {
-                Log.d(TAG, "resolveWeight: ouch " + SensorLog.weights[i]);
+                //Log.d(TAG, "resolveWeight: ouch " + SensorLog.weights[i]);
                 return SensorLog.weights[i];
             }
         }
@@ -332,22 +336,30 @@ public class LogsDetailFragment extends ListFragment {
      */
     private class LoadChartsTask extends AsyncTask<Void, Integer, Void> {
         private ProgressBar progressBar;
+        private TextView progressTextView;
 
         @Override
         protected Void doInBackground(Void... voids) {
             progressBar = getActivity().findViewById(R.id.list_fragment_progress_bar);
+            progressTextView = getActivity().findViewById(R.id.textview_progress_bar_text);
             loadItems();
             return null;
         }
         @Override
         protected void onProgressUpdate(Integer... progress) {
+            if(progress[0]==100){
+                progressTextView.setText(R.string.showing_data);
+            }else {
+                progressTextView.setText(R.string.processing_data);
+            }
             progressBar.setProgress(progress[0]);
         }
         @Override
         protected void onPostExecute(Void voidRes) {
+            progressTextView.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
             adapter = new LogDetailArrayAdapter(context,R.layout.log_list_item,items);
             getListView().setAdapter(adapter);
-            getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.GONE);
         }
 
         /**

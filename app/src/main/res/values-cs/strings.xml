@@ -106,4 +106,8 @@
     <string name="scheduled_log_time_summary">Aplikace po určeném počtu minut ukončí záznam.</string>
     <string name="unknown_duration">Neznámá délka</string>
     <string name="time">"Délka: "</string>
+    <string name="searching_data">Hledám data…</string>
+    <string name="fetching_data">Získávám data…</string>
+    <string name="processing_data">Zpracovávám data…</string>
+    <string name="showing_data">Zobrazuji data…</string>
 </resources>

@@ -78,6 +78,10 @@
     <string name="service_is_running">Service is running</string>
     <string name="time">Time: </string>
     <string name="unknown_duration">Unknown duration</string>
+    <string name="searching_data">Searching data&#8230;</string>
+    <string name="fetching_data">Fetching data&#8230;</string>
+    <string name="processing_data">Processing data&#8230;</string>
+    <string name="showing_data">Showing data&#8230;</string>
 
 
     <string-array name="log_but_beh_str_arr">

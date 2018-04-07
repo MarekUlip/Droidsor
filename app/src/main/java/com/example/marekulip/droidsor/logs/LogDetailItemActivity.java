@@ -54,7 +54,7 @@ public class LogDetailItemActivity extends AppCompatActivity {
     /**
      * Chart async task used to display progress
      */
-    LoadChartTask chartTask;
+    private LoadChartTask chartTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,22 +173,30 @@ public class LogDetailItemActivity extends AppCompatActivity {
      */
     private class LoadChartTask extends AsyncTask<Void, Integer, Void> {
         private ProgressBar progressBar;
+        private TextView progressTextView;
 
         @Override
         protected Void doInBackground(Void... voids) {
             progressBar = findViewById(R.id.progress_bar);
+            progressTextView = findViewById(R.id.textview_progress_bar_text);
             setupEntryHolder();
 
             return null;
         }
         @Override
         protected void onProgressUpdate(Integer... progress) {
+            if(progress[0]==100){
+                progressTextView.setText(R.string.showing_data);
+            }else {
+                progressTextView.setText(R.string.processing_data);
+            }
             progressBar.setProgress(progress[0]);
         }
         @Override
         protected void onPostExecute(Void voidRes) {
             setUpGraph();
-            findViewById(R.id.progress_bar).setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+            progressTextView.setVisibility(View.GONE);
             findViewById(R.id.log_chart).setVisibility(View.VISIBLE);
             ((TextView)findViewById(R.id.text_sensor_units)).setText(SensorsEnum.resolveEnum(sensorId).getSensorUnitName(LogDetailItemActivity.this));
             ((TextView)findViewById(R.id.text_sensor_name)).setText(SensorsEnum.resolveEnum(sensorId).getSensorName(LogDetailItemActivity.this));
