@@ -101,6 +101,7 @@ public class LogsDetailFragment extends ListFragment {
         registerForContextMenu(getListView());
         id = getArguments().getInt("id");
         prefferedCount = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(getContext()).getString(DroidsorSettingsFramgent.COUNT_OF_POINTS,"750"));
+        if(prefferedCount <=0)prefferedCount = 1;
         loadItemsWithWeights(id);
     }
 
@@ -241,8 +242,26 @@ public class LogsDetailFragment extends ListFragment {
     private int resolveWeight(int count){
         //If count is lesser than preferred count we can load all points
         if(count<prefferedCount)return 1;
-        for(int i = 0; i< SensorLog.weights.length;i++){
-            if(count/SensorLog.weights[i]>=70&&count/SensorLog.weights[i]<700)return SensorLog.weights[i];
+        /*int minCount = 70;
+        if(minCount > prefferedCount) minCount = 1;*/
+        boolean hasValidIndex = false;
+        int validIndex = 0;
+        for(int i = 0, countedCount; i< SensorLog.weights.length;i++){
+            Log.d(TAG, "resolveWeight: " + count/SensorLog.weights[i] + " min 1 max "+ prefferedCount+" count "+ count);
+            countedCount = count/SensorLog.weights[i];
+            if(countedCount>=1 && countedCount<prefferedCount){
+                hasValidIndex = true;
+                validIndex = i;//return SensorLog.weights[i];
+                continue;
+            }
+            if(hasValidIndex){
+                Log.d(TAG, "resolveWeight: indexed " + SensorLog.weights[validIndex]);
+                return SensorLog.weights[validIndex];
+            }
+            if(countedCount > prefferedCount) {
+                Log.d(TAG, "resolveWeight: ouch " + SensorLog.weights[i]);
+                return SensorLog.weights[i];
+            }
         }
         return 1;
     }

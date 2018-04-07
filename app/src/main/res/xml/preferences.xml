@@ -23,13 +23,13 @@
         android:title="@string/start_logging_button_behaviour"
         android:entries="@array/log_but_beh_str_arr"
         android:entryValues="@array/log_but_beh_str_val"/>
-    <EditTextPreference
+    <ListPreference
         android:key="count_of_points"
-        android:defaultValue="500"
-        android:inputType="number"
+        android:defaultValue="100"
+        android:entries="@array/max_point_count_arr"
+        android:entryValues="@array/max_point_count_vals"
         android:title="@string/count_of_points"
-        android:summary="@string/count_of_points_summary"
-        android:maxLength="4"/>
+        android:summary="@string/count_of_points_summary"/>
     <CheckBoxPreference
         android:key="scheduled_log_end"
         android:defaultValue="false"

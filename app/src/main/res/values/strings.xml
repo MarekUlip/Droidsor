@@ -57,7 +57,7 @@
     <string name="rename">Rename</string>
     <string name="loading_sensor_items">Loading sensor items</string>
     <string name="no_logs">No log made yet</string>
-    <string name="count_of_points">Count of points at graph summary</string>
+    <string name="count_of_points">Max point count at log summary</string>
     <string name="count_of_points_summary">Count of points to display at graph summary. The more points to show the slower the loading of the log will be.</string>
     <string name="waiting_for_gps">Waiting for GPS</string>
     <string name="waiting_for_gps_message">Do you wish to start logging without GPS?</string>
@@ -88,6 +88,20 @@
     <string-array name="log_but_beh_str_val" translatable="false">
         <item>1</item>
         <item>2</item>
+    </string-array>
+
+    <string-array name="max_point_count_arr" translatable="false">
+        <item>1 &#8211; 10</item>
+        <item>10 &#8211; 100 </item>
+        <item>100 &#8211; 1000</item>
+        <item>1000 &#8211; 10000</item>
+    </string-array>
+
+    <string-array name="max_point_count_vals" translatable="false">
+        <item>10</item>
+        <item>100</item>
+        <item>1000</item>
+        <item>10000</item>
     </string-array>
 
 
@@ -150,7 +164,4 @@
     <string name="accelerometer_external">Accelerometer external</string>
     <string name="gyroscope_internal">Gyroscope internal</string>
     <string name="gyroscope_external">Gyroscope external</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
