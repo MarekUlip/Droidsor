@@ -319,7 +319,7 @@ public class PositionManager {
      */
     public interface OnRecievedPositionListener{
         /**
-         * Notifies that manager has acquired posit
+         * Notifies that manager has acquired position
          */
         void positionRecieved();
     }

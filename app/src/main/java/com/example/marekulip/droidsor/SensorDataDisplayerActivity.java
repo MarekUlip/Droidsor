@@ -41,6 +41,9 @@ import com.example.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+/**
+ * Main page activity used to display data from sensors.
+ */
 public class SensorDataDisplayerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, PositionManager.OnRecievedPositionListener, WaitForGPSDialog.WaitForGPSIFace {
 
@@ -48,17 +51,33 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     public static final String SHARED_PREFS_NAME = "droidsor_prefs";
     public static final String FAVORITE_LOG = "favorite_log";
     public static final int BT_DEVICE_REQUEST = 2;
-    private long profileId = -1;
     private SensorDataDispListFragment fragment;
     private FloatingActionButton fab;
     private DroidsorService mDroidsorService;
     private PositionManager positionManager;
+    /**
+     * Holder used when log cannot be started right away but profile was already loaded. For example
+     * when waiting for first GPS position.
+     */
     private LogProfile profileHolder;
     private boolean isRecording = false;
     private boolean recievedLocation = false;
+    /**
+     * Indicates that dialog could not be shown and wants to be shown as soon as possible
+     */
     private boolean isRequestingDialog = false;
+    /**
+     * Semaphore used for waiting till connection to service has been created or restored
+     */
     private Semaphore serviceSemaphore = new Semaphore(0,true);
+    /**
+     * Semaphore used for waiting till dialog can be shown
+     */
     private Semaphore dialogSemaphore = new Semaphore(1,true);
+    /**
+     * Dialog to inform user that app waits for first GPS position till it will start logging and allows
+     * user to start logging without this position
+     */
     private DialogFragment waitForGPSDialog;
     private NavigationView drawerNavigationView;
 
@@ -295,7 +314,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     }
 
     /**
-     * Method designed to handle service unavailability issues.
+     * Method designed to handle service unavailability issues. Should be called only from {@link #onActivityResult(int, int, Intent)} method.
      * @param requestCode
      * @param resultCode
      * @param data

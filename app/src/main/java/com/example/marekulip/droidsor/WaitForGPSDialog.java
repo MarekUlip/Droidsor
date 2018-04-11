@@ -10,6 +10,7 @@ import android.support.v4.app.DialogFragment;
 
 /**
  * Created by Marek Ulip on 09-Feb-18.
+ * DialogFragment used to inform user that app is waiting for gps position before it starts logging.
  */
 
 public class WaitForGPSDialog extends DialogFragment {

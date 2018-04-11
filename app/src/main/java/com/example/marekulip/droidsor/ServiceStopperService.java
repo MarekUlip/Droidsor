@@ -8,6 +8,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
+/**
+ * Service
+ */
 public class ServiceStopperService extends Service {
 
     private DroidsorService mDroidsorService;
@@ -18,7 +21,7 @@ public class ServiceStopperService extends Service {
     @Override
     public void onCreate(){
         Intent intent = new Intent(this,DroidsorService.class);
-        if(isMyServiceRunning(DroidsorService.class)){
+        if(isMyServiceRunning(DroidsorService.class) || !DroidsorService.isServiceOff()){
             bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
         }else {
             stopSelf();

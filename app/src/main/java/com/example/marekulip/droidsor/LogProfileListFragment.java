@@ -19,7 +19,9 @@ import com.example.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.example.marekulip.droidsor.database.LogProfileItemsTable;
 import com.example.marekulip.droidsor.database.LogProfilesTable;
 
-
+/**
+ * Fragment to show list of profiles
+ */
 public class LogProfileListFragment extends ListFragment {
     private SimpleCursorAdapter cursorAdapter;
     private boolean isPickingModeOn = false;
@@ -72,23 +74,34 @@ public class LogProfileListFragment extends ListFragment {
         destroyCursorAdapter();
     }
 
+    /**
+     * Enters mode from which this fragment notifies activity about picked profile
+     */
     public void enterPickingMode(){
         isPickingModeOn = true;
         ((LogProfileListFragmentListener)getActivity()).changePickingMode(isPickingModeOn);
     }
 
+    /**
+     *  Exist mode from which this fragment notifies activity about picked profile without taking action
+     */
     public void exitPickingMode(){
         isPickingModeOn = false;
         ((LogProfileListFragmentListener)getActivity()).changePickingMode(isPickingModeOn);
     }
 
-
+    /**
+     * Initializes or restarts cursor adapter
+     */
     private void initCursorAdapter(){
         Cursor c = getContext().getContentResolver().query(DroidsorProvider.LOG_PROFILE_URI,new String[]{LogProfilesTable._ID,LogProfilesTable.PROFILE_NAME},null,null,null);
         cursorAdapter = new SimpleCursorAdapter(getContext(),android.R.layout.simple_list_item_1,c,new String[]{LogProfilesTable.PROFILE_NAME},new int[]{android.R.id.text1},0);
         setListAdapter(cursorAdapter);
     }
 
+    /**
+     * Closes cursor of this cursor adapter
+     */
     private void destroyCursorAdapter(){
         cursorAdapter.getCursor().close();
     }
@@ -107,6 +120,10 @@ public class LogProfileListFragment extends ListFragment {
         }
     }
 
+    /**
+     * Deletes specified profile and restarts cursor adapter
+     * @param id - id of a profile to be deleted
+     */
     private void deleteItem(long id){
         getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_ITEMS_URI, LogProfileItemsTable.PROFILE_ID + " = ?",new String[]{String.valueOf(id)});
         getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_URI,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(id)});
@@ -114,12 +131,25 @@ public class LogProfileListFragment extends ListFragment {
         initCursorAdapter();
     }
 
+    /**
+     * Indicates whether picking mode is on
+     * @return true if mode is on otherwise false
+     */
     public boolean isPickingModeOn(){
         return isPickingModeOn;
     }
 
     public interface LogProfileListFragmentListener{
+        /**
+         * Notifies about enabling or disabling
+         * @param on true enable otherwise false
+         */
         void changePickingMode(boolean on);
+
+        /**
+         * Notifies about selected profile
+         * @param id id of a profile that was selected
+         */
         void profilePicked(long id);
     }
 

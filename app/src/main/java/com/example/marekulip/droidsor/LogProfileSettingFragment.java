@@ -23,20 +23,48 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Fredred on 28.10.2017.
+ * Created by Marek Ulip on 28.10.2017.
+ * Fragment that displays list view of log profile items
  */
 
 public class LogProfileSettingFragment extends ListFragment implements SetExtMovSensorDialogFragment.SetExtMovSensorIface{
 
 
+    /**
+     * Indicates it this profile is new or was loaded from database
+     */
     private boolean isNew = true;
+    /**
+     * Id of a profile. 0 if creating new profile
+     */
     private int profileId = 0;
+    /**
+     * Service from which log profile items are obtained
+     */
     private DroidsorService mDroidsorService;
+    /**
+     * Adapter that manages set log profile items
+     */
     private LogProfileItemArrAdapter mAdapter;
+    /**
+     * Items of {@link #mAdapter}
+     */
     private List<LogProfileItem> items;
+    /**
+     * Map containing information if sensors that are part of movement sensor are enabled or disabled
+     */
     private SparseBooleanArray extBluetoothMovSensorStates;
+    /**
+     * Name of loaded profile
+     */
     private String profileName;
+    /**
+     * GPS frequency of loaded profile
+     */
     private int gpsFrequency;
+    /**
+     * Indicates whether this profile should save GPS frequency
+     */
     private boolean scanGPS;
 
     public LogProfileSettingFragment() {
@@ -51,30 +79,6 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         fragment.setArguments(args);
         return fragment;
     }
-
-    /*@Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
-    }*/
-
-    /*@Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }*/
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -97,7 +101,7 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
 
     /**
      * Loads profile name and frequency and its items. There are two queries required to do this.
-     * @return
+     * @return List of log profile items
      */
     private List<LogProfileItem> loadProfile(){
         List<LogProfileItem> items = new ArrayList<>();
@@ -143,18 +147,6 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         setListAdapter(mAdapter);
     }
 
-    /*@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_create_new:
-                startActivity(new Intent(getContext(),LogProfileSettingActivity.class));
-                break;
-        }
-        return true;
-    }*/
-
-
-
     private void createLogProfileItemList(){
         for(Integer i: mDroidsorService.getSensorTypesForProfile()){
             if(!isNew){
@@ -167,6 +159,9 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         }
     }
 
+    /**
+     * Shows dialog that allows to save this profile and set its name and gps options
+     */
     public void saveProfile(){
         DialogFragment dialogFragment = new SaveProfileDialogFragment();
         if(!isNew){
@@ -179,6 +174,12 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         dialogFragment.show(getActivity().getSupportFragmentManager(),"SaveProfileDialog");
     }
 
+    /**
+     * Finishes saving using items that were set in dialog
+     * @param name Name of a profile
+     * @param frequency GPS frequency
+     * @param scanGPS true to scan otherwise false
+     */
     public void finishSaving(String name, int frequency, boolean scanGPS){
         ContentValues cv = new ContentValues();
         if(name == null || name.length()==0)name = getString(R.string.untitled_profile);
@@ -224,6 +225,11 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
             Toast.makeText(getContext(),getString(R.string.saved),Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Inserts provided values of one sensor of this log profile or updates them
+     * @param cv items of a sensor to be inserted
+     * @param sensorType type of a sensors that is being inserted
+     */
     private void insertOrUpdate(ContentValues cv,int sensorType){
         if(isNew) getContext().getContentResolver().insert(DroidsorProvider.LOG_PROFILE_ITEMS_URI,cv);
         else {
@@ -233,6 +239,9 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         }
     }
 
+    /**
+     * Restarts adapter of this fragment
+     */
     public void restartFragment(){
        initAdapter();
        createLogProfileItemList();

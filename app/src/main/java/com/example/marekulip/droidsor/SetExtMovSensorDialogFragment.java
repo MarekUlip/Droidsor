@@ -14,6 +14,7 @@ import android.widget.CheckBox;
 
 /**
  * Created by Marek Ulip on 14-Feb-18.
+ * DialogFragment that is used to set items from external movement sensor
  */
 
 public class SetExtMovSensorDialogFragment extends DialogFragment {

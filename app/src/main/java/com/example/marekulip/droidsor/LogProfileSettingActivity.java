@@ -22,11 +22,26 @@ import com.example.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorMana
 import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.BT_DEVICE_REQUEST;
 import static com.example.marekulip.droidsor.SensorDataDisplayerActivity.DEVICE_ADDRESS;
 
+/**
+ * Activity used to create or edit log profile
+ */
 public class LogProfileSettingActivity extends AppCompatActivity implements SaveProfileDialogFragment.SaveProfileDialogListener, SetExtMovSensorDialogFragment.SetExtMovSensorIface{
 
+    /**
+     * Fragment containing list of log profile items
+     */
     LogProfileSettingFragment fragment;
+    /**
+     * Service which provides available sensors
+     */
     private DroidsorService mDroidsorService;
+    /**
+     * Indicator of log id that was sent via intent
+     */
     public static final String LOG_PROFILE_ID = "log_id";
+    /**
+     * Indicator that log is new and not edited
+     */
     public static final String IS_NEW = "is_new";
 
 
@@ -45,9 +60,6 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
                 fragment.saveProfile();
             }
         });
-
-        /*Intent intent = new Intent(this,DroidsorService.class);
-        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);*/
 
         fragment = LogProfileSettingFragment.newInstance(getIntent().getBooleanExtra(IS_NEW,true),getIntent().getIntExtra(LOG_PROFILE_ID,0));
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment,fragment).commit();

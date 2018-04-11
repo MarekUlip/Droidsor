@@ -20,7 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
 /**
- * Created by Fredred on 18.11.2017.
+ * Created by Marek Ulip on 18.11.2017.
  */
 
 public class SaveProfileDialogFragment extends DialogFragment {
@@ -109,7 +109,7 @@ public class SaveProfileDialogFragment extends DialogFragment {
                 .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                mListener.saveProfile(profNameEdit.getText().toString(),gpsFrequency+minScan,checkBox.isChecked());
+                mListener.saveProfile(profNameEdit.getText().toString(),gpsFrequency,checkBox.isChecked());
             }
         })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -141,6 +141,11 @@ public class SaveProfileDialogFragment extends DialogFragment {
         };
     }
 
+    /**
+     * TextWatcher that set progress of provided SeekBar on any EditText change.
+     * @param v SeekBar that should be changed
+     * @return TextWatcher that can be used
+     */
     private TextWatcher createTextWatcher(final SeekBar v){
         return new TextWatcher() {
             @Override
@@ -155,12 +160,22 @@ public class SaveProfileDialogFragment extends DialogFragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                Log.d("sd", "afterTextChanged: ");
-                if(editable.toString().length() != 0) {
+                /*if(editable.toString().length() != 0) {
                     int value = Integer.parseInt(editable.toString());
                     if(value>maxScan)value = maxScan;
                     v.setProgress(value-minScan);
                     gpsFrequency = value-minScan;
+                }*/
+                if(editable.toString().length() != 0) {
+                    int value = Integer.parseInt(editable.toString());
+                    // Keep value in bounds
+                    if(value>maxScan)value = maxScan;
+                    else if(value<minScan)value = minScan;
+                    // Set real value
+                    gpsFrequency = value;
+                    Log.d("sd", "afterTextChanged: "+gpsFrequency);
+                    // Set programmatic value so it reflects behaviour of seek bar
+                    v.setProgress(value-minScan);
                 }
             }
         };

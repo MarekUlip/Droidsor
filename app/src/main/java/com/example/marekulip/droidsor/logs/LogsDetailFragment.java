@@ -262,10 +262,6 @@ public class LogsDetailFragment extends ListFragment {
                 //Log.d(TAG, "resolveWeight: indexed " + SensorLog.weights[validIndex]);
                 return SensorLog.weights[validIndex];
             }
-            if(countedCount > prefferedCount) {
-                //Log.d(TAG, "resolveWeight: ouch " + SensorLog.weights[i]);
-                return SensorLog.weights[i];
-            }
         }
         return 1;
     }
