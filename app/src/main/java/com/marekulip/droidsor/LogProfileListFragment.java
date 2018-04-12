@@ -1,11 +1,18 @@
 package com.marekulip.droidsor;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v7.app.AlertDialog;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,17 +21,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.marekulip.droidsor.database.LogProfileItemsTable;
 import com.marekulip.droidsor.database.LogProfilesTable;
+import com.marekulip.droidsor.database.PlaceholderMaker;
+import com.marekulip.droidsor.database.SensorLogsTable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Fragment to show list of profiles
  */
-public class LogProfileListFragment extends ListFragment {
-    private SimpleCursorAdapter cursorAdapter;
+public class LogProfileListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    private LogProfilesCursorAdapter mAdapter;
+    private List<Long> items = new ArrayList<>();
     private boolean isPickingModeOn = false;
+    private boolean isSelectionModeOn = false;
+    private LogProfileListFragmentListener mListener;
 
     public LogProfileListFragment() {
     }
@@ -58,8 +75,27 @@ public class LogProfileListFragment extends ListFragment {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if(item.getItemId()==Menu.FIRST) deleteItem(info.id);
+        if(item.getItemId()==Menu.FIRST) {
+            deleteItemDialog(info.id);
+        }
         return super.onContextItemSelected(item);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof LogProfileListFragmentListener) {
+            mListener = (LogProfileListFragmentListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     @Override
@@ -71,52 +107,137 @@ public class LogProfileListFragment extends ListFragment {
     @Override
     public void onStop() {
         super.onStop();
-        destroyCursorAdapter();
     }
-
     /**
-     * Enters mode from which this fragment notifies activity about picked profile
+     * Enters or exits from picking mode.
+     * @param enable
      */
-    public void enterPickingMode(){
-        isPickingModeOn = true;
-        ((LogProfileListFragmentListener)getActivity()).changePickingMode(isPickingModeOn);
+    public void setPickingMode(boolean enable){
+        isPickingModeOn = enable;
+        mListener.changePickingMode(isPickingModeOn);
     }
 
     /**
-     *  Exist mode from which this fragment notifies activity about picked profile without taking action
+     * Enables or disables mark more feature
+     * @param mode true for enable otherwise false
      */
-    public void exitPickingMode(){
-        isPickingModeOn = false;
-        ((LogProfileListFragmentListener)getActivity()).changePickingMode(isPickingModeOn);
+    public void setSelectionMode(boolean mode){
+        isSelectionModeOn = mode;
+        if(!mode){
+            // if disabling feature clear all selected items
+            cancelSelection();
+        }else {
+            mAdapter.setItemsList(items);
+        }
+        mListener.changeSelectionMode(isSelectionModeOn);
     }
 
     /**
-     * Initializes or restarts cursor adapter
+     * Deletes all items selected with mark more option
+     */
+    public void deleteMarked(){
+        deleteItemDialog(-1);
+    }
+
+    /**
+     * Deletes selected items
+     */
+    private void deleteMore(){
+        if(items.isEmpty()){
+            setSelectionMode(false);
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final Context appContext = getContext().getApplicationContext();
+                String placeholders = PlaceholderMaker.makePlaceholders(items.size());
+                String where = LogProfilesTable._ID+ " IN ("+placeholders+")";
+                String[] params = new String[items.size()];
+                PlaceholderMaker.makeParameters(params,items);
+
+                appContext.getContentResolver().delete(DroidsorProvider.LOG_PROFILE_URI, where,params);
+                where = LogProfileItemsTable.PROFILE_ID + " IN ("+placeholders+")";
+                appContext.getContentResolver().delete(DroidsorProvider.LOG_PROFILE_ITEMS_URI,where,params);
+
+                if(getActivity()!=null){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(appContext,R.string.deleted, Toast.LENGTH_SHORT).show();
+                            setSelectionMode(false);
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * Deletes specified log
+     * @param id Id of the log to be deleted
+     */
+    private void deleteItemDialog(final long id){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.confirm_delete).setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if(isSelectionModeOn) deleteMore();
+                else {
+                    deleteItem(id);
+                    initCursorAdapter();
+                }
+            }
+        }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    /**
+     * Clears all items from the {@link #items} list selected with mark more feature
+     */
+    private void cancelSelection(){
+        items.clear();
+        mAdapter.setItemsList(items);
+        initCursorAdapter();
+    }
+
+    /**
+     * Initialize or resets cursor adapter responsible for showing logs
      */
     private void initCursorAdapter(){
-        Cursor c = getContext().getContentResolver().query(DroidsorProvider.LOG_PROFILE_URI,new String[]{LogProfilesTable._ID,LogProfilesTable.PROFILE_NAME},null,null,null);
-        cursorAdapter = new SimpleCursorAdapter(getContext(),android.R.layout.simple_list_item_1,c,new String[]{LogProfilesTable.PROFILE_NAME},new int[]{android.R.id.text1},0);
-        setListAdapter(cursorAdapter);
-    }
-
-    /**
-     * Closes cursor of this cursor adapter
-     */
-    private void destroyCursorAdapter(){
-        cursorAdapter.getCursor().close();
+        getLoaderManager().initLoader(0,null,this);
+        mAdapter = new LogProfilesCursorAdapter(getContext(),android.R.layout.simple_list_item_1,null,new String[]{},new int[]{android.R.id.text1},0);
+        getLoaderManager().restartLoader(0,null,this);
+        getListView().setAdapter(mAdapter);
     }
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-        if(!isPickingModeOn) {
+        if(isPickingModeOn) {
+            setPickingMode(false);
+            mListener.profilePicked(id);
+        } else if(isSelectionModeOn){
+            if(items.contains(id)){
+                items.remove(id);
+                v.setBackgroundColor(Color.TRANSPARENT);
+            }else{
+                items.add(id);
+                v.setBackgroundColor(Color.GRAY);
+            }
+            mAdapter.setItemsList(items);
+        } else {
             Intent intent = new Intent(getContext(), LogProfileSettingActivity.class);
             intent.putExtra(LogProfileSettingActivity.LOG_PROFILE_ID, (int) id);
             intent.putExtra(LogProfileSettingActivity.IS_NEW, false);
             startActivity(intent);
-        } else {
-            exitPickingMode();
-            ((LogProfileListFragmentListener)getActivity()).profilePicked(id);
+
         }
     }
 
@@ -127,7 +248,6 @@ public class LogProfileListFragment extends ListFragment {
     private void deleteItem(long id){
         getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_ITEMS_URI, LogProfileItemsTable.PROFILE_ID + " = ?",new String[]{String.valueOf(id)});
         getContext().getContentResolver().delete(DroidsorProvider.LOG_PROFILE_URI,LogProfilesTable._ID+" = ?",new String[]{String.valueOf(id)});
-        destroyCursorAdapter();
         initCursorAdapter();
     }
 
@@ -137,6 +257,54 @@ public class LogProfileListFragment extends ListFragment {
      */
     public boolean isPickingModeOn(){
         return isPickingModeOn;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity(),DroidsorProvider.LOG_PROFILE_URI,null,null,null,null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mAdapter.swapCursor(null);
+    }
+
+    /**
+     * Adapter used for displaying log profiles
+     */
+    private class LogProfilesCursorAdapter extends SimpleCursorAdapter {
+        /**
+         * List of profile ids selected with mark more feature
+         */
+        private List<Long> items = new ArrayList<>();
+
+        public LogProfilesCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags) {
+            super(context, layout, c, from, to, flags);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(LogProfilesTable.PROFILE_NAME));
+            ((TextView) view.findViewById(android.R.id.text1)).setText(name);
+            if (items.contains(cursor.getLong(cursor.getColumnIndexOrThrow(SensorLogsTable._ID)))) {
+                view.setBackgroundColor(Color.GRAY);
+            } else {
+                view.setBackgroundColor(Color.TRANSPARENT);
+            }
+        }
+
+        /**
+         * Set list of ids for mark more feature
+         * @param ids list of ids
+         */
+        private void setItemsList(List<Long> ids){
+            items = ids;
+        }
     }
 
     public interface LogProfileListFragmentListener{
@@ -151,6 +319,12 @@ public class LogProfileListFragment extends ListFragment {
          * @param id id of a profile that was selected
          */
         void profilePicked(long id);
+
+        /**
+         * Notifies about enabling or disabling mark more feature.
+         * @param on true enable otherwise false
+         */
+        void changeSelectionMode(boolean on);
     }
 
 

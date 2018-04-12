@@ -1,6 +1,5 @@
 package com.marekulip.droidsor.logs;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -10,7 +9,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;

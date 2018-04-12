@@ -33,9 +33,13 @@ public class LogProfileActivity extends AppCompatActivity implements LogProfileL
      */
     LogProfileListFragment fragment;
     /**
-     * Indicates whether mark more feature is on
+     * Indicates whether pick next profile feature is on
      */
     private boolean isPickingModeOn = false;
+    /**
+     * Indicates whether mark more feature is on
+     */
+    private boolean isSelectionModeOn = false;
 
 
     /**
@@ -86,13 +90,17 @@ public class LogProfileActivity extends AppCompatActivity implements LogProfileL
     @Override
     protected void onResume() {
         super.onResume();
-        if(isPickingFirstFavoriteProfile||isPickingNextToLog)fragment.enterPickingMode();
+        if(isPickingFirstFavoriteProfile||isPickingNextToLog)fragment.setPickingMode(true);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if(!isPickingModeOn)getMenuInflater().inflate(R.menu.log_profile_menu,menu);
-        else getMenuInflater().inflate(R.menu.cancel_menu,menu);
+        if(!isPickingModeOn && !isSelectionModeOn)getMenuInflater().inflate(R.menu.log_profile_menu,menu);
+        else {
+            getMenuInflater().inflate(R.menu.cancel_menu,menu);
+            if(isSelectionModeOn)menu.findItem(R.id.action_delete).setVisible(true);
+            else menu.findItem(R.id.action_delete).setVisible(false);
+        }
         return true;
     }
 
@@ -100,10 +108,20 @@ public class LogProfileActivity extends AppCompatActivity implements LogProfileL
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_pick_favorite:
-                fragment.enterPickingMode();
+                fragment.setPickingMode(true);
+                break;
+            case R.id.action_mark_more:
+                fragment.setSelectionMode(true);
+                invalidateOptionsMenu();
+                break;
+            case R.id.action_delete:
+                fragment.deleteMarked();
                 break;
             case R.id.action_cancel:
-                fragment.exitPickingMode();
+                if(isSelectionModeOn) {
+                    fragment.setSelectionMode(false);
+                    invalidateOptionsMenu();
+                } else if(isPickingModeOn) fragment.setPickingMode(false);
                 break;
         }
         return true;
@@ -118,8 +136,11 @@ public class LogProfileActivity extends AppCompatActivity implements LogProfileL
             return;
         }
         if(fragment.isPickingModeOn()){
-            fragment.exitPickingMode();
-        }else finish();
+            fragment.setPickingMode(false);
+        } else if(isSelectionModeOn){
+            isSelectionModeOn = false;
+            fragment.setSelectionMode(false);
+        } else finish();
     }
 
     @Override
@@ -147,5 +168,12 @@ public class LogProfileActivity extends AppCompatActivity implements LogProfileL
             setResult(RESULT_OK);
             finish();
         }
+    }
+
+    @Override
+    public void changeSelectionMode(boolean on) {
+        if(isPickingFirstFavoriteProfile||isPickingNextToLog)return;
+        else isSelectionModeOn = on;
+        invalidateOptionsMenu();
     }
 }

@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.marekulip.droidsor.R;
 import com.marekulip.droidsor.contentprovider.DroidsorProvider;
+import com.marekulip.droidsor.database.PlaceholderMaker;
 import com.marekulip.droidsor.database.SenorDataItemsCountTable;
 import com.marekulip.droidsor.database.SensorDataTable;
 import com.marekulip.droidsor.database.SensorLogsTable;
@@ -198,14 +199,18 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
      * Deletes all logs selected with mark more feature
      */
     private void deleteMore(){
+        if(items.isEmpty()){
+            setSelectionMode(false);
+            return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
                 final Context appContext = getContext().getApplicationContext();
-                String placeholders = makePlaceholders(items.size());
+                String placeholders = PlaceholderMaker.makePlaceholders(items.size());
                 String where = SenorDataItemsCountTable.LOG_ID + " IN ("+placeholders+")";
                 String[] params = new String[items.size()];
-                makeParameters(params,items);
+                PlaceholderMaker.makeParameters(params,items);
 
                 appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_COUNT_URI, where,params);
                 where = SensorDataTable.LOG_ID + " IN ("+placeholders+")";
@@ -235,30 +240,6 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         }
     }
 
-    private String makePlaceholders(int len) {
-        if (len < 1) {
-            // It will lead to an invalid query
-            throw new RuntimeException("No placeholders");
-        } else {
-            StringBuilder sb = new StringBuilder(len * 2 - 1);
-            sb.append("?");
-            for (int i = 1; i < len; i++) {
-                sb.append(",?");
-            }
-            return sb.toString();
-        }
-    }
-    private void makeParameters(String[] params,List<Long> idList) {
-        if (params.length < 1) {
-            // It will lead to an invalid query
-            throw new RuntimeException("No placeholders");
-        } else {
-            for (int i = 0; i < idList.size(); i++) {
-                params[i] = String.valueOf(idList.get(i));
-            }
-        }
-    }
-
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -274,8 +255,6 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         if(item.getItemId()==Menu.FIRST) LogExporter.exportLog(getContext(),info.id,null);
         if(item.getItemId()==Menu.FIRST+1) {
             deleteItemDialog(info.id);
-            //deleteItem(info.id);
-            //initCursorAdapter();
         }
         if(item.getItemId() == Menu.FIRST+2) renameItem(info.id);
         return super.onContextItemSelected(item);
