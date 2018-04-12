@@ -480,6 +480,7 @@ public class DroidsorService extends Service {
      * @return true if it is sendable otherwise false
      */
     private boolean isSendable(List<SensorData> sensorDataList) {
+        if(sensorDataList.isEmpty())return false;
         //It is enough to check only first sensor from list because ussualy only one value is present at list. When there are multiple values in the list they are from the same source
         return !(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType < 100) && !(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType > 100);
     }

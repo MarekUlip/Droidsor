@@ -298,7 +298,10 @@ public class BluetoothSensorManager {
                             configureSensor(sensor, false);
                         }
                     }
-                } catch (InterruptedException e) {
+                } catch (InterruptedException | NullPointerException e) {
+                    // Catching null pointer because if user exits before device was configured
+                    // then this exception rises. It does not have any impact on performance because
+                    // when null occurs this method would quit anyway.
                     e.printStackTrace();
                 }
             }
