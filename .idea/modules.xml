@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Droidsor.iml" filepath="$PROJECT_DIR$/Droidsor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Droidsor.iml" filepath="$PROJECT_DIR$/.idea/Droidsor.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
