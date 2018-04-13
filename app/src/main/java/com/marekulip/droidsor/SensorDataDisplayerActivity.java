@@ -259,7 +259,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             connectToService();
             return;
         }
-        if(mDroidsorService.isLogging())return;
+        if(mDroidsorService.isLoggingSafe())return;
         String pref = PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.START_LOG_BUT_BEHAVIOUR_PREF,"1");
         if (pref.equals("1")) {
             if (getSharedPreferences(SHARED_PREFS_NAME, 0).getLong(FAVORITE_LOG, 0) == 0) {
@@ -342,7 +342,9 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             }
         }  else if(requestCode == LogProfileActivity.SET_FIRST_FAVORITE_PROFILE){
             if(resultCode==RESULT_OK){
-                prepareForLogging();
+                if(!waitedForService){
+                    requestDialog(getSharedPreferences(SHARED_PREFS_NAME, 0).getLong(FAVORITE_LOG, 0));
+                }else prepareForLogging();
             }
         } else if (requestCode == LogProfileActivity.SET_NEXT_TO_LOG){
             if(resultCode == RESULT_OK){

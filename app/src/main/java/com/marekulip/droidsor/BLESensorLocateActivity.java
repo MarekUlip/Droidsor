@@ -54,22 +54,24 @@ public class BLESensorLocateActivity extends AppCompatActivity implements BLESen
         super.onCreate(savedInstanceState);
         mHanlder = new Handler();
 
-        // Check if BLE is available
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, getString(R.string.ble_not_supported), Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
         final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
         // Check if BT is available
-        // It seems unnecessary but Android examples show it this way and one can never be too sure
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, getString(R.string.error_bluetooth_not_supported), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
+
+        // Check if BLE is available
+        // It seems unnecessary but Android examples show it this way and one can never be too sure
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, getString(R.string.ble_not_supported), Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         //It is required to search for BLE devices
         if (!(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PositionManager.MY_PERMISSIONS_REQUEST_LOCATION_FINE);

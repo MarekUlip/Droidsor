@@ -32,6 +32,13 @@ public class SensorLogManager {
      * Indicates whether logging is actually in progress
      */
     private boolean isLogging = false;
+
+    /**
+     * Indicates that log has been stopped including finalizing thread and that it is now save to start
+     * new log. It is safety measure so no new log starts until old was stopped because stopping old
+     * log sets log to null and this should not happen with new log.
+     */
+    private boolean isLogCompletelyStopped = true;
     /**
      * Context from service
      */
@@ -68,6 +75,7 @@ public class SensorLogManager {
      * @param sensorsToListen sensors this log should contain
      */
     public void startLog(String logName,List<Integer> sensorsToListen){
+        //if(!isLogCompletelyStopped) return;
         // First get wakelock to ensure CPU does not turn off and sensors are logged correctly
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"DroidsorWakelockTag");
@@ -95,11 +103,12 @@ public class SensorLogManager {
      * Ends logging and releases wakelock. Note that you should check if manager is really logging with {@link #isLogging()} method otherwise NullPointerException might occur.
      */
     public void endLog(){
-        Log.d(TAG, "endLog: ending logging");
+        //Log.d(TAG, "endLog: ending logging");
         isLogging = false;
         timer.cancel();
         timer.purge();
         timer = null;
+        isLogCompletelyStopped =false;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -113,6 +122,7 @@ public class SensorLogManager {
                 log.countSensorLogItems();
                 log = null;
                 wakeLock.release();
+                isLogCompletelyStopped = true;
             }
         }).start();
     }
@@ -124,6 +134,14 @@ public class SensorLogManager {
      */
     public boolean isLogging(){
         return isLogging;
+    }
+
+    /**
+     * Indicates whether previous log was correctly stopped
+     * @return true if yes otherwise false
+     */
+    public boolean isLogCompletelyStopped(){
+        return isLogCompletelyStopped;
     }
 
     /**

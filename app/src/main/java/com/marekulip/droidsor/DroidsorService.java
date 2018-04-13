@@ -414,6 +414,14 @@ public class DroidsorService extends Service {
     }
 
     /**
+     * Indicates that it is completely safe to start new log.
+     * @return true if it is safe otherwise false
+     */
+    public boolean isLoggingSafe(){
+        return sensorLogManager.isLogging() || !sensorLogManager.isLogCompletelyStopped();
+    }
+
+    /**
      * Indicates whether this service is logging.
      * @return true if logging otherwise false
      */
@@ -506,7 +514,7 @@ public class DroidsorService extends Service {
             // Create the NotificationChannel
             CharSequence channelName = getString(R.string.app_name);
             String description = getString(R.string.channel_description);
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, importance);
             mChannel.setDescription(description);
             // Register the channel with the system; you can't change the importance
