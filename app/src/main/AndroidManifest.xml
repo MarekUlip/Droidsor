@@ -59,7 +59,7 @@
 
         <provider
             android:name=".contentprovider.DroidsorProvider"
-            android:authorities="com.example.marekulip.provider"
+            android:authorities="com.marekulip.provider"
             android:exported="false" />
 
         <activity android:name=".DroidsorSettingsActivity" />
