@@ -83,6 +83,11 @@ public class BluetoothSensorManager {
      */
     private boolean isAddressSet = false;
 
+    private boolean isInitializing = false;
+    private boolean isInitializingImportant = false;
+    private boolean shouldStopInitializing = false;
+    private boolean shouldStopInitializingImportant = false;
+
     /**
      * List of all supported sensors from BLE device
      */
@@ -99,7 +104,8 @@ public class BluetoothSensorManager {
      * Semaphore used for communication with BLE device where it is required to wait for answer.
      * So when device sends answer it also releases semaphore.
      */
-    private Semaphore communicationSemaphore = new Semaphore(0,true);
+    private final Semaphore communicationSemaphore = new Semaphore(0,true);
+    private final Semaphore initializationSemaphore = new Semaphore(0,true);
 
     /**
      * Initializes manager and connects to provided service
@@ -252,7 +258,7 @@ public class BluetoothSensorManager {
                         }
                     }
                 }
-                initializeSensors();
+                initializeSensors(true);
 
             } else {
                 Log.w(TAG, "onServicesDiscovered: " + status);
@@ -285,24 +291,49 @@ public class BluetoothSensorManager {
      * Initializes all desired sensors which were set via {@link #setSensorsToListen(List, List)} or {@link #defaultListeningMode()} methods.\
      * In other word all sensors which are in {@link #activeSensors} will be activated.
      */
-    private void initializeSensors(){
+    private void initializeSensors(final boolean hasPriority){
         // New thread for semaphore releases
+        if(isInitializing && !hasPriority){
+            if(isInitializingImportant)return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
+                    Log.d(TAG, "run: " + hasPriority +" "+initializationSemaphore.availablePermits());
+                    //Check if another initialization is in progress
+                    if(isInitializing){
+                        // if yes stop other initialization and after it stops start this one
+                        shouldStopInitializing = true;
+                        initializationSemaphore.acquire();
+                    }
+                    isInitializing = true;
+                    isInitializingImportant = hasPriority;
                     for (GeneralTISensor sensor : sensors) {
+                        // If more important initialization is about to begin start it and stop this.
+                        if(shouldStopInitializing){
+                            return;
+                        }
                         if (activeSensors.contains(sensor)) {
                             configureSensor(sensor, true);
                         } else {
                             configureSensor(sensor, false);
                         }
                     }
+
                 } catch (InterruptedException | NullPointerException e) {
                     // Catching null pointer because if user exits before device was configured
                     // then this exception rises. It does not have any impact on performance because
                     // when null occurs this method would quit anyway.
                     e.printStackTrace();
+                } finally {
+                    isInitializing = false;
+                    isInitializingImportant = false;
+                    // Check for the last time of no one is waiting so no locked threads remain.
+                    if(shouldStopInitializing){
+                        initializationSemaphore.release();
+                    }
+                    shouldStopInitializing = false;
                 }
             }
         }).start();
@@ -403,18 +434,25 @@ public class BluetoothSensorManager {
      * Starts listening to sensors which were set in setSensorsToListen. Those which are not set will be turned off.
      */
     public void startListening(){
-        initializeSensors();
+        initializeSensors(true);
+    }
+
+    public void stopListening(){
+        // Setting empty arrays will cause that all sensors will be turned off.
+        setSensorsToListen(new ArrayList<Integer>(), new ArrayList<Integer>());
+        initializeSensors(false);
     }
 
     /**
      * Resets listened sensors so that all sensors are again listened with frequency 1s
      */
     public void defaultListeningMode(){
+        // If important profile is initing we don't want to purge sensors that are supposed to log.
+        // Although this situation is rare it happens
+        if(isInitializingImportant) return;
         clearArrays();
-        for(GeneralTISensor sensor: sensors){
-            activeSensors.add(sensor);
-        }
-        initializeSensors();
+        activeSensors.addAll(sensors);
+        initializeSensors(false);
     }
 
     /**
