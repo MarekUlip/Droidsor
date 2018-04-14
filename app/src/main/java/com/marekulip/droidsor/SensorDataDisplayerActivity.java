@@ -1,6 +1,8 @@
 package com.marekulip.droidsor;
 
+import android.app.Activity;
 import android.app.ActivityManager;
+import android.arch.lifecycle.Lifecycle;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -69,11 +71,11 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     /**
      * Semaphore used for waiting till connection to service has been created or restored
      */
-    private Semaphore serviceSemaphore = new Semaphore(0,true);
+    private final Semaphore serviceSemaphore = new Semaphore(0,true);
     /**
      * Semaphore used for waiting till dialog can be shown
      */
-    private Semaphore dialogSemaphore = new Semaphore(1,true);
+    private final Semaphore dialogSemaphore = new Semaphore(1,true);
     /**
      * Dialog to inform user that app waits for first GPS position till it will start logging and allows
      * user to start logging without this position
@@ -128,7 +130,6 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         super.onResume();
         connectToService();
         if(isRequestingDialog){
-            Log.d("ds", "onResume: releasing");
             dialogSemaphore.release();
             isRequestingDialog = false;
         }
@@ -368,12 +369,18 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
      * @param profile Profile to log with
      */
     private void requestDialog(final LogProfile profile){
+        if(getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)){
+            startLogging(profile);
+            return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     isRequestingDialog = true;
-                    dialogSemaphore.acquire();
+                    if(!getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)){
+                        dialogSemaphore.acquire();
+                    }
                     SensorDataDisplayerActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -398,6 +405,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                Log.d("test", "run: delayed");
                                 delayedOnActivityResult(requestCode,resultCode,data,true);
                             }
                         });
