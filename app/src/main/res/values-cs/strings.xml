@@ -24,7 +24,7 @@
     <string name="profile_name">Jméno profilu</string>
     <string name="scan_gps_when_logging">Ukládat pozici při záznamu</string>
     <string name="create_profile">Vytvořit nový profil</string>
-    <string name="pick_favorite_log">Vybrat oblíbený profil</string>
+    <string name="pick_favorite_log">Vyberte oblíbený profil</string>
     <string name="favorite_log_picked">Oblíbený profil vybrán</string>
     <string name="connect_bt_device">Připojit k BT zařízení</string>
     <string name="no_favorite_log">Není nastaven žádný oblíbený záznam. Prosím, vyberte si oblíbený profil v nastavení profilů.</string>
