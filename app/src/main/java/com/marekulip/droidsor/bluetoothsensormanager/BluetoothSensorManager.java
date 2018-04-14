@@ -290,6 +290,7 @@ public class BluetoothSensorManager {
     /**
      * Initializes all desired sensors which were set via {@link #setSensorsToListen(List, List)} or {@link #defaultListeningMode()} methods.\
      * In other word all sensors which are in {@link #activeSensors} will be activated.
+     * @param hasPriority Indicates whether this initialization should stop another going.
      */
     private void initializeSensors(final boolean hasPriority){
         // New thread for semaphore releases
@@ -437,6 +438,9 @@ public class BluetoothSensorManager {
         initializeSensors(true);
     }
 
+    /**
+     * Stops listening to all sensors.
+     */
     public void stopListening(){
         // Setting empty arrays will cause that all sensors will be turned off.
         setSensorsToListen(new ArrayList<Integer>(), new ArrayList<Integer>());
