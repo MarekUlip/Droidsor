@@ -196,6 +196,26 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
     }
 
     /**
+     * Deletes specified log
+     * @param id Id of the log to be deleted
+     */
+    private void deleteItem(final long id){
+        final Context appContext = getContext().getApplicationContext();
+        // First delete log so list can be shown without it
+        appContext.getContentResolver().delete(DroidsorProvider.SENSOR_LOGS_URI,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(id)});
+        Toast.makeText(appContext,R.string.deleted,Toast.LENGTH_SHORT).show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Finish deleting the rest of the log on new thread so it does not block UI.
+                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_COUNT_URI, SenorDataItemsCountTable.LOG_ID + " = ?",new String[]{String.valueOf(id)});
+                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_URI,SensorDataTable.LOG_ID + " = ?",new String[]{String.valueOf(id)});
+
+            }
+        }).start();
+    }
+
+    /**
      * Deletes all logs selected with mark more feature
      */
     private void deleteMore(){
@@ -203,30 +223,30 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
             setSelectionMode(false);
             return;
         }
+        final Context appContext = getContext().getApplicationContext();
+        final String placeholders = PlaceholderMaker.makePlaceholders(items.size());
+        final String[] params = new String[items.size()];
+        PlaceholderMaker.makeParameters(params,items);
+        // First delete logs so list can be shown without them
+        appContext.getContentResolver().delete(DroidsorProvider.SENSOR_LOGS_URI,SensorLogsTable._ID + " IN ("+placeholders+")",params);
+        Toast.makeText(appContext,R.string.deleted,Toast.LENGTH_SHORT).show(); //TODO consider better way of informing user that items are deleted - this is like lying.
+        // Disable mark more feature and show refreshed list
+        setSelectionMode(false);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final Context appContext = getContext().getApplicationContext();
-                String placeholders = PlaceholderMaker.makePlaceholders(items.size());
-                String where = SenorDataItemsCountTable.LOG_ID + " IN ("+placeholders+")";
-                String[] params = new String[items.size()];
-                PlaceholderMaker.makeParameters(params,items);
+                // Aaand finish deleting the rest of the log on new thread so it does not block UI.
+                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_COUNT_URI, SenorDataItemsCountTable.LOG_ID + " IN ("+placeholders+")",params);
+                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_URI,SensorDataTable.LOG_ID + " IN ("+placeholders+")",params);
 
-                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_COUNT_URI, where,params);
-                where = SensorDataTable.LOG_ID + " IN ("+placeholders+")";
-                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_DATA_URI,where,params);
-                where = SensorLogsTable._ID + " IN ("+placeholders+")";
-                appContext.getContentResolver().delete(DroidsorProvider.SENSOR_LOGS_URI,where,params);
-
-                if(getActivity()!=null){
+                /*if(getActivity()!=null){
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(appContext,R.string.deleted,Toast.LENGTH_SHORT).show();
-                            setSelectionMode(false);
+
                         }
                     });
-                }
+                }*/
             }
         }).start();
     }
@@ -258,16 +278,6 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
         }
         if(item.getItemId() == Menu.FIRST+2) renameItem(info.id);
         return super.onContextItemSelected(item);
-    }
-
-    /**
-     * Deletes specified log
-     * @param id Id of the log to be deleted
-     */
-    private void deleteItem(long id){
-        getContext().getContentResolver().delete(DroidsorProvider.SENSOR_DATA_COUNT_URI, SenorDataItemsCountTable.LOG_ID + " = ?",new String[]{String.valueOf(id)});
-        getContext().getContentResolver().delete(DroidsorProvider.SENSOR_DATA_URI,SensorDataTable.LOG_ID + " = ?",new String[]{String.valueOf(id)});
-        getContext().getContentResolver().delete(DroidsorProvider.SENSOR_LOGS_URI,SensorLogsTable._ID+" = ?",new String[]{String.valueOf(id)});
     }
 
     /**
