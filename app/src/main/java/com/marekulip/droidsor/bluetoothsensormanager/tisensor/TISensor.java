@@ -57,33 +57,8 @@
  */
 package com.marekulip.droidsor.bluetoothsensormanager.tisensor;
 
-import android.bluetooth.BluetoothGattCharacteristic;
-
 import com.marekulip.droidsor.sensorlogmanager.Point3D;
 
-import java.util.UUID;
-
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_ACC_CONF;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_ACC_DATA;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_ACC_SERV;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_GYR_CONF;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_GYR_DATA;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_GYR_SERV;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_HUM_CONF;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_HUM_DATA;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_HUM_SERV;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_IRT_CONF;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_IRT_DATA;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_IRT_SERV;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_MAG_CONF;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_MAG_DATA;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_MAG_SERV;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_MOV_CONF;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_MOV_DATA;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_MOV_SERV;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_OPT_CONF;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_OPT_DATA;
-import static com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt.UUID_OPT_SERV;
 import static java.lang.Math.pow;
 
 
@@ -92,7 +67,7 @@ import static java.lang.Math.pow;
  * characteristic-containing-measurement.
  */
 public enum TISensor {
-	IR_TEMPERATURE(UUID_IRT_SERV, UUID_IRT_DATA, UUID_IRT_CONF) {
+	IR_TEMPERATURE() {
 		@Override
 		public Point3D convert(final byte [] value) {
 
@@ -142,7 +117,7 @@ public enum TISensor {
 		}
 	},
 
-	MOVEMENT_ACC(UUID_MOV_SERV,UUID_MOV_DATA, UUID_MOV_CONF,(byte)3) {
+	MOVEMENT_ACC() {
 		@Override
 		public Point3D convert(final byte[] value) {
 			// Range 8G
@@ -154,7 +129,7 @@ public enum TISensor {
 			return new Point3D(((x / SCALE) * -1), y / SCALE, ((z / SCALE)*-1));
 		}
 	},
-	MOVEMENT_GYRO(UUID_MOV_SERV,UUID_MOV_DATA, UUID_MOV_CONF,(byte)3) {
+	MOVEMENT_GYRO() {
 		@Override
 		public Point3D convert(final byte[] value) {
 
@@ -166,7 +141,7 @@ public enum TISensor {
 			return new Point3D(x / SCALE, y / SCALE, z / SCALE);
 		}
 	},
-	MOVEMENT_MAG(UUID_MOV_SERV,UUID_MOV_DATA, UUID_MOV_CONF,(byte)3) {
+	MOVEMENT_MAG() {
 		@Override
 		public Point3D convert(final byte[] value) {
 			final float SCALE = (float) (32768 / 4912);
@@ -179,7 +154,7 @@ public enum TISensor {
 			else return new Point3D(0,0,0);
 		}
 	},
-	ACCELEROMETER(UUID_ACC_SERV, UUID_ACC_DATA, UUID_ACC_CONF,(byte)3) {
+	ACCELEROMETER() {
 		@Override
 		public Point3D convert(final byte[] value) {
 			/*
@@ -203,7 +178,7 @@ public enum TISensor {
 		}
 	},
 
-	HUMIDITY(UUID_HUM_SERV, UUID_HUM_DATA, UUID_HUM_CONF) {
+	HUMIDITY() {
 		@Override
 		public Point3D convert(final byte[] value) {
 			int a = shortUnsignedAtOffset(value, 2);
@@ -217,7 +192,7 @@ public enum TISensor {
 		}
 	},
 
-	MAGNETOMETER(UUID_MAG_SERV, UUID_MAG_DATA, UUID_MAG_CONF) {
+	MAGNETOMETER() {
 		@Override
 		public Point3D convert(final byte [] value) {
 			// Multiply x and y with -1 so that the values correspond with the image in the app
@@ -230,7 +205,7 @@ public enum TISensor {
 		}
 	},
 
-	LUXOMETER(UUID_OPT_SERV, UUID_OPT_DATA, UUID_OPT_CONF) {
+	LUXOMETER() {
 		@Override
 		public Point3D convert(final byte [] value) {
 			int mantissa;
@@ -248,7 +223,7 @@ public enum TISensor {
 		}
 	},
 
-	GYROSCOPE(UUID_GYR_SERV, UUID_GYR_DATA, UUID_GYR_CONF, (byte)7) {
+	GYROSCOPE() {
 		@Override
 		public Point3D convert(final byte [] value) {
 
@@ -260,12 +235,12 @@ public enum TISensor {
 		}
 	},
 
-	BAROMETER(SensorTagGatt.UUID_BAR_SERV, SensorTagGatt.UUID_BAR_DATA, SensorTagGatt.UUID_BAR_CONF) {
+	BAROMETER() {
 		@Override
 		public Point3D convert(final byte [] value) {
 			if (value.length > 4) {
-				//Integer val = twentyFourBitUnsignedAtOffset(value, 3);
-				Integer val = ((value[3] & 0xff) + ((value[4]<<8) & 0xff00) + ((value[5]<<16) & 0xff0000));
+				Integer val = twentyFourBitUnsignedAtOffset(value, 3);
+				//Integer val = ((value[3] & 0xff) + ((value[4]<<8) & 0xff00) + ((value[5]<<16) & 0xff0000));
 				return new Point3D((double) val / 100.0, 0, 0);
 			}
 			else {
@@ -308,59 +283,9 @@ public enum TISensor {
         return (upperByte << 16) + (mediumByte << 8) + lowerByte;
     }
 
-	public void onCharacteristicChanged(BluetoothGattCharacteristic c) {
-		throw new UnsupportedOperationException("Error: the individual enum classes are supposed to override this method.");
-	}
-
-
 	public Point3D convert(byte[] value) {
 		throw new UnsupportedOperationException("Error: the individual enum classes are supposed to override this method.");
 	}
 
-	private final UUID service, data, config;
-	private byte enableCode; // See getEnableSensorCode for explanation.
-	public static final byte DISABLE_SENSOR_CODE = 0;
-	public static final byte ENABLE_SENSOR_CODE = 1;
-	public static final byte CALIBRATE_SENSOR_CODE = 2;
-
-	/**
-	 * Constructor called by the Gyroscope and Accelerometer because it more than a boolean enable
-	 * code.
-	 */
-	TISensor(UUID service, UUID data, UUID config, byte enableCode) {
-		this.service = service;
-		this.data = data;
-		this.config = config;
-		this.enableCode = enableCode;
-	}
-
-	/**
-	 * Constructor called by all the sensors except Gyroscope
-	 * */
-	TISensor(UUID service, UUID data, UUID config) {
-		this.service = service;
-		this.data = data;
-		this.config = config;
-		this.enableCode = ENABLE_SENSOR_CODE; // This is the sensor enable code for all sensors except the gyroscope
-	}
-
-	/**
-	 * @return the code which, when written to the configuration characteristic, turns on the sensor.
-	 * */
-	public byte getEnableSensorCode() {
-		return enableCode;
-	}
-
-	public UUID getService() {
-		return service;
-	}
-
-	public UUID getData() {
-		return data;
-	}
-
-	public UUID getConfig() {
-		return config;
-	}
 
 }

@@ -42,7 +42,7 @@ public class SensorLogManager {
     /**
      * Context from service
      */
-    private Context context;
+    private final Context context;
     /**
      * Wakelock used to keep CPU awake while logging so data are correct.
      */

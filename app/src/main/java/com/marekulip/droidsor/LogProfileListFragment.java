@@ -103,11 +103,6 @@ public class LogProfileListFragment extends ListFragment implements LoaderManage
         super.onResume();
         initCursorAdapter();
     }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
     /**
      * Enters or exits from picking mode.
      * @param enable

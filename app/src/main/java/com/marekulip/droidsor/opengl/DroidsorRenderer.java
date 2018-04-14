@@ -210,7 +210,7 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
 
                 + "attribute vec4 a_Position;     \n"		// Per-vertex position information we will pass in.
                 + "attribute vec4 a_Color;        \n"		// Per-vertex color information we will pass in.
-                //TODO + "attribute vec3 a_Normal;       \n"		// Per-vertex normal information we will pass in.
+                // + "attribute vec3 a_Normal;       \n"		// Per-vertex normal information we will pass in.
 
                 + "varying vec4 v_Color;          \n"		// This will be passed into the fragment shader.
 

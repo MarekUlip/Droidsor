@@ -4,7 +4,6 @@ package com.marekulip.droidsor;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 
 /**
  * Fragment used for setting settings.

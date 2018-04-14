@@ -164,6 +164,7 @@ public class LogsDetailFragment extends ListFragment {
      * @param isSelectionModeOn true for enable false for disable
      */
     public void setSelectionMode(boolean isSelectionModeOn){
+        if(adapter == null) return;
         if(isSelectionModeOn){
             //init list for mark more feature
             idList.clear();
@@ -172,6 +173,10 @@ public class LogsDetailFragment extends ListFragment {
         adapter.setSelectionModeOn(isSelectionModeOn);
         this.isSelectionModeOn = isSelectionModeOn;
         adapter.notifyDataSetChanged();
+    }
+
+    public boolean isSelectionModeOn(){
+        return isSelectionModeOn;
     }
 
     /**

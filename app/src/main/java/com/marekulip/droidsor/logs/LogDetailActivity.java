@@ -20,7 +20,7 @@ public class LogDetailActivity extends AppCompatActivity {
     /**
      * Indicates whether selection of more items feature is enabled.
      */
-    private boolean isSelectionModeOn = false;
+    //private boolean isSelectionModeOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +36,7 @@ public class LogDetailActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.log_detail_menu, menu);
-        if(isSelectionModeOn){
+        if(fragment!=null && fragment.isSelectionModeOn()){
             menu.findItem(R.id.action_mark_more).setVisible(false);
             menu.findItem(R.id.action_export_selected).setVisible(true);
             menu.findItem(R.id.action_cancel).setVisible(true);
@@ -53,14 +53,17 @@ public class LogDetailActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_mark_more) {
-            isSelectionModeOn = true;
-            fragment.setSelectionMode(true);
-        } else if(id == R.id.action_export_selected){
-            fragment.exportSelectedItems();
-            cancelSelection();
-        } else if (id == R.id.action_cancel){
-            cancelSelection();
+        switch (id) {
+            case R.id.action_mark_more:
+                fragment.setSelectionMode(true);
+                break;
+            case R.id.action_export_selected:
+                fragment.exportSelectedItems();
+                cancelSelection();
+                break;
+            case R.id.action_cancel:
+                cancelSelection();
+                break;
         }
         invalidateOptionsMenu();
         return true;
@@ -70,19 +73,13 @@ public class LogDetailActivity extends AppCompatActivity {
      * Disables mark more feature
      */
     private void cancelSelection(){
-        isSelectionModeOn = false;
         fragment.setSelectionMode(false);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
     }
 
     @Override
     public void onBackPressed() {
         //If mark more feature is enable just disable it and stay in this activity
-        if(isSelectionModeOn){
+        if(fragment!=null && fragment.isSelectionModeOn()){
             cancelSelection();
             invalidateOptionsMenu();
         }else{

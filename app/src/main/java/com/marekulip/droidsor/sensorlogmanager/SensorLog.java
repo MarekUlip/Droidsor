@@ -38,7 +38,7 @@ public class SensorLog {
     /**
      * Manager of this object which takes care of proper start and end of log
      */
-    private SensorLogManager sensorLogManager;
+    private final SensorLogManager sensorLogManager;
     /**
      * Array of all usable weights
      */
@@ -80,13 +80,11 @@ public class SensorLog {
      * Writes logged items into database.
      */
     public void writeToDatabase(){
-        List<SensorData> dataList = new ArrayList<>();
-        dataList.addAll(sensorDataList);
+        List<SensorData> dataList = new ArrayList<>(sensorDataList);
         sensorDataList.clear();
         List<ContentValues> bulk = new ArrayList<>();
         int count;
         for(SensorData s: dataList){
-            //TODO possible problem with large bulks
                 count = countOfItems.get(s.sensorType, 0) + 1;
                 countOfItems.put(s.sensorType, count);
                 for (Integer i : weights) {

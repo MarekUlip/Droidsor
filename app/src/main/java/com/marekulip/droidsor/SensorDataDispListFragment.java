@@ -31,7 +31,6 @@ public class SensorDataDispListFragment extends ListFragment {
         registerForContextMenu(getListView());
         adapter = new SensorDataDispArrAdapter(getContext(),R.layout.sensor_data_displayer_list_item,items);
         setListAdapter(adapter);
-        Log.d(TAG, "onActivityCreated: ");
     }
 
     /**

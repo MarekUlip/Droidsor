@@ -8,6 +8,7 @@
         android:id="@+id/profile_name"
         android:layout_width="match_parent"
         android:hint="@string/profile_name"
+        android:inputType="text"
         android:layout_height="wrap_content" />
 
     <LinearLayout

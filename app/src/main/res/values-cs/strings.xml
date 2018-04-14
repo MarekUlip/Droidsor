@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_settings">Nastavení</string>
-    <string name="ble_not_supported">BLE není podporován</string>
+    <string name="ble_not_supported">BLE není podporováno</string>
     <string name="label_data">Data:</string>
     <string name="label_device_address">Adresa zařízení:</string>
     <string name="label_state">Stav:</string>
@@ -17,17 +17,17 @@
     <string name="cancel">Storno</string>
     <string name="delete">Vymazat</string>
     <string name="untitled_profile">Bezejmenný</string>
-    <string name="export_sensor">Exportovat tento senzor</string>
+    <string name="export_sensor">Exportovat senzor</string>
     <string name="export_selected_sensors">Exportovat zvolené senzory</string>
     <string name="export_selected_logs">Exportovat zvolené záznamy</string>
     <string name="export_log_item">Exportovat položku záznamu</string>
     <string name="profile_name">Jméno profilu</string>
-    <string name="scan_gps_when_logging">Ukládat pozici při záznamu</string>
-    <string name="create_profile">Vytvořit nový profil</string>
+    <string name="scan_gps_when_logging">Ukládat GPS pozici</string>
+    <string name="create_profile">Vytvořit profil</string>
     <string name="pick_favorite_log">Vyberte oblíbený profil</string>
     <string name="favorite_log_picked">Oblíbený profil vybrán</string>
     <string name="connect_bt_device">Připojit k BT zařízení</string>
-    <string name="no_favorite_log">Není nastaven žádný oblíbený záznam. Prosím, vyberte si oblíbený profil v nastavení profilů.</string>
+    <string name="no_favorite_log">Není nastaven žádný oblíbený profil. Prosím, vyberte profil v nastavení profilů.</string>
     <string name="mobile_sensors">Mobilní senzory</string>
     <string name="bluetooth_sensors">Bluetooth senzory</string>
     <string name="all_sensors">Všechny senzory</string>
@@ -36,27 +36,27 @@
     <string name="logging">Záznamy</string>
     <string name="saved_logs">Uložené záznamy</string>
     <string name="log_profile_settings">Nastavení profilů</string>
-    <string name="unavailable_when_not_logging">Tento režim zobrazení není dostupný, když neprobíhá záznam</string>
-    <string name="unavailable_when_logging">Tento režim zobrazení není dostupný, když probíhá záznam</string>
+    <string name="unavailable_when_not_logging">Režim zobrazení není dostupný, když neprobíhá záznam</string>
+    <string name="unavailable_when_logging">Režim zobrazení není dostupný, když probíhá záznam</string>
     <string name="export_log">Exportovat záznam</string>
     <string name="started_exporting">Začal export zvolených záznamů. Informujeme vás, až bude export hotov.</string>
-    <string name="exporting_done">Export hotov</string>
+    <string name="exporting_done">"Soubor exportován do "</string>
     <string name="mark_more">Označit více</string>
     <string name="disconnect_from_bt_when_not_needed">Úspora Bluetooth energie</string>
     <string name="disconnect_from_bt_when_not_needed_summary">Aplikace se odpojí od Bluetooth zařízení, když není používáno.</string>
-    <string name="wait_for_gps">Počkat na GPS pozici</string>
-    <string name="wait_for_gps_summary">Zajistí, že záznam nezačne, dokud nebude známa poloha.</string>
-    <string name="start_logging_button_behaviour">Chování tlačítka spouštějícího záznam</string>
-    <string name="favorite_profile_gone">Váš oblíbený profil již neexistuje. Prosím vyberte si nový.</string>
+    <string name="wait_for_gps">Počkat na GPS</string>
+    <string name="wait_for_gps_summary">Zajistí, že záznam nezačne, dokud nebude známa poloha</string>
+    <string name="start_logging_button_behaviour">Chování tlačítka záznamu</string>
+    <string name="favorite_profile_gone">Profil již neexistuje. Prosím, vyberte nový</string>
     <string name="pick_profile_to_log">Vyberte si profil, se kterým chcete spustit záznam.</string>
-    <string name="one_click_notification_exit">Jednodušší vypnutí služby</string>
-    <string name="one_click_notification_exit_summary">Umožňuje vypnout službu z pole upozornění pouze s jedním dotekem.</string>
+    <string name="one_click_notification_exit">Jednodušší vypnutí</string>
+    <string name="one_click_notification_exit_summary">Umožňuje vypnout službu z pole upozornění pouze s jedním dotekem</string>
     <string name="choose_new_log_name">Zvolte nové jméno záznamu</string>
     <string name="rename">Přejmenovat</string>
     <string name="loading_sensor_items">Načítám položky senzoru</string>
     <string name="no_logs">Zatím nebyl vytvořen žádný záznam</string>
-    <string name="count_of_points">Max rozsah v souhrnu záznamu</string>
-    <string name="count_of_points_summary">Počet bodů, který bude zobrazen v grafovém souhrnu. Čím více bodů je třeba zobrazit, tím pomaleji se souhrn záznamu zobrazí.</string>
+    <string name="count_of_points">Rozsah v souhrnu</string>
+    <string name="count_of_points_summary">Rozsah bodů, který bude zobrazen v grafovém souhrnu. Čím více bodů je třeba zobrazit, tím pomaleji se souhrn záznamu zobrazí.</string>
     <string name="waiting_for_gps">Čekám na GPS</string>
     <string name="waiting_for_gps_message">Přejete si začít záznam bez GPS?</string>
     <string name="start_without_gps">Začít bez GPS</string>
@@ -68,8 +68,8 @@
     <string name="confirm_delete">Potvrdit smazání</string>
     <string name="show_three_d_but">Zobrazovat tlačítko 3D pohledu</string>
     <string name="channel_description">Kanál pro notifikaci služby</string>
-    <string name="permission_fine_location_not_granted">Oprávnení nebylo uděleno. Bez tohoto povolení nemůžeme hledat Bluetooth zařízení.</string>
-    <string name="service_is_off_resetting">Služba je vypnutá. Prosím, zkuste to znovu.</string>
+    <string name="permission_fine_location_not_granted">Oprávnení nebylo uděleno. Bez tohoto povolení nemůžeme hledat Bluetooth zařízení</string>
+    <string name="service_is_off_resetting">Služba je vypnutá. Prosím, zkuste to znovu</string>
     <string name="unknown_device">Neznámé zařízení</string>
     <string name="menu_connect">Připojit</string>
     <string name="menu_disconnect">Odpojit</string>
@@ -86,11 +86,11 @@
     <string name="orientation">Orientace</string>
     <string name="internal">Interní</string>
     <string name="external">Externí</string>
-    <string name="logging_on">Probíhá záznam. Služba zůstane aktivní.</string>
-    <string name="permission_explain_write">Toto oprávnění je potřeba k uložení GPX souboru na SD kartu.</string>
+    <string name="logging_on">Probíhá záznam. Služba zůstane aktivní</string>
+    <string name="permission_explain_write">Toto oprávnění je potřeba k uložení GPX souboru na SD kartu</string>
     <string name="droidsor_service">Služba Droidsor</string>
     <string name="service_is_running">Služba běží</string>
-    <string name="gravity">Gravity</string>
+    <string name="gravity">Gravitace</string>
 
     <string-array name="log_but_beh_str_arr">
         <item>Snímat s oblíbeným profilem</item>

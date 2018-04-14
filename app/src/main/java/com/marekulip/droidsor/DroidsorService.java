@@ -129,11 +129,11 @@ public class DroidsorService extends Service {
     /**
      * SparseArray containing data from sensors
      */
-    private SparseArray<SensorData> sensorDataSparseArray = new SparseArray<>();
+    private final SparseArray<SensorData> sensorDataSparseArray = new SparseArray<>();
     /**
      * Array of sensor types that occurred since last {@link #ACTION_DATA_AVAILABLE} broadcast
      */
-    private List<Integer> sensorTypesOccured = new ArrayList<>();
+    private final List<Integer> sensorTypesOccured = new ArrayList<>();
 
     /**
      * Timer used to stop logs after time specified in settings
@@ -251,11 +251,11 @@ public class DroidsorService extends Service {
         if(isListening) {
             androidSensorManager.stopListening();
             if(bluetoothSensorManager.isBluetoothDeviceOn()) {
-                // Setting empty arrays will cause that all sensors will be turned off.
-                bluetoothSensorManager.setSensorsToListen(new ArrayList<Integer>(), new ArrayList<Integer>());
-                bluetoothSensorManager.startListening();
-                if (fullStop || PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.DISCONNECT_FROM_BT_PREF, false))
+                if (fullStop || PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.DISCONNECT_FROM_BT_PREF, false)){
                     bluetoothSensorManager.disconnect();
+                } else{
+                    bluetoothSensorManager.stopListening();
+                }
             }
             isListening = false;
             return;
@@ -441,8 +441,7 @@ public class DroidsorService extends Service {
      */
     public List<Integer> getSensorTypesOccured(){
         if(sensorTypesOccured.isEmpty())return null;
-        List<Integer> listToSend = new ArrayList<>();
-        listToSend.addAll(sensorTypesOccured);
+        List<Integer> listToSend = new ArrayList<>(sensorTypesOccured);
         sensorTypesOccured.clear();
         return listToSend;
     }

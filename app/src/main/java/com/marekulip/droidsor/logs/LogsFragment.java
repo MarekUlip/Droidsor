@@ -33,17 +33,10 @@ import com.marekulip.droidsor.database.PlaceholderMaker;
 import com.marekulip.droidsor.database.SenorDataItemsCountTable;
 import com.marekulip.droidsor.database.SensorDataTable;
 import com.marekulip.droidsor.database.SensorLogsTable;
-import com.marekulip.droidsor.gpxfileexporter.GPXExporter;
 import com.marekulip.droidsor.gpxfileexporter.LogExporter;
-import com.marekulip.droidsor.sensorlogmanager.Point3D;
-import com.marekulip.droidsor.sensorlogmanager.SensorData;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * Fragment used to display list of logs
@@ -155,18 +148,20 @@ public class LogsFragment extends ListFragment implements LoaderManager.LoaderCa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_mark_more) {
-            setSelectionMode(true);
-        }
-        else if (id == R.id.action_cancel){
-            setSelectionMode(false);
-        }
-        else if(id==R.id.action_delete){
-            deleteItemDialog(-1);
-        }
-        else if(id==R.id.action_export_selected){
-            exportMore();
-            setSelectionMode(false);
+        switch (id) {
+            case R.id.action_mark_more:
+                setSelectionMode(true);
+                break;
+            case R.id.action_cancel:
+                setSelectionMode(false);
+                break;
+            case R.id.action_delete:
+                deleteItemDialog(-1);
+                break;
+            case R.id.action_export_selected:
+                exportMore();
+                setSelectionMode(false);
+                break;
         }
         return true;
     }
