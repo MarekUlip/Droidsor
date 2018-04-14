@@ -44,6 +44,8 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
      */
     public static final String IS_NEW = "is_new";
 
+    private String storedAddress = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,8 +99,11 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == BT_DEVICE_REQUEST){
             if(resultCode==RESULT_OK) {
-                mDroidsorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
-                fragment.restartFragment();
+                if(mDroidsorService == null)storedAddress = data.getStringExtra(DEVICE_ADDRESS);
+                else {
+                    mDroidsorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
+                    fragment.restartFragment();
+                }
             }
         }
     }
@@ -121,6 +126,11 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mDroidsorService = ((DroidsorService.LocalBinder)service).getService();
             fragment.setSensorService(mDroidsorService);
+            if(storedAddress != null){
+                mDroidsorService.connectToBluetoothDevice(storedAddress);
+                fragment.restartFragment();
+            }
+            storedAddress = null;
             invalidateOptionsMenu();
         }
 
@@ -161,7 +171,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
 
     private void disconnectFromService(){
         if(mDroidsorService ==null)return;
-        if(!mDroidsorService.isLogging()) mDroidsorService.stopListeningSensors();
+        //if(!mDroidsorService.isLogging()) mDroidsorService.stopListeningSensors();
         unregisterReceiver(mSensorServiceUpdateReceiver);
         unbindService(mServiceConnection);
     }
