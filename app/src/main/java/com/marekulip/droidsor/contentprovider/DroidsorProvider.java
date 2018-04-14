@@ -71,7 +71,7 @@ public class DroidsorProvider extends ContentProvider {
     private static final int SENSOR_DATA_COUNT_ID = 10;
 
 
-    private static final String AUTHORITY = "com.marekulip.provider";
+    private static final String AUTHORITY = "com.marekulip.droidsor.provider";
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
