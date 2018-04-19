@@ -83,13 +83,7 @@ public enum SensorsEnum {
     /**
      * Represents temperature from BLE device. Units are in degrees of Celsius and Fahrenheits. Can process 3 values x,y,z.
      */
-    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,R.string.thermometer_xml,R.string.external_xml,3){
-        @Override
-        protected String getSensorUnitName(Context context, int position) {
-            if(position == 2) return context.getString(R.string.fahrenheit_degree_unit);
-            return super.getSensorUnitName(context);
-        }
-    },
+    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,R.string.thermometer_xml,R.string.external_xml,2),
     /**
      * Represents optical sensor from BLE device. Units are in Lux. Can process 1 value x.
      */

@@ -3,6 +3,7 @@ package com.marekulip.droidsor.bluetoothsensormanager.tisensor;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
+import com.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
@@ -29,9 +30,9 @@ public class TIMovementSensor extends GeneralTISensor{
     public boolean processNewData(BluetoothGattCharacteristic data, List<SensorData> sensorDataList) {
         //This sensor has three sub sensors so different behaviour has to be applied
         if(data.getUuid().equals(dataCharacteristic.getUuid())){
-            sensorDataList.add(new SensorData(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType, TISensor.MOVEMENT_ACC.convert(data.getValue()),SensorData.getTime()));
-            sensorDataList.add(new SensorData(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType, TISensor.MOVEMENT_GYRO.convert(data.getValue()),SensorData.getTime()));
-            sensorDataList.add(new SensorData(SensorsEnum.EXT_MOV_MAGNETIC.sensorType, TISensor.MOVEMENT_MAG.convert(data.getValue()),SensorData.getTime()));
+            sensorDataList.add(new SensorData(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType, convertAcc(data.getValue()),SensorData.getTime()));
+            sensorDataList.add(new SensorData(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType, convertGyr(data.getValue()),SensorData.getTime()));
+            sensorDataList.add(new SensorData(SensorsEnum.EXT_MOV_MAGNETIC.sensorType, convertMag(data.getValue()),SensorData.getTime()));
             return true;
         }
         return false;
@@ -42,5 +43,36 @@ public class TIMovementSensor extends GeneralTISensor{
         sensorTypes.add(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType);
         sensorTypes.add(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType);
         sensorTypes.add(SensorsEnum.EXT_MOV_MAGNETIC.sensorType);
+    }
+
+    @Override
+    protected Point3D convert(byte[] value) {
+        return null;
+    }
+    private Point3D convertAcc(byte[] value) {
+        final float SCALE = (float) 4096.0;
+
+        int x = (value[7]<<8) + value[6];
+        int y = (value[9]<<8) + value[8];
+        int z = (value[11]<<8) + value[10];
+        return new Point3D(((x / SCALE) * -1), y / SCALE, ((z / SCALE)*-1));
+    }
+    private Point3D convertMag(byte[] value) {
+        final float SCALE = (float) (32768 / 4912);
+        if (value.length >= 18) {
+            int x = (value[13]<<8) + value[12];
+            int y = (value[15]<<8) + value[14];
+            int z = (value[17]<<8) + value[16];
+            return new Point3D(x / SCALE, y / SCALE, z / SCALE);
+        }
+        else return new Point3D(0,0,0);
+    }
+    private Point3D convertGyr(byte[] value) {
+        final float SCALE = (float) 128.0;
+
+        int x = (value[1]<<8) + value[0];
+        int y = (value[3]<<8) + value[2];
+        int z = (value[5]<<8) + value[4];
+        return new Point3D(x / SCALE, y / SCALE, z / SCALE);
     }
 }

@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 
+import com.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
@@ -163,4 +164,11 @@ public abstract class GeneralTISensor {
     public int getSensorType(){
         return sensorType;
     }
+
+    /**
+     * Converts received bytes into sensor data
+     * @param value bytes to be converted
+     * @return {@link Point3D} object with sensor data.
+     */
+    protected abstract Point3D convert(final byte[] value);
 }
