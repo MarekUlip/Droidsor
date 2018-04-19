@@ -136,7 +136,7 @@ public class LogDetailItemActivity extends AppCompatActivity {
         };
 
         XAxis xAxis = graphView.getXAxis();
-        xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
+        xAxis.setGranularity(countGranularity(item.xLabels.size())); // minimum axis-step (interval) is 1
         xAxis.setValueFormatter(formatter);
 
 
@@ -144,6 +144,18 @@ public class LogDetailItemActivity extends AppCompatActivity {
         graphView.invalidate();
         graphView.zoom(4,0,0,0);
         graphView.setVisibleXRangeMaximum(item.xLabels.size());
+    }
+
+    /**
+     * Counts granularity to be used in chart.
+     * @param count Count of items on which granularity will be counted
+     * @return estimated granularity value to be used
+     */
+    private float countGranularity(int count){
+        if(count <= 10) return 1;
+        else if(count <= 100) return 5;
+        else if(count <= 1000) return 10;
+        else return 25;
     }
 
     /**

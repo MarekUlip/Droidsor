@@ -103,6 +103,11 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
         return convertView;
     }
 
+    /**
+     * Counts granularity to be used in chart.
+     * @param count Count of items on which granularity will be counted
+     * @return estimated granularity value to be used
+     */
     private float countGranularity(int count){
         if(count <= 10) return 1;
         else if(count <= 100) return 5;
