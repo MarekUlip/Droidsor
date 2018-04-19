@@ -1,11 +1,15 @@
 # Droidsor
-Aplikace pro snímání dat ze senzorů na Androidu. Umožňuje připojit Bluetooth zařízení TI SensorTag CC2650 a snímat data i z tohoto senzoru. Data jsou uložena v SQLite databázi, s možností exportu do GPX formátu. Pro snadnější obsluhu snímání senzorů je možno využít profilů, ve kterých uživatel uvede, které senzonry chce snímat a s jakou frekvencí je chce snímat. Snímat se dá i bez profilu. Data ze snímaní lze v aplikaci zobrazit ve formě grafu.
-## Požadavky
-Android 4.4 až Android 6.0 (Na vyšších verzích nebylo testováno)  
-SensorTag CC2650 (Pokud chce uživatel připojit zařízení Bluetooth)  
+Application designed for capturing sensor data on Android. It allows to connect to Bluetooth device TI SensorTag CC2650 and capture data from this sensor too. Data are saved in SQLite database with an option to export to GPX file format. For easier sensor data recording it is possible to use profiles in which user can set sensors that he wants to capture and at what frequency. It is possible to display recorded data via charts. 
+
+## Requirements
+Android 4.4 and higher
+SensorTag CC2650 (If user wants to connect Bluetooth device)  
+
+## Installation
+You can [download](https://play.google.com/store/apps/details?id=com.marekulip.droidsor) this app from Google Play App Store or you can use [apk file](https://github.com/MarekUlip/Droidsor/blob/master/app/release/Droidsor.apk).
 
 ## Ukázky z aplikace
 
-Přehled senzorů |  Nastavení profilů | Graf 
+Sensor overview |  Profile settings | Charts 
 :-------------------------:|:-------------------------:|:-------------------------:
  ![sensor_overview](readme-pics/sensorData.png)   |  ![profile_setting](readme-pics/profile.png) |  ![graph](readme-pics/graph.png) 
