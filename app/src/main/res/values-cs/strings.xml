@@ -94,7 +94,28 @@
 
     <string-array name="log_but_beh_str_arr">
         <item>Snímat s oblíbeným profilem</item>
-        <item>Ukázat seznam všech profilů</item>
+        <item>Ukázat seznam profilů</item>
+    </string-array>
+
+    <string-array name="tmp007_data_desc">
+        <item>Okolní teplota:&#160;</item>
+        <item>Teplota objeku:&#160;</item>
+    </string-array>
+
+    <string-array name="humidity_data_desc">
+        <item>Vlhkost vzduchu:&#160;</item>
+    </string-array>
+
+    <string-array name="temperature_data_desc">
+        <item>Okolní teplota:&#160;</item>
+    </string-array>
+
+    <string-array name="optical_data_desc">
+        <item>Intenzita světla:&#160;</item>
+    </string-array>
+
+    <string-array name="pressure_data_desc">
+        <item>Atmosférický tlak:&#160;&#032;</item>
     </string-array>
     <string name="accelerometer_internal">Akcelerometr interní</string>
     <string name="accelerometer_external">Akcelerometr externí</string>

@@ -96,7 +96,7 @@ public class LogDetailItemActivity extends AppCompatActivity {
     private void prepItemsForGraph(EntryHolder entryHolder){
         List<ILineDataSet> dataSets = new ArrayList<>();
         LineDataSet dataSet;
-        String[] axisLabels = {"X", "Y", "Z"};
+        String[] axisLabels = SensorsEnum.resolveEnum(entryHolder.sensorType).getDataDescriptions(this);
         int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
         for(int j = 0; j<entryHolder.entries.size(); j++){
             //Create LineDataSet for every point.

@@ -78,10 +78,10 @@ public class LogsDetailFragment extends ListFragment {
      */
     private int prefferedCount = 750;
     /**
-     * Application context used to ensure that there is reference to context even when orientation changes.
+     * Application appContext used to ensure that there is reference to appContext even when orientation changes.
      * Context itself is used to access database
      */
-    private Context context;
+    private Context appContext;
     /**
      * Async task used to load chart items and display progress while loading it
      */
@@ -116,7 +116,7 @@ public class LogsDetailFragment extends ListFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        this.context = context.getApplicationContext();
+        this.appContext = context.getApplicationContext();
     }
 
     @Override
@@ -194,7 +194,7 @@ public class LogsDetailFragment extends ListFragment {
     private void loadItemsWithWeights(final long id){
         progressTextView.setText(R.string.searching_data);
         // First load weights. Based on weights sensor types are found.
-        Cursor c = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_COUNT_URI,null, SenorDataItemsCountTable.LOG_ID+" = ?",new String[]{String.valueOf(id)},null);
+        Cursor c = appContext.getContentResolver().query(DroidsorProvider.SENSOR_DATA_COUNT_URI,null, SenorDataItemsCountTable.LOG_ID+" = ?",new String[]{String.valueOf(id)},null);
         if(c!=null && c.moveToFirst()){
             weights.put(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.SENSOR_TYPE)),resolveWeight(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.COUNT_OF_ITEMS))));
             while (c.moveToNext()){
@@ -227,10 +227,13 @@ public class LogsDetailFragment extends ListFragment {
     private void prepItemsForGraph(List<EntryHolder> lst){
         List<ILineDataSet> dataSets;
         LineDataSet dataSet;
-        String[] axisLabels = {"X", "Y", "Z"};
+        String[] axisLabels;
+        SensorsEnum sensorsEnum;
         int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
         for(int i = 0;i< lst.size();i++){
             dataSets = new ArrayList<>();
+            sensorsEnum = SensorsEnum.resolveEnum(lst.get(i).sensorType);
+            axisLabels = sensorsEnum.getDataDescriptions(appContext);
             for(int j = 0; j<lst.get(i).entries.size(); j++){
                 dataSet = new LineDataSet(lst.get(i).entries.get(j),axisLabels[j]);
                 dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
@@ -239,7 +242,7 @@ public class LogsDetailFragment extends ListFragment {
                 dataSet.setDrawValues(false);
                 dataSets.add(dataSet);
             }
-            items.add(new LogDetailItem(SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorName(context),SensorsEnum.resolveEnum(lst.get(i).sensorType).getSensorUnitName(getContext()),new LineData(dataSets),lst.get(i).sensorType,lst.get(i).labels));
+            items.add(new LogDetailItem(sensorsEnum.getSensorName(appContext),sensorsEnum.getSensorUnitName(getContext()),new LineData(dataSets),lst.get(i).sensorType,lst.get(i).labels));
         }
     }
 
@@ -357,7 +360,7 @@ public class LogsDetailFragment extends ListFragment {
         protected void onPostExecute(Void voidRes) {
             progressTextView.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
-            adapter = new LogDetailArrayAdapter(context,R.layout.log_list_item,items);
+            adapter = new LogDetailArrayAdapter(appContext,R.layout.log_list_item,items);
             getListView().setAdapter(adapter);
         }
 
@@ -374,7 +377,7 @@ public class LogsDetailFragment extends ListFragment {
             params[0] = String.valueOf(id);
             makeParameters(weights,params);
             // Load items with weights
-            Cursor c = context.getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,where,params,null);
+            Cursor c = appContext.getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null,where,params,null);
             List<EntryHolder> lst = new ArrayList<>();
             int itemCount;
             if(c!= null&& c.moveToFirst()){

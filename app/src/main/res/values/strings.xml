@@ -86,7 +86,7 @@
 
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>
-        <item>Show list with all profiles</item>
+        <item>Show list with profiles</item>
     </string-array>
 
     <string-array name="log_but_beh_str_val" translatable="false">
@@ -136,6 +136,27 @@
     <string name="scheduled_log_time">Max log length</string>
     <string name="scheduled_log_time_summary">After the specified amount of minutes the log will stop.</string>
 
+    <string-array name="tmp007_data_desc">
+        <item>Ambient temperature:&#160;</item>
+        <item>Object temperature:&#160;</item>
+    </string-array>
+
+    <string-array name="humidity_data_desc">
+        <item>Air humidity:&#160;</item>
+    </string-array>
+
+    <string-array name="temperature_data_desc">
+        <item>Ambient temperature:&#160;</item>
+    </string-array>
+
+    <string-array name="optical_data_desc">
+        <item>Light level:&#160;</item>
+    </string-array>
+
+    <string-array name="pressure_data_desc">
+        <item>Atmospheric pressure:&#160;</item>
+    </string-array>
+
     <string name="accelerometer_xml" translatable="false">accelerometer</string>
     <string name="gyroscope_xml" translatable="false">gyroscope</string>
     <string name="barometer_xml" translatable="false">barometer</string>
@@ -158,6 +179,7 @@
     <string name="magnetometer_unit" translatable="false">\u00B5T</string>
     <string name="radian" translatable="false">rad</string>
     <string name="milliseconds" translatable="false">ms</string>
+    <string name="gravity_accel_unit" translatable="false">G</string>
 
     <string name="internal">Internal</string>
     <string name="external">External</string>

@@ -25,39 +25,39 @@ public enum SensorsEnum {
     /**
      * Represents accelerometer from smartphone. Units are in m/s2. Can process 3 values x,y,z.
      */
-    INTERNAL_ACCELEROMETER(Sensor.TYPE_ACCELEROMETER,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.internal,R.string.accelerometer_xml,R.string.internal_xml,3),
+    INTERNAL_ACCELEROMETER(Sensor.TYPE_ACCELEROMETER,true,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.accelerometer_xml,3),
     /**
      * Represents magnetometer from smartphone. Units are in uT. Can process 3 values x,y,z.
      */
-    INTERNAL_MAGNETOMETER(Sensor.TYPE_MAGNETIC_FIELD,R.string.magnetometer,R.string.magnetometer_unit,R.string.internal,R.string.magnetometer_xml,R.string.internal_xml,3),
+    INTERNAL_MAGNETOMETER(Sensor.TYPE_MAGNETIC_FIELD,true,R.string.magnetometer,R.string.magnetometer_unit,R.string.magnetometer_xml,3),
     /**
      * Represents gyroscope from smartphone. Units are in rad/s. Can process 3 values x,y,z.
      */
-    INTERNAL_GYROSCOPE(Sensor.TYPE_GYROSCOPE,R.string.gyroscope,R.string.gyroscope_unit,R.string.internal,R.string.gyroscope_xml,R.string.internal_xml,3),
+    INTERNAL_GYROSCOPE(Sensor.TYPE_GYROSCOPE,true,R.string.gyroscope,R.string.gyroscope_unit,R.string.gyroscope_xml,3),
     /**
      * Represents light sensor from smartphone. Units are in Lux. Can process 1 value x.
      */
-    INTERNAL_LIGHT(Sensor.TYPE_LIGHT,R.string.optical,R.string.optical_unit,R.string.internal,R.string.optical_xml,R.string.internal_xml,1),
+    INTERNAL_LIGHT(Sensor.TYPE_LIGHT,true,R.string.optical,R.string.optical_unit,R.string.optical_xml,R.array.optical_data_desc,1),
     /**
      * Represents barometer from smartphone. Units are in mBar. Can process 1 value x.
      */
-    INTERNAL_BAROMETER(Sensor.TYPE_PRESSURE,R.string.barometer,R.string.barometer_unit,R.string.internal,R.string.barometer_xml,R.string.internal_xml,1),
+    INTERNAL_BAROMETER(Sensor.TYPE_PRESSURE,true,R.string.barometer,R.string.barometer_unit,R.string.barometer_xml,R.array.pressure_data_desc,1),
     /**
      * Represents gravity sensor from smartphone. Units are in m/s2. Can process 3 values x,y,z.
      */
-    INTERNAL_GRAVITY(Sensor.TYPE_GRAVITY,R.string.gravity,R.string.meter_per_sec_square_unit,R.string.internal,R.string.gravity_xml,R.string.internal_xml,3),
+    INTERNAL_GRAVITY(Sensor.TYPE_GRAVITY,true,R.string.gravity,R.string.meter_per_sec_square_unit,R.string.gravity_xml,3),
     /**
      * Represents temperature from smartphone. Units are in Celsius degrees. Can process 1 value x.
      */
-    INTERNAL_TEMPERATURE(Sensor.TYPE_AMBIENT_TEMPERATURE,R.string.thermometer,R.string.celsius_degree_unit,R.string.internal,R.string.thermometer_xml,R.string.internal_xml,1),
+    INTERNAL_TEMPERATURE(Sensor.TYPE_AMBIENT_TEMPERATURE,true,R.string.thermometer,R.string.celsius_degree_unit,R.string.thermometer_xml,R.array.temperature_data_desc,1),
     /**
      * Represents humidity sensor from smartphone. Units are in %rH. Can process 1 value x.
      */
-    INTERNAL_HUMIDITY(Sensor.TYPE_RELATIVE_HUMIDITY,R.string.humidity,R.string.humidity_unit,R.string.internal,R.string.humidity_xml,R.string.internal_xml,1),
+    INTERNAL_HUMIDITY(Sensor.TYPE_RELATIVE_HUMIDITY,true,R.string.humidity,R.string.humidity_unit,R.string.humidity_xml,R.array.humidity_data_desc,1),
     /**
      * Represents orientation sensor from smartphone. Units are in radians. Can process 3 values x,y,z.
      */
-    INTERNAL_ORIENTATION(98,R.string.orientation,R.string.radian,R.string.internal,R.string.orientation_xml,R.string.internal_xml,3){
+    INTERNAL_ORIENTATION(98,true,R.string.orientation,R.string.radian,R.string.orientation_xml,3){
         //98 is used because Sensor.TYPE_ORIENTATION is deprecated so i wanted to avoid wrong type
         @Override
         public void resolveSensor(List<SensorData> sensorDataList, float[] data){
@@ -67,37 +67,37 @@ public enum SensorsEnum {
     /**
      * Represents accelerometer from BLE device. Units are in m/s2. Can process 3 values x,y,z.
      */
-    EXT_MOV_ACCELEROMETER(100,R.string.accelerometer,R.string.meter_per_sec_square_unit,R.string.external,R.string.accelerometer_xml,R.string.external_xml, 3),
+    EXT_MOV_ACCELEROMETER(100,false,R.string.accelerometer,R.string.gravity_accel_unit,R.string.accelerometer_xml, 3),
     /**
      * Represents gyroscope from BLE device. Units are in degrees/s. Can process 3 values x,y,z.
      */
-    EXT_MOV_GYROSCOPE(101,R.string.gyroscope,R.string.degrees_per_second,R.string.external,R.string.gyroscope_xml,R.string.external_xml,3),
+    EXT_MOV_GYROSCOPE(101,false,R.string.gyroscope,R.string.degrees_per_second,R.string.gyroscope_xml,3),
     /**
      * Represents magnetometer from BLE device. Units are in uT. Can process 3 values x,y,z.
      */
-    EXT_MOV_MAGNETIC(102,R.string.magnetometer,R.string.magnetometer_unit,R.string.external,R.string.magnetometer_xml,R.string.external_xml,3),
+    EXT_MOV_MAGNETIC(102,false,R.string.magnetometer,R.string.magnetometer_unit,R.string.magnetometer_xml,3),
     /**
      * Represents humidity sensor from BLE device. Units are in %rH. Can process 1 value x.
      */
-    EXT_HUMIDITY(103,R.string.humidity,R.string.humidity_unit,R.string.external,R.string.humidity_xml,R.string.external_xml,1),
+    EXT_HUMIDITY(103,false,R.string.humidity,R.string.humidity_unit,R.string.humidity_xml,R.array.humidity_data_desc,1),
     /**
      * Represents temperature from BLE device. Units are in degrees of Celsius and Fahrenheits. Can process 3 values x,y,z.
      */
-    EXT_TEMPERATURE(104,R.string.thermometer,R.string.celsius_degree_unit,R.string.external,R.string.thermometer_xml,R.string.external_xml,2),
+    EXT_TEMPERATURE(104,false,R.string.thermometer,R.string.celsius_degree_unit,R.string.thermometer_xml,R.array.tmp007_data_desc,2),
     /**
      * Represents optical sensor from BLE device. Units are in Lux. Can process 1 value x.
      */
-    EXT_OPTICAL(105,R.string.optical,R.string.optical_unit,R.string.external,R.string.optical_xml,R.string.external_xml,1),
+    EXT_OPTICAL(105,false,R.string.optical,R.string.optical_unit,R.string.optical_xml,R.array.optical_data_desc,1),
     /**
      * Represents barometer from BLE device. Units are in mBar. Can process 1 value x.
      */
-    EXT_BAROMETER(106,R.string.barometer,R.string.barometer_unit,R.string.external,R.string.barometer_xml,R.string.external_xml,1),
+    EXT_BAROMETER(106,false,R.string.barometer,R.string.barometer_unit,R.string.barometer_xml,R.array.pressure_data_desc,1),
     /**
      * Represents movement from BLE device. Units are in m/s2. Can process 1 value x. This enum should not be used
      * for processing because in BLE device it contains another 3 sensors. It is enum so profiles are easier to make
      * and BLE device is easier to get going.
      */
-    EXT_MOVEMENT(107,R.string.movement,R.string.meter_per_sec_square_unit,R.string.external,R.string.movement_xml,R.string.external_xml,1);
+    EXT_MOVEMENT(107,false,R.string.movement,R.string.meter_per_sec_square_unit,R.string.movement_xml,1);
 
 
     /**
@@ -108,6 +108,11 @@ public enum SensorsEnum {
      * Count of axises this sensor was designed for
      */
     public int itemCount;
+
+    /**
+     * Indicates whether this sensor is used in mobile devices.
+     */
+    public boolean isInternal;
     /**
      * Name of the sensor loaded from Android resources
      */
@@ -145,6 +150,16 @@ public enum SensorsEnum {
      */
     private DecimalFormat decimalFormat;
 
+    /**
+     * Android resource id for string array containing data descriptions.
+     */
+    private int dataDescriptionsRes;
+
+    /**
+     * Sensor data descriptions i.e. X,Y,Z for senors that measure three axises.
+     */
+    private String[] dataDescriptions;
+
 
     /**
      * Sparse array used for resolving sensor type ids to actual SensorEnums
@@ -156,30 +171,50 @@ public enum SensorsEnum {
     }
 
     /**
-     * Enum constructor.
+     * Enum constructor to set specific data descriptions.
      * @param sensorType Sensor type id
+     * @param isInternal Indicates whether this sensor is used in mobile devices.
      * @param sensorNameRes Android resource id for sensor name
      * @param sensorUnitNameRes Android resource id for physical unit of this sensor
-     * @param positionRes Android resource id for sensor position
      * @param sensorNameResXml Android resource id for xml friendly sensor name
-     * @param sPositionStringResXml Android resource id for xml friendly sensor position
      * @param itemCount count of axises this sensor was designed for.
      */
-    SensorsEnum(int sensorType, int sensorNameRes, int sensorUnitNameRes, int positionRes, int sensorNameResXml, int sPositionStringResXml, int itemCount){
+    SensorsEnum(int sensorType, boolean isInternal, int sensorNameRes, int sensorUnitNameRes, int sensorNameResXml, int dataDescriptionsRes,int itemCount){
         this.sensorType = sensorType;
         this.sensorNameRes = sensorNameRes;
         this.sensorUnitNameRes = sensorUnitNameRes;
-        this.sPositionStringRes = positionRes;
         this.itemCount = itemCount;
         this.sensorNameResXml = sensorNameResXml;
-        this.sPositionStringResXml = sPositionStringResXml;
+        this.isInternal = isInternal;
+        if(isInternal){
+            sPositionStringRes = R.string.internal;
+            sPositionStringResXml = R.string.internal_xml;
+        } else {
+            sPositionStringRes = R.string.external;
+            sPositionStringResXml = R.string.external_xml;
+        }
         decimalFormat =  new DecimalFormat("##.##");
         decimalFormat.setRoundingMode(RoundingMode.DOWN);
+        this.dataDescriptionsRes = dataDescriptionsRes;
+    }
+
+    /**
+     * Enum basic constructor.
+     * @param sensorType Sensor type id
+     * @param isInternal Indicates whether this sensor is used in mobile devices.
+     * @param sensorNameRes Android resource id for sensor name
+     * @param sensorUnitNameRes Android resource id for physical unit of this sensor
+     * @param sensorNameResXml Android resource id for xml friendly sensor name
+     * @param itemCount count of axises this sensor was designed for.
+     */
+    SensorsEnum(int sensorType, boolean isInternal,int sensorNameRes, int sensorUnitNameRes, int sensorNameResXml, int itemCount){
+        this(sensorType,isInternal,sensorNameRes,sensorUnitNameRes,sensorNameResXml,0,itemCount);
+        dataDescriptions = new String[]{"X: ","Y: ","Z: "};
     }
 
     /**
      * Resloves provides sensor type id into actual SensorEnum
-     * @param sensorType
+     * @param sensorType sensor type id to resolve
      * @return return enum of relevant sensor or null if provided id is not supported
      */
     public static SensorsEnum resolveEnum(int sensorType){
@@ -236,6 +271,18 @@ public enum SensorsEnum {
         return getSensorUnitName(context);
     }
 
+    /**
+     * Returns string array describing meaning of sensor data
+     * @param context context to be used to load resource if necessary
+     * @return string array
+     */
+    public String[] getDataDescriptions(Context context){
+        if(dataDescriptions == null){
+            dataDescriptions = context.getResources().getStringArray(dataDescriptionsRes);
+        }
+        return dataDescriptions;
+    }
+
 
     /**
      * Formats provided data into three axises
@@ -245,7 +292,8 @@ public enum SensorsEnum {
      * @return StringBuilder containing formatted string
      */
     private StringBuilder threeValuesString(Point3D data, Context c, StringBuilder sb){
-        return twoValuesString(data,c,sb).append("Z: ").append(decimalFormat.format(data.z)).append(getSensorUnitName(c,3)).append(System.lineSeparator());
+        return twoValuesString(data,c,sb).append(getDataDescriptions(c)[2]).append(decimalFormat.format(data.z)).append(getSensorUnitName(c,3)).append(System.lineSeparator());
+
     }
 
     /**
@@ -256,7 +304,7 @@ public enum SensorsEnum {
      * @return StringBuilder containing formatted string
      */
     private StringBuilder twoValuesString(Point3D data, Context c, StringBuilder sb){
-        return oneValueString(data,c,sb).append("Y: ").append(decimalFormat.format(data.y)).append(getSensorUnitName(c,2)).append(System.lineSeparator());
+        return oneValueString(data,c,sb).append(getDataDescriptions(c)[1]).append(decimalFormat.format(data.y)).append(getSensorUnitName(c,2)).append(System.lineSeparator());
     }
 
     /**
@@ -267,7 +315,7 @@ public enum SensorsEnum {
      * @return StringBuilder containing formatted string
      */
     private StringBuilder oneValueString(Point3D data, Context c, StringBuilder sb){
-       return sb.append("X: ").append(decimalFormat.format(data.x)).append(getSensorUnitName(c,1)).append(System.lineSeparator());
+       return sb.append(getDataDescriptions(c)[0]).append(decimalFormat.format(data.x)).append(getSensorUnitName(c,1)).append(System.lineSeparator());
     }
 
     /**

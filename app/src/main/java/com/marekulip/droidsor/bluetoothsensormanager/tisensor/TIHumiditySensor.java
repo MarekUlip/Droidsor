@@ -33,7 +33,6 @@ public class TIHumiditySensor extends GeneralTISensor{
     protected Point3D convert(byte[] value) {
         int a = ByteShifter.shortUnsignedAtOffset(value, 2);
         a &=  ~0x0003; // remove status bits
-
-        return new Point3D(((double)a / 65536)*100,0,0);//((double)a / 65536f)*100, 0, 0);
+        return new Point3D(((double)a / 65536)*100,0,0);
     }
 }
