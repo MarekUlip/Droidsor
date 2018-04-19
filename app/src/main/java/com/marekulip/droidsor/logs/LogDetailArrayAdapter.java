@@ -90,7 +90,7 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
             };
 
             XAxis xAxis = graphView.getXAxis();
-            xAxis.setGranularity(50f); // minimum axis-step (interval) is 1
+            xAxis.setGranularity(countGranularity(item.xLabels.size())); // minimum axis-step (interval) is 1
             xAxis.setValueFormatter(formatter);
 
             graphView.setData(item.lineData);
@@ -101,6 +101,13 @@ public class LogDetailArrayAdapter extends ArrayAdapter<LogDetailItem> {
         sensorValue.setText(item.sensorName);
 
         return convertView;
+    }
+
+    private float countGranularity(int count){
+        if(count <= 10) return 1;
+        else if(count <= 100) return 5;
+        else if(count <= 1000) return 10;
+        else return 25;
     }
 
     /**
