@@ -8,7 +8,7 @@ SensorTag CC2650 (If user wants to connect Bluetooth device)
 ## Installation
 You can [download](https://play.google.com/store/apps/details?id=com.marekulip.droidsor) this app from Google Play App Store or you can use [apk file](https://github.com/MarekUlip/Droidsor/blob/master/app/release/Droidsor.apk).
 
-## Ukázky z aplikace
+## Screenshots
 
 Sensor overview |  Profile settings | Charts 
 :-------------------------:|:-------------------------:|:-------------------------:
