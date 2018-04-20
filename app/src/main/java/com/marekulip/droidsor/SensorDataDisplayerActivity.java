@@ -396,16 +396,19 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        if(mDroidsorService ==null){
+        if(mDroidsorService == null || DroidsorService.isServiceOff()){
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        // if service was stop by user reference to it is still alive and reconnection is in progress
+                        // so this is to make sure that lock release from that reconnection will be ignored
+                        // otherwise it would make "ghost log".
+                        if(mDroidsorService != null)serviceSemaphore.acquire();
                         serviceSemaphore.acquire();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Log.d("test", "run: delayed");
                                 delayedOnActivityResult(requestCode,resultCode,data,true);
                             }
                         });

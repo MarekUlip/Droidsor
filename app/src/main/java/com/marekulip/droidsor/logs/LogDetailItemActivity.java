@@ -130,8 +130,10 @@ public class LogDetailItemActivity extends AppCompatActivity {
 
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-                if ((int) value >= item.xLabels.size()) return "";
-                return item.xLabels.get((int) value);
+                int val = (int) value;
+                if (val<0)val = 0;
+                if (val >= item.xLabels.size()) return "";
+                return item.xLabels.get(val);
             }
         };
 
