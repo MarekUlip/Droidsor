@@ -88,105 +88,121 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
                         // the back. OpenGL has an optimization where all back-facing triangles are culled, since they
                         // usually represent the backside of an object and aren't visible anyways.
 
+                        // Front face screen
+                        -1.10f, 1.75f, 0.251f,
+                        -1.10f, -1.75f, 0.251f,
+                        1.10f, 1.75f, 0.251f,
+                        -1.10f, -1.75f, 0.251f,
+                        1.10f, -1.75f, 0.251f,
+                        1.10f, 1.75f, 0.251f,
+
                         // Front face
-                        -1.0f, 1.0f, 1.0f,
-                        -1.0f, -1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f,
-                        -1.0f, -1.0f, 1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f,
+                        -1.25f, 2.25f, 0.25f,
+                        -1.25f, -2.25f, 0.25f,
+                        1.25f, 2.25f, 0.25f,
+                        -1.25f, -2.25f, 0.25f,
+                        1.25f, -2.25f, 0.25f,
+                        1.25f, 2.25f, 0.25f,
 
                         // Right face
-                        1.0f, 1.0f, 1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        1.0f, 1.0f, -1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        1.0f, -1.0f, -1.0f,
-                        1.0f, 1.0f, -1.0f,
+                        1.25f, 2.25f, 0.25f,
+                        1.25f, -2.25f, 0.25f,
+                        1.25f, 2.25f, -0.1f,
+                        1.25f, -2.25f, 0.25f,
+                        1.25f, -2.25f, -0.1f,
+                        1.25f, 2.25f, -0.1f,
 
                         // Back face
-                        1.0f, 1.0f, -1.0f,
-                        1.0f, -1.0f, -1.0f,
-                        -1.0f, 1.0f, -1.0f,
-                        1.0f, -1.0f, -1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                        -1.0f, 1.0f, -1.0f,
+                        1.25f, 2.25f, -0.1f,
+                        1.25f, -2.25f, -0.1f,
+                        -1.25f, 2.25f, -0.1f,
+                        1.25f, -2.25f, -0.1f,
+                        -1.25f, -2.25f, -0.1f,
+                        -1.25f, 2.25f, -0.1f,
 
                         // Left face
-                        -1.0f, 1.0f, -1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                        -1.0f, 1.0f, 1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                        -1.0f, -1.0f, 1.0f,
-                        -1.0f, 1.0f, 1.0f,
+                        -1.25f, 2.25f, -0.1f,
+                        -1.25f, -2.25f, -0.1f,
+                        -1.25f, 2.25f, 0.25f,
+                        -1.25f, -2.25f, -0.1f,
+                        -1.25f, -2.25f, 0.25f,
+                        -1.25f, 2.25f, 0.25f,
 
                         // Top face
-                        -1.0f, 1.0f, -1.0f,
-                        -1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, -1.0f,
-                        -1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, -1.0f,
+                        -1.25f, 2.25f, -0.1f,
+                        -1.25f, 2.25f, 0.25f,
+                        1.25f, 2.25f, -0.1f,
+                        -1.25f, 2.25f, 0.25f,
+                        1.25f, 2.25f, 0.25f,
+                        1.25f, 2.25f, -0.1f,
 
                         // Bottom face
-                        1.0f, -1.0f, -1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        -1.0f, -1.0f, 1.0f,
-                        -1.0f, -1.0f, -1.0f,
+                        1.25f, -2.25f, -0.1f,
+                        1.25f, -2.25f, 0.25f,
+                        -1.25f, -2.25f, -0.1f,
+                        1.25f, -2.25f, 0.25f,
+                        -1.25f, -2.25f, 0.25f,
+                        -1.25f, -2.25f, -0.1f,
                 };
 
         // R, G, B, A
         final float[] cubeColorData =
                 {
-                        // Front face (red)
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
+                        // Front face (screen)
+                        0.25f, 1f, 1f, 1.0f,
+                        0.5f, 0.8156f, 0.9411f, 1.0f,
+                        0.5f, 0.8156f, 0.9411f, 1.0f,
+                        0.5f, 0.8156f, 0.9411f, 1.0f,
+                        0.5f, 0.8156f, 0.9411f, 1.0f,
+                        0.5f, 0.8156f, 0.9411f, 1.0f,
 
-                        // Right face (green)
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
+                        // Front face (frame)
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
 
-                        // Back face (blue)
-                        0.0f, 0.0f, 1.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f, 1.0f,
+                        // Right face
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
 
-                        // Left face (yellow)
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
+                        // Back face
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
+                        0.1f, 0.1f, 0.1f, 1.0f,
 
-                        // Top face (cyan)
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
+                        // Left face
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
 
-                        // Bottom face (magenta)
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f
+                        // Top face
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+
+                        // Bottom face
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
+                        0.1882f, 0.1882f, 0.1882f, 1.0f,
                 };
 
         // Initialize the buffers.
@@ -322,10 +338,8 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
                 Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer, 0.0f, 1.0f, 0.0f);
                 Matrix.rotateM(mModelMatrix, 0, (float)data.values.z * enhancer, 0.0f, 0.0f, 1.0f);
             } else if(data.sensorType == SensorsEnum.INTERNAL_ACCELEROMETER.sensorType){
-                int enhancer = 10;
-                Matrix.rotateM(mModelMatrix, 0, (float)data.values.y * enhancer, 1.0f, 0.0f, 0.0f);
-                Matrix.rotateM(mModelMatrix, 0, (float)data.values.x * enhancer*-1, 0.0f, 1.0f, 0.0f);
-                Matrix.rotateM(mModelMatrix, 0, 0, 0.0f, 0.0f, 1.0f);
+                Matrix.rotateM(mModelMatrix, 0, (float)(data.values.y  / 0.0981f)*0.9f, 1.0f, 0.0f, 0.0f);
+                Matrix.rotateM(mModelMatrix, 0, (float)(data.values.x  / 0.0981f)*0.9f*-1, 0.0f, 1.0f, 0.0f);
             }
             drawCube();
         }
@@ -368,7 +382,7 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
         //GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
 
         // Draw the cube.
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 42);
     }
 
 
