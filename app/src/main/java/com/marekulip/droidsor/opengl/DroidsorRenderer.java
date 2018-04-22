@@ -35,8 +35,8 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
     private float[] mModelMatrix = new float[16];
 
     /**
-     * Store the view matrix. This can be thought of as our camera. This matrix transforms world space to eye space;
-     * it positions things relative to our eye.
+     * Store the view matrix. This can be thought of as camera. This matrix transforms world space to eye space;
+     * it positions things relative to eye.
      */
     private float[] mViewMatrix = new float[16];
 
@@ -46,7 +46,7 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
     /** Allocate storage for the final combined matrix. This will be passed into the shader program. */
     private float[] mMVPMatrix = new float[16];
 
-    /** Store our model data in a float buffer. */
+    /** Store model data in a float buffer. */
     private final FloatBuffer mCubePositions;
     private final FloatBuffer mCubeColors;
 
@@ -71,7 +71,7 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
     /** Size of the color data in elements. */
     private final int mColorDataSize = 4;
 
-    /** This is a handle to our per-vertex cube shading program. */
+    /** This is a handle to per-vertex cube shading program. */
     private int mPerVertexProgramHandle;
 
     /**
@@ -83,9 +83,9 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
         // X, Y, Z
         final float[] cubePositionData =
                 {
-                        // In OpenGL counter-clockwise winding is default. This means that when we look at a triangle,
-                        // if the points are counter-clockwise we are looking at the "front". If not we are looking at
-                        // the back. OpenGL has an optimization where all back-facing triangles are culled, since they
+                        // In OpenGL counter-clockwise winding is default. This means that when looking at a triangle,
+                        // if the points are counter-clockwise the "front" is seen. If not then
+                        // back is seen. OpenGL has an optimization where all back-facing triangles are culled, since they
                         // usually represent the backside of an object and aren't visible anyways.
 
                         // Front face screen
@@ -222,15 +222,13 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
 
         return "uniform mat4 u_MVPMatrix;      \n"		// A constant representing the combined model/view/projection matrix.
                 + "uniform mat4 u_MVMatrix;       \n"		// A constant representing the combined model/view matrix.
-                // + "uniform vec3 u_LightPos;       \n"	    // The position of the light in eye space.
 
-                + "attribute vec4 a_Position;     \n"		// Per-vertex position information we will pass in.
-                + "attribute vec4 a_Color;        \n"		// Per-vertex color information we will pass in.
-                // + "attribute vec3 a_Normal;       \n"		// Per-vertex normal information we will pass in.
+                + "attribute vec4 a_Position;     \n"		// Per-vertex position information passed in.
+                + "attribute vec4 a_Color;        \n"		// Per-vertex color information passed in.
 
                 + "varying vec4 v_Color;          \n"		// This will be passed into the fragment shader.
 
-                + "void main()                    \n" 	// The entry point for our vertex shader.
+                + "void main()                    \n" 	// The entry point for vertex shader.
                 + "{                              \n"
                 // Transform the vertex into eye space.
                 + "   vec3 modelViewVertex = vec3(u_MVMatrix * a_Position);              \n"
@@ -245,11 +243,10 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
     private String getFragmentShader()
     {
 
-        return "precision mediump float;       \n"		// Set the default precision to medium. We don't need as high of a
-                // precision in the fragment shader.
+        return "precision mediump float;       \n"		// Set the default precision to medium.
                 + "varying vec4 v_Color;          \n"		// This is the color from the vertex shader interpolated across the
                 // triangle per fragment.
-                + "void main()                    \n"		// The entry point for our fragment shader.
+                + "void main()                    \n"		// The entry point for fragment shader.
                 + "{                              \n"
                 + "   gl_FragColor = v_Color;     \n"		// Pass the color directly through the pipeline.
                 + "}                              \n";
@@ -258,8 +255,8 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config)
     {
-        // Set the background clear color to black.
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        // Set the background clear color to almost white.
+        GLES20.glClearColor(0.85f, 0.85f, 0.85f, 0.0f);
 
         // Use culling to remove back faces.
         GLES20.glEnable(GLES20.GL_CULL_FACE);
@@ -272,19 +269,19 @@ public class DroidsorRenderer implements GLSurfaceView.Renderer
         final float eyeY = 0.0f;
         final float eyeZ = -0.5f;
 
-        // We are looking toward the distance
+        // Looking toward the distance
         final float lookX = 0.0f;
         final float lookY = 0.0f;
         final float lookZ = -5.0f;
 
-        // Set our up vector. This is where our head would be pointing were we holding the camera.
+        // Set up vector. This is where head would be pointing were camera is held.
         final float upX = 0.0f;
         final float upY = 1.0f;
         final float upZ = 0.0f;
 
         // Set the view matrix. This matrix can be said to represent the camera position.
         // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination of a model and
-        // view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
+        // view matrix.
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 
         final String vertexShader = getVertexShader();
