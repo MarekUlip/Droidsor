@@ -23,6 +23,7 @@ import com.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
 import com.marekulip.droidsor.positionmanager.PositionManager;
 import com.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.marekulip.droidsor.sensorlogmanager.LogProfileItem;
+import com.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.marekulip.droidsor.sensorlogmanager.SensorLogManager;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
@@ -36,7 +37,7 @@ import java.util.TimerTask;
  * Service used to handle all sensor data. It sends data to activities that are listening. I also takes care
  * of logging feature - it sens data to SensorLogManager.
  */
-public class DroidsorService extends Service {
+public class DroidsorService extends Service implements PositionManager.OnRecievedPositionListener{
 
     /**
      * Action indicating that service has new data and if some activity wants them then it can get them.
@@ -151,6 +152,7 @@ public class DroidsorService extends Service {
         positionManager = new PositionManager(this);
         // Try to get position if all settings are correct
         positionManager.tryInitPosManager();
+        positionManager.setOnRecievedPositionListener(this);
         //createOrUpdateServiceNotification("","");
         startForeground(NOTIFICATION_ID,createOrUpdateServiceNotification());
         isServiceOff = false;
@@ -231,6 +233,7 @@ public class DroidsorService extends Service {
     public void startListeningSensors(){
         if(!isListening){
             androidSensorManager.startListening();
+            positionManager.startUpdates();
             bluetoothSensorManager.tryToReconnect();
             isListening = true;
         }
@@ -250,6 +253,7 @@ public class DroidsorService extends Service {
     private void stopListeningSensors(boolean fullStop){
         if(isListening) {
             androidSensorManager.stopListening();
+            positionManager.stopUpdates();
             if(bluetoothSensorManager.isBluetoothDeviceOn()) {
                 if (fullStop || PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.DISCONNECT_FROM_BT_PREF, false)){
                     bluetoothSensorManager.disconnect();
@@ -457,6 +461,7 @@ public class DroidsorService extends Service {
             androidSensorManager.getListenedSensorTypes(sensorTypes);
             if(bluetoothSensorManager.isBluetoothDeviceOn())
             bluetoothSensorManager.getListenedSensorTypes(sensorTypes);
+            sensorTypes.add(SensorsEnum.GPS.sensorType);
         }
         else {
             if(displayMode == BLUETOOTH_SENSORS_MODE){
@@ -464,6 +469,7 @@ public class DroidsorService extends Service {
             }
             else if(displayMode == MOBILE_SENSORS_MODE){
                 androidSensorManager.getListenedSensorTypes(sensorTypes);
+                sensorTypes.add(SensorsEnum.GPS.sensorType);
             }
         }
         return sensorTypes;
@@ -581,6 +587,18 @@ public class DroidsorService extends Service {
         //destroyServiceNotification();
         isServiceOff = true;
         stopSelf();
+    }
+
+    @Override
+    public void positionRecieved() {
+        SensorData sensorData= new SensorData(SensorsEnum.GPS.sensorType,
+                new Point3D(positionManager.getLocation().getLatitude(),
+                        positionManager.getLocation().getLongitude(),
+                        positionManager.getLocation().getAltitude()
+                ),SensorData.getTime());
+        List<SensorData> data = new ArrayList<>();
+        data.add(sensorData);
+        broadcastUpdate(ACTION_DATA_AVAILABLE,data);
     }
 
 

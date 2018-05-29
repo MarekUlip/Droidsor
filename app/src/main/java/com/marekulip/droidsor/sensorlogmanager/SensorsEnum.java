@@ -97,7 +97,17 @@ public enum SensorsEnum {
      * for processing because in BLE device it contains another 3 sensors. It is enum so profiles are easier to make
      * and BLE device is easier to get going.
      */
-    EXT_MOVEMENT(107,false,R.string.movement,R.string.meter_per_sec_square_unit,R.string.movement_xml,1);
+    EXT_MOVEMENT(107,false,R.string.movement,R.string.meter_per_sec_square_unit,R.string.movement_xml,1),
+
+    GPS(97,true,R.string.gps,R.string.degrees,R.string.gps_xml, R.array.gps_data_desc,3){
+        @Override
+        protected String getSensorUnitName(Context context, int position) {
+            if(position == 3){
+                return "m";
+            }
+            return getSensorUnitName(context);
+        }
+    };
 
 
     /**

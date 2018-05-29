@@ -235,7 +235,7 @@ public class PositionManager {
                         @Override
                         public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
                             isPositionObtainable = true;
-                            isTryingToGetFirstPosition = true;
+                            //isTryingToGetFirstPosition = true;
                             startUpdates();
                         }
                     });
