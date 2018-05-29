@@ -1,6 +1,8 @@
 package com.marekulip.droidsor;
 
 import android.app.ActivityManager;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
+import com.marekulip.droidsor.viewmodels.LogProfileViewModel;
 
 import static com.marekulip.droidsor.SensorDataDisplayerActivity.BT_DEVICE_REQUEST;
 import static com.marekulip.droidsor.SensorDataDisplayerActivity.DEVICE_ADDRESS;
@@ -62,6 +65,7 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
                 fragment.saveProfile();
             }
         });
+
 
         fragment = LogProfileSettingFragment.newInstance(getIntent().getBooleanExtra(IS_NEW,true),getIntent().getIntExtra(LOG_PROFILE_ID,0));
         getSupportFragmentManager().beginTransaction().replace(R.id.sensor_list_fragment,fragment).commit();

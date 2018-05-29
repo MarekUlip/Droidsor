@@ -1,5 +1,6 @@
 package com.marekulip.droidsor;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import com.marekulip.droidsor.database.LogProfileItemsTable;
 import com.marekulip.droidsor.database.LogProfilesTable;
 import com.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
+import com.marekulip.droidsor.viewmodels.LogProfileViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +69,8 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
      */
     private boolean scanGPS;
 
+    private LogProfileViewModel logProfileViewModel;
+
     public LogProfileSettingFragment() {
 
     }
@@ -95,6 +99,9 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         super.onActivityCreated(savedInstanceState);
         this.getListView().setDividerHeight(2);
         registerForContextMenu(getListView());
+        if(getActivity()!=null) {
+            logProfileViewModel = ViewModelProviders.of(getActivity()).get(LogProfileViewModel.class);
+        }
         initAdapter();
 
     }
@@ -137,13 +144,16 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
 
     private void initAdapter(){
         extBluetoothMovSensorStates = new SparseBooleanArray();
-        if(isNew){
-            items = new ArrayList<>();
-        }else{
-            items = loadProfile();
+        items = logProfileViewModel.getItems();
+        if(!isNew){
+            if(items.isEmpty()){
+                items = loadProfile();
+                logProfileViewModel.setItems(items);
+            }
         }
         mAdapter = new LogProfileItemArrAdapter(getContext(),R.layout.profile_list_item,items,getActivity());
         mAdapter.setExtBluetoothMovSensorStates(extBluetoothMovSensorStates);
+        //logProfileViewModel.setItems(items);
         setListAdapter(mAdapter);
     }
 
@@ -253,6 +263,10 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
         initAdapter();
         createLogProfileItemList();
         mAdapter.notifyDataSetChanged();
+    }
+
+    public void setLogProfileViewModel(LogProfileViewModel model){
+        logProfileViewModel = model;
     }
 
     @Override

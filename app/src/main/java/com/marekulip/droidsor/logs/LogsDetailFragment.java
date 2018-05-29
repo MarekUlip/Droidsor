@@ -1,5 +1,6 @@
 package com.marekulip.droidsor.logs;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -34,6 +35,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.marekulip.droidsor.viewmodels.LogDetailViewModel;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -54,7 +56,7 @@ public class LogsDetailFragment extends ListFragment {
     /**
      * Adapter items
      */
-    private final List<LogDetailItem> items = new ArrayList<>();
+    private List<LogDetailItem> items = new ArrayList<>();
     /**
      * Id of the log to be displayed
      */
@@ -87,6 +89,8 @@ public class LogsDetailFragment extends ListFragment {
      */
     private LoadChartsTask loadChartsTask;
 
+    private LogDetailViewModel logDetailViewModel;
+
     private TextView progressTextView;
 
     @Override
@@ -104,7 +108,21 @@ public class LogsDetailFragment extends ListFragment {
         prefferedCount = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(getContext()).getString(DroidsorSettingsFramgent.COUNT_OF_POINTS,"750"));
         if(prefferedCount <=0)prefferedCount = 1;
         progressTextView = getActivity().findViewById(R.id.textview_progress_bar_text);
-        loadItemsWithWeights(id);
+        logDetailViewModel = ViewModelProviders.of(getActivity()).get(LogDetailViewModel.class);
+        items = logDetailViewModel.getItems();
+        if(items.isEmpty()){
+            loadItemsWithWeights(id);
+        }
+        else {
+            prepForCachedItems();
+        }
+    }
+
+    private void prepForCachedItems(){
+        getActivity().findViewById(R.id.list_fragment_progress_bar).setVisibility(View.GONE);
+        getActivity().findViewById(android.R.id.empty).setVisibility(View.GONE);
+        adapter = new LogDetailArrayAdapter(appContext,R.layout.log_list_item,items);
+        getListView().setAdapter(adapter);
     }
 
     @Override
