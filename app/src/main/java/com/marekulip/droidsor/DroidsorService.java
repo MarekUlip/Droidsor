@@ -233,7 +233,9 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     public void startListeningSensors(){
         if(!isListening){
             androidSensorManager.startListening();
-            positionManager.startUpdates();
+            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
+                positionManager.startDefaultUpdates();
+            }
             bluetoothSensorManager.tryToReconnect();
             isListening = true;
         }
@@ -253,7 +255,9 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     private void stopListeningSensors(boolean fullStop){
         if(isListening) {
             androidSensorManager.stopListening();
-            positionManager.stopUpdates();
+            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)){
+                positionManager.stopUpdates();
+            }
             if(bluetoothSensorManager.isBluetoothDeviceOn()) {
                 if (fullStop || PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.DISCONNECT_FROM_BT_PREF, false)){
                     bluetoothSensorManager.disconnect();
@@ -388,6 +392,9 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             if (bluetoothSensorManager.isBluetoothDeviceOn()) {
                 bluetoothSensorManager.defaultListeningMode();
             }
+            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
+                positionManager.startDefaultUpdates();
+            }
         }
     }
 
@@ -461,7 +468,9 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             androidSensorManager.getListenedSensorTypes(sensorTypes);
             if(bluetoothSensorManager.isBluetoothDeviceOn())
             bluetoothSensorManager.getListenedSensorTypes(sensorTypes);
-            sensorTypes.add(SensorsEnum.GPS.sensorType);
+            if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
+                sensorTypes.add(SensorsEnum.GPS.sensorType);
+            }
         }
         else {
             if(displayMode == BLUETOOTH_SENSORS_MODE){
@@ -469,7 +478,9 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             }
             else if(displayMode == MOBILE_SENSORS_MODE){
                 androidSensorManager.getListenedSensorTypes(sensorTypes);
-                sensorTypes.add(SensorsEnum.GPS.sensorType);
+                if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
+                    sensorTypes.add(SensorsEnum.GPS.sensorType);
+                }
             }
         }
         return sensorTypes;

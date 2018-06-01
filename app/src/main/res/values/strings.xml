@@ -82,6 +82,9 @@
     <string name="fetching_data">Fetching data&#8230;</string>
     <string name="processing_data">Processing data&#8230;</string>
     <string name="showing_data">Showing data&#8230;</string>
+    <string name="show_gps_data">Show GPS data</string>
+    <string name="show_gps_data_sum">Shows GPS data as a sensor. May cause slightly higher battery consumption</string>
+
 
 
     <string-array name="log_but_beh_str_arr">

@@ -45,4 +45,11 @@
         android:summary="@string/scheduled_log_time_summary"
         android:maxLength="3"
         />
+
+    <CheckBoxPreference
+        android:key="show_gps_data"
+        android:defaultValue="true"
+        android:title="@string/show_gps_data"
+        android:summary="@string/show_gps_data_sum"
+        />
 </PreferenceScreen>

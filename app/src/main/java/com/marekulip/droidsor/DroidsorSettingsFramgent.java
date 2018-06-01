@@ -37,6 +37,11 @@ public class DroidsorSettingsFramgent extends PreferenceFragment{
      * Specified amount of time after which log should be stopped
      */
     public static final String SCHEDULED_LOG_END_TIME = "scheduled_log_end_time";
+    /**
+     * Determines whether app should show GPS data with other sensors. This setting may cause slightly bigger
+     * battery consumption
+     */
+    public static final String SHOW_GPS_DATA = "show_gps_data";
 
     public DroidsorSettingsFramgent() {
         // Required empty public constructor

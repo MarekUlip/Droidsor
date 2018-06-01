@@ -261,7 +261,7 @@ public class PositionManager {
      * Sets base GPS frequency and fastest frequency which is one half of base frequency.
      * @param interval frequency to be set
      */
-    public void setIntervals(int interval){
+    public void setIntervals(long interval){
         mLocationRequest.setInterval(interval);
         if(interval>2000){
             mLocationRequest.setFastestInterval(interval / 2);
@@ -281,6 +281,14 @@ public class PositionManager {
             mFusedLocationClient.requestLocationUpdates(mLocationRequest,mLocationCallback,Looper.myLooper());
             isGettingUpdates = true;
         }
+    }
+
+    /**
+     * Starts updates with default frequency. Used when no log is running.
+     */
+    public void startDefaultUpdates(){
+        setIntervals(UPDATE_INTERVAL_IN_MILLISECONDS);
+        startUpdates();
     }
 
     /**
