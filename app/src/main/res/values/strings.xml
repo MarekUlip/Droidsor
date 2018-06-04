@@ -135,6 +135,7 @@
     <string name="movement">Movement</string>
     <string name="orientation">Orientation</string>
     <string name="gps">GPS</string>
+    <string name="microphone">Microphone</string>
     <string name="scheduled_log_end">Set log length</string>
     <string name="scheduled_log_end_summary">Allows you to end logging after specified while. Default time is one hour.</string>
     <string name="scheduled_log_time">Max log length</string>
@@ -178,6 +179,7 @@
     <string name="movement_xml" translatable="false">movement</string>
     <string name="orientation_xml" translatable="false">orientation</string>
     <string name="gps_xml" translatable="false">gps</string>
+    <string name="microphone_xml">microphone_xml</string>
 
     <string name="meter_per_sec_square_unit" translatable="false">m/s²</string>
     <string name="celsius_degree_unit" translatable="false">°C</string>
@@ -192,6 +194,7 @@
     <string name="milliseconds" translatable="false">ms</string>
     <string name="gravity_accel_unit" translatable="false">G</string>
     <string name="degrees" translatable="false">°</string>
+    <string name="decibels" translatable="false">dB</string>
 
     <string name="internal">Internal</string>
     <string name="external">External</string>
