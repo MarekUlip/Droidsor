@@ -17,8 +17,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.marekulip.droidsor.R;
-import com.marekulip.droidsor.DroidsorService;
+import com.marekulip.droidsor.droidsorservice.DroidsorService;
 import com.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
+import com.marekulip.droidsor.droidsorservice.ServiceConnectionHelper;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 /**
@@ -133,48 +134,18 @@ public class OpenGLActivity extends AppCompatActivity {
         mGLSurfaceView.onPause();
     }
 
-    /**
-     * Determines whether specified service is running. Not 100% reliable. Usable at approximately 80% use cases.
-     * @param serviceClass Service to check
-     * @return true if service runs otherwise false
-     */
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
+    private void connectToService(){
+        ServiceConnectionHelper.connectToService(this,mServiceConnection,mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
     }
 
-    /**
-     * Connects to service or truns service on if it is not running
-     */
-    private void connectToService(){
-        Intent intent = new Intent(this,DroidsorService.class);
-        if(!isMyServiceRunning(DroidsorService.class) || DroidsorService.isServiceOff()){
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent);
-            }else{
-                startService(intent);
-            }
-        }
-        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
-        registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
+    private void disconnectFromService(){
+        ServiceConnectionHelper.disconnectFromService(this,mDroidsorService,mSensorServiceUpdateReceiver,mServiceConnection);
     }
 
     private static IntentFilter makeUpdateIntentFilter(){
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(DroidsorService.ACTION_DATA_AVAILABLE);
         return intentFilter;
-    }
-
-    private void disconnectFromService(){
-        if(mDroidsorService ==null)return;
-        mDroidsorService.stopOpenGLMode();
-        unregisterReceiver(mSensorServiceUpdateReceiver);
-        unbindService(mServiceConnection);
     }
     private final BroadcastReceiver mSensorServiceUpdateReceiver = new BroadcastReceiver() {
         @Override

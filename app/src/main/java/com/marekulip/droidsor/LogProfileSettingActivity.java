@@ -1,8 +1,6 @@
 package com.marekulip.droidsor;
 
 import android.app.ActivityManager;
-import android.arch.lifecycle.ViewModelProvider;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,7 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
-import com.marekulip.droidsor.viewmodels.LogProfileViewModel;
+import com.marekulip.droidsor.droidsorservice.DroidsorService;
+import com.marekulip.droidsor.droidsorservice.ServiceConnectionHelper;
 
 import static com.marekulip.droidsor.SensorDataDisplayerActivity.BT_DEVICE_REQUEST;
 import static com.marekulip.droidsor.SensorDataDisplayerActivity.DEVICE_ADDRESS;
@@ -150,34 +149,12 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
         finish();
     }
 
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void connectToService(){
-        Intent intent = new Intent(this,DroidsorService.class);
-        if(!isMyServiceRunning(DroidsorService.class) || DroidsorService.isServiceOff()){
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent);
-            }else{
-                startService(intent);
-            }
-        }
-        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
-        registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
+        ServiceConnectionHelper.connectToService(this,mServiceConnection,mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
     }
 
     private void disconnectFromService(){
-        if(mDroidsorService ==null)return;
-        //if(!mDroidsorService.isLogging()) mDroidsorService.stopListeningSensors();
-        unregisterReceiver(mSensorServiceUpdateReceiver);
-        unbindService(mServiceConnection);
+        ServiceConnectionHelper.disconnectFromService(this,mDroidsorService,mSensorServiceUpdateReceiver,mServiceConnection);
     }
 
     private final BroadcastReceiver mSensorServiceUpdateReceiver = new BroadcastReceiver() {

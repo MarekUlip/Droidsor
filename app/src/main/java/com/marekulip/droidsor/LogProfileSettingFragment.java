@@ -17,6 +17,7 @@ import com.marekulip.droidsor.adapters.LogProfileItemArrAdapter;
 import com.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.marekulip.droidsor.database.LogProfileItemsTable;
 import com.marekulip.droidsor.database.LogProfilesTable;
+import com.marekulip.droidsor.droidsorservice.DroidsorService;
 import com.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import com.marekulip.droidsor.viewmodels.LogProfileViewModel;

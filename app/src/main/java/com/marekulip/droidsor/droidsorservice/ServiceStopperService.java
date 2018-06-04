@@ -1,4 +1,4 @@
-package com.marekulip.droidsor;
+package com.marekulip.droidsor.droidsorservice;
 
 import android.app.ActivityManager;
 import android.app.Service;

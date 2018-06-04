@@ -1,4 +1,4 @@
-package com.marekulip.droidsor;
+package com.marekulip.droidsor.droidsorservice;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -18,8 +18,11 @@ import android.support.v4.app.NotificationCompat;
 import android.util.SparseArray;
 import android.widget.Toast;
 
+import com.marekulip.droidsor.DroidsorSettingsFramgent;
+import com.marekulip.droidsor.R;
 import com.marekulip.droidsor.androidsensormanager.AndroidSensorManager;
 import com.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
+import com.marekulip.droidsor.nosensormanager.NoSensorManager;
 import com.marekulip.droidsor.positionmanager.PositionManager;
 import com.marekulip.droidsor.sensorlogmanager.LogProfile;
 import com.marekulip.droidsor.sensorlogmanager.LogProfileItem;
@@ -106,6 +109,10 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
      */
     private AndroidSensorManager androidSensorManager;
     /**
+     * Manager used for Android 'things' that are not sensors such as battery or microphone
+     */
+    private NoSensorManager noSensorManager;
+    /**
      * Manager used for getting GPS position.
      */
     private PositionManager positionManager;
@@ -149,6 +156,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         sensorLogManager= new SensorLogManager(this);
         bluetoothSensorManager = new BluetoothSensorManager(this);
         androidSensorManager = new AndroidSensorManager(this);
+        noSensorManager = new NoSensorManager(this);
         positionManager = new PositionManager(this);
         // Try to get position if all settings are correct
         positionManager.tryInitPosManager();
@@ -233,6 +241,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     public void startListeningSensors(){
         if(!isListening){
             androidSensorManager.startListening();
+            noSensorManager.startListening();
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
                 positionManager.startDefaultUpdates();
             }
@@ -255,6 +264,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     private void stopListeningSensors(boolean fullStop){
         if(isListening) {
             androidSensorManager.stopListening();
+            noSensorManager.stopListening();
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)){
                 positionManager.stopUpdates();
             }
@@ -326,6 +336,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         List<Integer> bluetoothSensorFrequencies = new ArrayList<>();
         // Stop listening so new sensors can be safely set
         androidSensorManager.stopListening();
+        noSensorManager.stopListening();
         for(LogProfileItem item : profile.getLogItems()){
             if(item.getSensorType()<100){
                 androidSensorTypes.add(item.getSensorType());
@@ -395,6 +406,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
                 positionManager.startDefaultUpdates();
             }
+            noSensorManager.startListening();
         }
     }
 
@@ -466,6 +478,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         List<Integer> sensorTypes = new ArrayList<>();
         if(ignoreMode || displayMode == ALL_SENSORS_MODE||isLogging()){
             androidSensorManager.getListenedSensorTypes(sensorTypes);
+            //noSensorManager.getMonitoredSensors(sensorTypes);
             if(bluetoothSensorManager.isBluetoothDeviceOn())
             bluetoothSensorManager.getListenedSensorTypes(sensorTypes);
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
@@ -478,6 +491,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             }
             else if(displayMode == MOBILE_SENSORS_MODE){
                 androidSensorManager.getListenedSensorTypes(sensorTypes);
+                noSensorManager.getMonitoredSensors(sensorTypes);
                 if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
                     sensorTypes.add(SensorsEnum.GPS.sensorType);
                 }

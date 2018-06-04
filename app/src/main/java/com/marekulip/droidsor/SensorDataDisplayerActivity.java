@@ -1,6 +1,5 @@
 package com.marekulip.droidsor;
 
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.arch.lifecycle.Lifecycle;
 import android.bluetooth.BluetoothAdapter;
@@ -15,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
@@ -23,7 +23,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +32,8 @@ import com.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
 import com.marekulip.droidsor.contentprovider.DroidsorProvider;
 import com.marekulip.droidsor.database.LogProfileItemsTable;
 import com.marekulip.droidsor.database.LogProfilesTable;
+import com.marekulip.droidsor.droidsorservice.DroidsorService;
+import com.marekulip.droidsor.droidsorservice.ServiceConnectionHelper;
 import com.marekulip.droidsor.gpxfileexporter.GPXExporter;
 import com.marekulip.droidsor.logs.LogsActivity;
 import com.marekulip.droidsor.opengl.OpenGLActivity;
@@ -147,26 +148,14 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
      * Starts Droidsor service or connects to it if it already runs.
      */
     private void connectToService(){
-        Intent intent = new Intent(this,DroidsorService.class);
-        if(!isMyServiceRunning(DroidsorService.class) || DroidsorService.isServiceOff()){
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent);
-            }else{
-                startService(intent);
-            }
-        }
-        bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
-        registerReceiver(mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
+        ServiceConnectionHelper.connectToService(this,mServiceConnection,mSensorServiceUpdateReceiver,makeUpdateIntentFilter());
     }
 
     /**
      * Disconnects from Droidsor service but does not stop it.
      */
     private void disconnectFromService(){
-        if(mDroidsorService ==null)return;
-        if(!mDroidsorService.isLogging()) mDroidsorService.stopListeningSensors();
-        unregisterReceiver(mSensorServiceUpdateReceiver);
-        unbindService(mServiceConnection);
+        ServiceConnectionHelper.disconnectFromService(this,mDroidsorService,mSensorServiceUpdateReceiver,mServiceConnection);
     }
 
     @Override
@@ -484,7 +473,7 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     };
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         boolean isCorrect = true;
@@ -600,21 +589,6 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         intentFilter.addAction(DroidsorService.SERVICE_IS_TURNING_OFF);
         intentFilter.addAction(DroidsorService.SCHEDULED_LOG_STOP);
         return intentFilter;
-    }
-
-    /**
-     * Checks whether provided service is running. Note that this method is not reliable if the service has run before and app has not been turned off. Android system may still run the service although no connection to it is possible so it is necessary to start new one.
-     * @param serviceClass Service to be found
-     * @return true if service was found otherwise false.
-     */
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
