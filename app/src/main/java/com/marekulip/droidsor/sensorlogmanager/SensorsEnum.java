@@ -64,6 +64,11 @@ public enum SensorsEnum {
             sensorDataList.add(new SensorData(sensorType,new Point3D(data[0],data[1],data[2]),SensorData.getTime()));
         }
     },
+
+    /**
+     * Represents microphone from smartphone. Units are in dB and returns only 1 value
+     */
+    INTERNAL_MICROPHONE(96,true,R.string.microphone,R.string.decibels,R.string.microphone_xml,1),
     /**
      * Represents accelerometer from BLE device. Units are in m/s2. Can process 3 values x,y,z.
      */
