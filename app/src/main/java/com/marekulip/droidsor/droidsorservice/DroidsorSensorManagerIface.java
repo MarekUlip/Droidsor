@@ -4,10 +4,11 @@ import android.util.SparseIntArray;
 
 import java.util.List;
 
-public interface SensorManagerInterface {
+public interface DroidsorSensorManagerIface {
+    int defaultSensorFrequency = 500;
     void setSensorsToListen(SparseIntArray sensors);
     void getListenedSensorTypes(List<Integer> sensors);
     void startListening();
     void stopListening();
-    void getAllAvailableSensorTypes();
+    void getAllAvailableSensorTypes(List<Integer> sensors);
 }

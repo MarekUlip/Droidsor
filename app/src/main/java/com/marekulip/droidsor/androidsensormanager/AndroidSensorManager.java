@@ -9,7 +9,8 @@ import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
-import com.marekulip.droidsor.DroidsorService;
+import com.marekulip.droidsor.droidsorservice.DroidsorSensorManagerIface;
+import com.marekulip.droidsor.droidsorservice.DroidsorService;
 import com.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
@@ -21,7 +22,7 @@ import java.util.List;
  * Class for listening sensors on Android device. Ensures that it registers only available sensors. Returns results as a broadcast to a service provided in constructor
  */
 
-public class AndroidSensorManager implements SensorEventListener{
+public class AndroidSensorManager implements SensorEventListener, DroidsorSensorManagerIface{
     /**
      * Service that should receive broadcasts
      */
@@ -297,6 +298,11 @@ public class AndroidSensorManager implements SensorEventListener{
             presentSensors.put(orientationId,true);
             toListenIds.add(orientationId);
         }
+    }
+
+    @Override
+    public void setSensorsToListen(SparseIntArray sensors) {
+
     }
 
     /**

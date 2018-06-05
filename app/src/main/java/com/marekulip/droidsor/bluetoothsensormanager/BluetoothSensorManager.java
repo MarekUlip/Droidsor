@@ -13,7 +13,8 @@ import android.content.Context;
 import android.util.Log;
 import android.util.SparseIntArray;
 
-import com.marekulip.droidsor.DroidsorService;
+import com.marekulip.droidsor.droidsorservice.DroidsorSensorManagerIface;
+import com.marekulip.droidsor.droidsorservice.DroidsorService;
 import com.marekulip.droidsor.bluetoothsensormanager.tisensor.GeneralTISensor;
 import com.marekulip.droidsor.bluetoothsensormanager.tisensor.TIBarometricSensor;
 import com.marekulip.droidsor.bluetoothsensormanager.tisensor.TIHumiditySensor;
@@ -32,7 +33,7 @@ import java.util.concurrent.Semaphore;
  * Created by Marek Ulip on 21.10.2017.
  */
 
-public class BluetoothSensorManager {
+public class BluetoothSensorManager implements DroidsorSensorManagerIface{
     private static final String TAG = BluetoothSensorManager.class.toString();
 
 
@@ -374,6 +375,11 @@ public class BluetoothSensorManager {
         return sensors;
     }
 
+    @Override
+    public void setSensorsToListen(SparseIntArray sensors) {
+
+    }
+
     /**
      * Returns all sensors which are actually listened
      * @param sensorTypes list of all listened sensors
@@ -445,6 +451,11 @@ public class BluetoothSensorManager {
         // Setting empty arrays will cause that all sensors will be turned off.
         setSensorsToListen(new ArrayList<Integer>(), new ArrayList<Integer>());
         initializeSensors(false);
+    }
+
+    @Override
+    public void getAllAvailableSensorTypes(List<Integer> sensors) {
+
     }
 
     /**

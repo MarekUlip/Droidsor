@@ -1,9 +1,10 @@
 package com.marekulip.droidsor.nosensormanager;
 
 import android.media.MediaRecorder;
-import android.util.Log;
 import android.util.SparseIntArray;
+import android.util.SparseLongArray;
 
+import com.marekulip.droidsor.droidsorservice.DroidsorSensorManagerIface;
 import com.marekulip.droidsor.droidsorservice.DroidsorService;
 import com.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.marekulip.droidsor.sensorlogmanager.SensorData;
@@ -18,16 +19,13 @@ import java.util.TimerTask;
 /**
  * Class that monitors everything monitorable that is not sensor such as battery and sound intensity.
  */
-public class NoSensorManager {
+public class NoSensorManager implements DroidsorSensorManagerIface {
     private final DroidsorService droidsorService;
-    private final int defaultFrequency = 200;
-    private final int defaultSensorFrequency = 500;
     private MediaRecorder mediaRecorder = null;
     private Timer timer;
     private TimerTask timerTask;
-    private List<Integer> listenedSensors = new ArrayList<>();
-    private SparseIntArray sensorFrequencies = new SparseIntArray();
-    private SparseIntArray lastTimeSensorFrequencies = new SparseIntArray();
+    private SparseIntArray listenedSensors = new SparseIntArray();
+    private SparseLongArray lastTimeSensorFrequencies = new SparseLongArray();
 
     public NoSensorManager(DroidsorService droidsorService){
         this.droidsorService = droidsorService;
@@ -35,12 +33,23 @@ public class NoSensorManager {
         initListenedSensors();
     }
 
+    @Override
+    public void setSensorsToListen(SparseIntArray sensors) {
+        listenedSensors = sensors;
+    }
+
+    @Override
+    public void getListenedSensorTypes(List<Integer> sensors) {
+        getAllAvailableSensorTypes(sensors);
+    }
+    @Override
     public void startListening(){
         initSensors();
         initTimer();
-        timer.schedule(timerTask,defaultFrequency,500);
+        int defaultFrequency = 200;
+        timer.schedule(timerTask, defaultFrequency, defaultFrequency);
     }
-
+    @Override
     public void stopListening(){
         stopSensors();
         if(timer != null) {
@@ -50,12 +59,19 @@ public class NoSensorManager {
         }
     }
 
+    @Override
+    public void getAllAvailableSensorTypes(List<Integer> sensors) {
+        for(int i = 0; i<listenedSensors.size();i++){
+            sensors.add(listenedSensors.keyAt(i));
+        }
+    }
+
     /**
      * Sets ids for supported no sensors to be listened
      */
     private void initListenedSensors(){
         listenedSensors.clear();
-        listenedSensors.add(SensorsEnum.INTERNAL_MICROPHONE.sensorType);
+        listenedSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType,DroidsorSensorManagerIface.defaultSensorFrequency);
     }
 
     private void initTimer(){
@@ -63,12 +79,14 @@ public class NoSensorManager {
         timerTask = new TimerTask() {
             @Override
             public void run() {
-                Log.d("dd", "run: ");
+                //Log.d("dd", "run: ");
                 long time = System.currentTimeMillis();
                 List<SensorData> sensorDatas = null;
                 SensorData sensorData;
-                for(int i : listenedSensors){
-                    if(time - lastTimeSensorFrequencies.get(i,0) > sensorFrequencies.get(i,defaultSensorFrequency)) {
+                for(int i =0,key; i< listenedSensors.size();i++){
+                    key = listenedSensors.keyAt(i);
+                    if(time - lastTimeSensorFrequencies.get(key,0) > listenedSensors.valueAt(i)) {
+                        lastTimeSensorFrequencies.put(key,time);
                         if(sensorDatas== null)sensorDatas = new ArrayList<>();
                         sensorData = new SensorData(SensorsEnum.INTERNAL_MICROPHONE.sensorType, new Point3D(getSoundIntensity(), 0.0, 0.0), SensorData.getTime());
                         sensorDatas.add(sensorData);
@@ -80,7 +98,9 @@ public class NoSensorManager {
     }
 
     public void getMonitoredSensors(List<Integer> sensors){
-        sensors.addAll(listenedSensors);
+        for(int i =0; i< listenedSensors.size();i++){
+            sensors.add(listenedSensors.keyAt(i));
+        }
     }
 
     /*public void setSensorsToListen(List<Integer> sensors, List<Integer> frequencies){
