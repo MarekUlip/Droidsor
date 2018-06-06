@@ -56,7 +56,10 @@ public class OpenGLActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            mDroidsorService = null;
+            if(mDroidsorService != null) {
+                mDroidsorService.stopOpenGLMode();//TODO careful
+                mDroidsorService = null;
+            }
         }
     };
 
@@ -139,6 +142,7 @@ public class OpenGLActivity extends AppCompatActivity {
     }
 
     private void disconnectFromService(){
+        if(mDroidsorService!=null)mDroidsorService.stopOpenGLMode();
         ServiceConnectionHelper.disconnectFromService(this,mDroidsorService,mSensorServiceUpdateReceiver,mServiceConnection);
     }
 

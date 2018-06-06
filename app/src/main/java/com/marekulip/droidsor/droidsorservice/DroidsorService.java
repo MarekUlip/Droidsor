@@ -16,6 +16,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.widget.Toast;
 
 import com.marekulip.droidsor.DroidsorSettingsFramgent;
@@ -330,8 +331,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             positionManager.setIntervals(profile.getGPSFrequency());
             positionManager.startUpdates();
         }
-        List<Integer> androidSensorTypes = new ArrayList<>();
-        List<Integer> androidSensorFrequencies = new ArrayList<>();
+        SparseIntArray androidSensors = new SparseIntArray();
         List<Integer> bluetoothSensorTypes = new ArrayList<>();
         List<Integer> bluetoothSensorFrequencies = new ArrayList<>();
         // Stop listening so new sensors can be safely set
@@ -339,21 +339,20 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         noSensorManager.stopListening();
         for(LogProfileItem item : profile.getLogItems()){
             if(item.getSensorType()<100){
-                androidSensorTypes.add(item.getSensorType());
-                androidSensorFrequencies.add(item.getScanFrequency());
+                androidSensors.put(item.getSensorType(),item.getScanFrequency());
             }else {
                 bluetoothSensorTypes.add(item.getSensorType());
                 bluetoothSensorFrequencies.add(item.getScanFrequency());
             }
         }
-        androidSensorManager.setSensorsToListen(androidSensorTypes,androidSensorFrequencies);
+        androidSensorManager.setSensorsToListen(androidSensors);
         androidSensorManager.startListening();
         if(bluetoothSensorManager.isBluetoothDeviceOn()){
             bluetoothSensorManager.setSensorsToListen(bluetoothSensorTypes,bluetoothSensorFrequencies);
             bluetoothSensorManager.startListening();
         }
         List<Integer> sensorsToLog = new ArrayList<>();
-        sensorsToLog.addAll(androidSensorTypes);
+        androidSensorManager.getListenedSensorTypes(sensorsToLog);
         sensorsToLog.addAll(bluetoothSensorTypes);
         sensorLogManager.startLog(profile.getProfileName(),sensorsToLog);
         // Create log stopper if set in settings
@@ -417,13 +416,10 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     public void startOpenGLMode(){
         androidSensorManager.stopListening();
         minSendInterval = 20;
-        List<Integer> sensorTypes = new ArrayList<>();
-        List<Integer> sensorFrequencies = new ArrayList<>();
-        sensorTypes.add(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType);
-        sensorFrequencies.add(20);
-        sensorTypes.add(SensorsEnum.INTERNAL_GYROSCOPE.sensorType);
-        sensorFrequencies.add(20);
-        androidSensorManager.setSensorsToListenSafe(sensorTypes,sensorFrequencies);
+        SparseIntArray sensors = new SparseIntArray();
+        sensors.put(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType,minSendInterval);
+        sensors.put(SensorsEnum.INTERNAL_GYROSCOPE.sensorType,minSendInterval);
+        androidSensorManager.setSensorsToListenSafe(sensors);
         androidSensorManager.startListening();
     }
 
