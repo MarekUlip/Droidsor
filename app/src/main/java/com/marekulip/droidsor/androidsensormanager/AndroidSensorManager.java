@@ -9,7 +9,7 @@ import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
-import com.marekulip.droidsor.droidsorservice.DroidsorSensorManagerIface;
+import com.marekulip.droidsor.droidsorservice.DroidsorSensorManager;
 import com.marekulip.droidsor.droidsorservice.DroidsorService;
 import com.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
@@ -22,7 +22,7 @@ import java.util.List;
  * Class for listening sensors on Android device. Ensures that it registers only available sensors. Returns results as a broadcast to a service provided in constructor
  */
 
-public class AndroidSensorManager implements SensorEventListener, DroidsorSensorManagerIface{
+public class AndroidSensorManager extends DroidsorSensorManager implements SensorEventListener{
     /**
      * Service that should receive broadcasts
      */
@@ -37,15 +37,6 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
      */
     private final List<Sensor> toListen = new ArrayList<>();
     /**
-     * List of ids to be listened. Ids should match real sensors ids only exception is orientation
-     * sensor
-     */
-    private List<Integer> toListenIds;
-    /**
-     * Frequencies for sensors to be applied
-     */
-    private final SparseIntArray listenFrequencies = new SparseIntArray();
-    /**
      * SparseArray of all hardware available sensors
      */
     private SparseBooleanArray presentSensors = new SparseBooleanArray();
@@ -53,10 +44,6 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
      * Time from last processing (sending broadcast) of SensorEvent of a particular sensor
      */
     private final SparseLongArray lastSensorsTime = new SparseLongArray();
-    /**
-     * Basic listening frequency when no logging is active
-     */
-    private final int baseListenFrequency = 500;
     /**
      * Indicates if new data from accelerometer has been processed
      */
@@ -94,7 +81,7 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
         int sensorType = sensorEvent.sensor.getType();
         long time = System.currentTimeMillis();
         //If elapsed time is greater than set frequency process this event
-        if(time - lastSensorsTime.get(sensorType) > listenFrequencies.get(sensorType,baseListenFrequency)){
+        if(time - lastSensorsTime.get(sensorType) > listenedSensors.get(sensorType, DroidsorSensorManager.defaultSensorFrequency)){
             lastSensorsTime.put(sensorType,time);
             List<SensorData> sensorDataList = new ArrayList<>();
             SensorsEnum.resolveSensor(sensorEvent,sensorDataList);
@@ -113,7 +100,7 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
 
         //Process orientation
         if(hasOrientation &&isAccelSet && isMagFieldSet) {
-            if(time - lastSensorsTime.get(orientationId) > listenFrequencies.get(orientationId,baseListenFrequency)) {
+            if(time - lastSensorsTime.get(orientationId) > listenedSensors.get(orientationId, DroidsorSensorManager.defaultSensorFrequency)) {
                 lastSensorsTime.put(orientationId,time);
                 updateOrientationAngles();
                 List<SensorData> sensorDataList = new ArrayList<>();
@@ -142,7 +129,7 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
 
 
     /**
-     * Starts listening to sensors set via {@link #setSensorsToListen(List, List)} or {@link #setSensorsToListenSafe(List, List)} method.
+     * Starts listening to sensors set via {@link #setSensorsToListen(SparseIntArray)} or {@link #setSensorsToListenSafe(SparseIntArray)} method.
      */
     public void startListening(){
         registerListeners();
@@ -168,11 +155,10 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
      */
     public void resetManager(){
         filterToListenIds();
-        listenFrequencies.clear();
     }
 
     /**
-     * Registers listeners for sensors with ids that are contained in {@link #toListenIds} list.
+     * Registers listeners for sensors with ids that are contained in {@link #listenedSensors} array.
      */
     private void registerListeners(){
         new Thread(new Runnable() {
@@ -181,13 +167,13 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
                 boolean hasAcc = false, hasMag = false;
                 //Iterate through all available sensors and set those contained in toListenIds as active
                 for(int i = 0; i<toListen.size();i++){
-                    if(toListenIds.contains(toListen.get(i).getType())){
+                    if(containsSensor(toListen.get(i).getType(),listenedSensors)){
                         if(toListen.get(i).getType()==SensorsEnum.INTERNAL_MAGNETOMETER.sensorType)hasMag = true;
                         if(toListen.get(i).getType()==SensorsEnum.INTERNAL_ACCELEROMETER.sensorType)hasAcc = true;
                         mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
                     }
                 }
-                hasOrientation = toListenIds.contains(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
+                hasOrientation = containsSensor(SensorsEnum.INTERNAL_ORIENTATION.sensorType,listenedSensors);
                 // If orientation is required and one of sensors required to count orientation
                 // is not set then set it here
                 if(hasOrientation && !(hasAcc && hasMag)){
@@ -204,7 +190,7 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
                         }
                         else continue;
                         mSensorManager.registerListener(AndroidSensorManager.this,toListen.get(i),SensorManager.SENSOR_DELAY_NORMAL);
-                        listenFrequencies.put(toListen.get(i).getType(),listenFrequencies.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,500));
+                        listenedSensors.put(toListen.get(i).getType(),listenedSensors.get(SensorsEnum.INTERNAL_ORIENTATION.sensorType,500));
                         if(hasAcc  && hasMag)break;
                     }
                 }
@@ -221,34 +207,16 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
     }
 
     /**
-     * Sets sensors to listen without checking if they are truly present on device.
-     * @param sensorsToListen ids of sensors to listen. Provided ids should be supported by {@link SensorsEnum} enum.
-     * @param listeningFrequencies Frequencies in which this manager should send broadcasts. Frequencies should have same index as sensor id.
-     */
-    public void setSensorsToListen(List<Integer> sensorsToListen, List<Integer> listeningFrequencies){
-        //toListen.clear();
-        listenFrequencies.clear();
-        toListenIds = sensorsToListen;
-        for (int i = 0; i<sensorsToListen.size();i++) {
-            //toListen.add(mSensorManager.getDefaultSensor(sensorsToListen.get(i)));
-            listenFrequencies.put(sensorsToListen.get(i),listeningFrequencies.get(i));
-        }
-    }
-
-    /**
      * Set sensors to listen with check if that sensor is really available at the device. This method is slower and only should be used if there is a possibility to set sensors which are not present on the device.
-     * @param sensorsToListen ids of sensors to listen. Provided ids should be supported by {@link SensorsEnum} enum.
-     * @param listeningFrequencies Frequencies in which this manager should send broadcasts. Frequencies should have same index as sensor id.
+     * @param sensorsToListen ids and frequencies of sensors to listen. Provided ids should be supported by {@link SensorsEnum} enum.
      */
-    public void setSensorsToListenSafe(List<Integer> sensorsToListen, List<Integer> listeningFrequencies){
-        listenFrequencies.clear();
-        toListenIds.clear();
-        int type;
-        for (int i = 0; i<sensorsToListen.size();i++) {
-            type = sensorsToListen.get(i);
+    public void setSensorsToListenSafe(SparseIntArray sensorsToListen){
+        //listenFrequencies.clear();
+        listenedSensors.clear();
+        for (int i = 0,type; i<sensorsToListen.size();i++) {
+            type = sensorsToListen.keyAt(i);
             if(presentSensors.get(type,false)){
-                toListenIds.add(type);
-                listenFrequencies.put(type,listeningFrequencies.get(i));
+                listenedSensors.put(type,sensorsToListen.valueAt(i));
             }
         }
     }
@@ -257,26 +225,28 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
      * Initializes toListenIds list with ids of all supported but also possibly not present sensors
      */
     private void initToListenIds(){
-        toListenIds = new ArrayList<>();
-        toListenIds.add(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_GYROSCOPE.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_LIGHT.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_GRAVITY.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_HUMIDITY.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_BAROMETER.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_TEMPERATURE.sensorType);
-        toListenIds.add(SensorsEnum.INTERNAL_ORIENTATION.sensorType);
+        listenedSensors = new SparseIntArray();
+        listenedSensors.put(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_GYROSCOPE.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_LIGHT.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_GRAVITY.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_HUMIDITY.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_BAROMETER.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_TEMPERATURE.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_ORIENTATION.sensorType, DroidsorSensorManager.defaultSensorFrequency);
     }
 
     /**
      * Filters sensors that are supported but are not present on the device
      */
     private void filterToListenIds(){
-        //If this has been done before just reset toListenIds with all present sensors
+        //If this has been done before just reset listenedSensors with all present sensors
         if(!toListen.isEmpty()){
-            toListenIds.clear();
-            getAllAvailableSensorTypes(toListenIds);
+            listenedSensors.clear();
+            for(int i = 0; i<presentSensors.size();i++){
+                listenedSensors.put(presentSensors.keyAt(i), DroidsorSensorManager.defaultSensorFrequency);
+            }
             return;
         }
         //Otherwise find all present sensors
@@ -284,25 +254,26 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
         presentSensors = new SparseBooleanArray();
         List<Sensor>  sensors= mSensorManager.getSensorList(Sensor.TYPE_ALL);
         for(Sensor s: sensors){
-            if(!presentSensors.get(s.getType(),false) && toListenIds.contains(s.getType())){
+            //Ensure that sensor is found only once
+            if(!presentSensors.get(s.getType(),false) && containsSensor(s.getType(),listenedSensors)){
                 toListen.add(s);
                 presentSensors.put(s.getType(),true);
             }
         }
-        toListenIds.clear();
+        listenedSensors.clear();
         for(int i = 0; i<toListen.size();i++){
-            toListenIds.add(toListen.get(i).getType());
+            listenedSensors.put(toListen.get(i).getType(), DroidsorSensorManager.defaultSensorFrequency);
         }
         // If accelerometer and magentometer are present orientation can be measured too
         if(presentSensors.get(SensorsEnum.INTERNAL_ACCELEROMETER.sensorType,false) &&presentSensors.get(SensorsEnum.INTERNAL_MAGNETOMETER.sensorType,false)){
             presentSensors.put(orientationId,true);
-            toListenIds.add(orientationId);
+            listenedSensors.put(orientationId, DroidsorSensorManager.defaultSensorFrequency);
         }
     }
 
     @Override
     public void setSensorsToListen(SparseIntArray sensors) {
-
+        listenedSensors = sensors;
     }
 
     /**
@@ -310,7 +281,9 @@ public class AndroidSensorManager implements SensorEventListener, DroidsorSensor
      * @param sensorTypes List to fill
      */
     public void getListenedSensorTypes(List<Integer> sensorTypes){
-        sensorTypes.addAll(toListenIds);
+        for(int i = 0; i < listenedSensors.size(); i++) {
+            sensorTypes.add(listenedSensors.keyAt(i));
+        }
     }
 
     /**

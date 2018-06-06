@@ -4,7 +4,7 @@ import android.media.MediaRecorder;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
-import com.marekulip.droidsor.droidsorservice.DroidsorSensorManagerIface;
+import com.marekulip.droidsor.droidsorservice.DroidsorSensorManager;
 import com.marekulip.droidsor.droidsorservice.DroidsorService;
 import com.marekulip.droidsor.sensorlogmanager.Point3D;
 import com.marekulip.droidsor.sensorlogmanager.SensorData;
@@ -19,12 +19,11 @@ import java.util.TimerTask;
 /**
  * Class that monitors everything monitorable that is not sensor such as battery and sound intensity.
  */
-public class NoSensorManager implements DroidsorSensorManagerIface {
+public class NoSensorManager extends DroidsorSensorManager {
     private final DroidsorService droidsorService;
     private MediaRecorder mediaRecorder = null;
     private Timer timer;
     private TimerTask timerTask;
-    private SparseIntArray listenedSensors = new SparseIntArray();
     private SparseLongArray lastTimeSensorFrequencies = new SparseLongArray();
 
     public NoSensorManager(DroidsorService droidsorService){
@@ -71,7 +70,7 @@ public class NoSensorManager implements DroidsorSensorManagerIface {
      */
     private void initListenedSensors(){
         listenedSensors.clear();
-        listenedSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType,DroidsorSensorManagerIface.defaultSensorFrequency);
+        listenedSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType, DroidsorSensorManager.defaultSensorFrequency);
     }
 
     private void initTimer(){
