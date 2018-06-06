@@ -21,6 +21,8 @@
     <xsd:element name="gravity" type="three_dimension" />
     <xsd:element name="movement" type="three_dimension" />
     <xsd:element name="orientation" type="three_dimension" />
+    <xsd:element name="sound" type="one_dimension" />
+    <xsd:element name="battery" type="two_dimension" />
 
     <xsd:attribute name="data_source">
         <xsd:restriction base="xs:string">
