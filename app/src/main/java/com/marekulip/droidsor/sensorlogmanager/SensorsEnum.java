@@ -65,6 +65,16 @@ public enum SensorsEnum {
         }
     },
 
+    INTERNAL_BATTERY(96,true,R.string.battery,R.string.celsius_degree_unit,R.string.battery_xml,R.array.battery_desc,2){
+        @Override
+        protected String getSensorUnitName(Context context, int position) {
+            if(position == 2){
+                return "%";
+            }
+            return getSensorUnitName(context);
+        }
+    },
+
     /**
      * Represents microphone from smartphone. Units are in dB and returns only 1 value
      */
