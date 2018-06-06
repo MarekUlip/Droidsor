@@ -13,7 +13,7 @@ import android.content.Context;
 import android.util.Log;
 import android.util.SparseIntArray;
 
-import com.marekulip.droidsor.droidsorservice.DroidsorSensorManagerIface;
+import com.marekulip.droidsor.droidsorservice.DroidsorSensorManager;
 import com.marekulip.droidsor.droidsorservice.DroidsorService;
 import com.marekulip.droidsor.bluetoothsensormanager.tisensor.GeneralTISensor;
 import com.marekulip.droidsor.bluetoothsensormanager.tisensor.TIBarometricSensor;
@@ -33,7 +33,7 @@ import java.util.concurrent.Semaphore;
  * Created by Marek Ulip on 21.10.2017.
  */
 
-public class BluetoothSensorManager implements DroidsorSensorManagerIface{
+public class BluetoothSensorManager extends DroidsorSensorManager {
     private static final String TAG = BluetoothSensorManager.class.toString();
 
 
@@ -98,10 +98,6 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
      */
     private final List<GeneralTISensor> activeSensors = getBasicSetOfSensors();
     /**
-     * Data sending frequencies of active sensors.
-     */
-    private final SparseIntArray listenFrequencies = new SparseIntArray();
-    /**
      * Semaphore used for communication with BLE device where it is required to wait for answer.
      * So when device sends answer it also releases semaphore.
      */
@@ -121,7 +117,7 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
      * Send broadcast to service with provided action
      * @param action Action to be broadcasted
      */
-    public void broadcastUpdate(final String action){
+    private void broadcastUpdate(final String action){
         if(action.equals(ACTION_GATT_CONNECTED)){
             mConnectionState = STATE_CONNECTED;
         }
@@ -133,7 +129,7 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
      * @param action Action to be broadcasted. Use with ACTION_DATA_AVAILABLE from the Service so that data get processed.
      * @param sensorDataList data to be send
      */
-    public void broadcastUpdate(final String action, List<SensorData> sensorDataList){
+    private void broadcastUpdate(final String action, List<SensorData> sensorDataList){
         droidsorService.broadcastUpdate(action,sensorDataList);
     }
 
@@ -289,7 +285,7 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
     };
 
     /**
-     * Initializes all desired sensors which were set via {@link #setSensorsToListen(List, List)} or {@link #defaultListeningMode()} methods.\
+     * Initializes all desired sensors which were set via {@link #setSensorsToListen(SparseIntArray)} or {@link #defaultListeningMode()} methods.\
      * In other word all sensors which are in {@link #activeSensors} will be activated.
      * @param hasPriority Indicates whether this initialization should stop another going.
      */
@@ -356,7 +352,7 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
         communicationSemaphore.acquire();
         //No need to set frequency when sensor will not be enabled
         if (enable){
-            sensor.configureSensorFrequency(listenFrequencies.get(sensor.getSensorType(), 1000));
+            sensor.configureSensorFrequency(listenedSensors.get(sensor.getSensorType(), 1000));
             communicationSemaphore.acquire();
         }
     }
@@ -375,10 +371,7 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
         return sensors;
     }
 
-    @Override
-    public void setSensorsToListen(SparseIntArray sensors) {
 
-    }
 
     /**
      * Returns all sensors which are actually listened
@@ -407,20 +400,17 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
         }
     }
 
-    /**
-     * Set sensors to be listened. To start listening to the set sensors call {@link #startListening()}
-     * @param sensorsTypes ids of sensors to be activated
-     * @param sensorFrequencies frequencies of sensors to be activated
-     */
-    public void setSensorsToListen(List<Integer> sensorsTypes,List<Integer> sensorFrequencies){
+
+    @Override
+    public void setSensorsToListen(SparseIntArray sensorTypes) {
         clearArrays();
         for(GeneralTISensor sensor: sensors){
-            if(sensorsTypes.contains(sensor.getSensorType())){
+            if(containsSensor(sensor.getSensorType(),listenedSensors)){
                 activeSensors.add(sensor);
             }
         }
         // If there is some part of movement sensor activate movement sensor
-        if(sensorsTypes.contains(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType)||sensorsTypes.contains(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType)||sensorsTypes.contains(SensorsEnum.EXT_MOV_MAGNETIC.sensorType)){
+        if(containsSensor(SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType,listenedSensors)||containsSensor(SensorsEnum.EXT_MOV_GYROSCOPE.sensorType,listenedSensors)||containsSensor(SensorsEnum.EXT_MOV_MAGNETIC.sensorType,listenedSensors)){
             for(GeneralTISensor sensor: sensors){
                 if(sensor.getSensorType()==SensorsEnum.EXT_MOVEMENT.sensorType){
                     activeSensors.add(sensor);
@@ -428,12 +418,12 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
                 }
             }
         }
-        for(int i = 0; i<sensorsTypes.size();i++){
-            if(sensorsTypes.get(i)>=SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType&&sensorsTypes.get(i)<=SensorsEnum.EXT_MOV_MAGNETIC.sensorType){
-                listenFrequencies.put(SensorsEnum.EXT_MOVEMENT.sensorType,sensorFrequencies.get(i));
+        for(int i = 0; i<sensorTypes.size();i++){
+            if(sensorTypes.keyAt(i)>=SensorsEnum.EXT_MOV_ACCELEROMETER.sensorType&&sensorTypes.keyAt(i)<=SensorsEnum.EXT_MOV_MAGNETIC.sensorType){
+                listenedSensors.put(SensorsEnum.EXT_MOVEMENT.sensorType,sensorTypes.valueAt(i));
                 continue;
             }
-            listenFrequencies.put(sensorsTypes.get(i),sensorFrequencies.get(i));
+            listenedSensors.put(sensorTypes.keyAt(i),sensorTypes.valueAt(i));
         }
     }
 
@@ -449,7 +439,7 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
      */
     public void stopListening(){
         // Setting empty arrays will cause that all sensors will be turned off.
-        setSensorsToListen(new ArrayList<Integer>(), new ArrayList<Integer>());
+        setSensorsToListen(new SparseIntArray());
         initializeSensors(false);
     }
 
@@ -471,10 +461,10 @@ public class BluetoothSensorManager implements DroidsorSensorManagerIface{
     }
 
     /**
-     * Clears active sensors and listenFrequencies arrays
+     * Clears active sensors and listenedSensors arrays
      */
     private void clearArrays(){
         activeSensors.clear();
-        listenFrequencies.clear();
+        listenedSensors.clear();
     }
 }
