@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;

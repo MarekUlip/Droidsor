@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.widget.Toast;
@@ -332,27 +333,35 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             positionManager.startUpdates();
         }
         SparseIntArray androidSensors = new SparseIntArray();
+        SparseIntArray noSensors = new SparseIntArray();
         List<Integer> bluetoothSensorTypes = new ArrayList<>();
         List<Integer> bluetoothSensorFrequencies = new ArrayList<>();
         // Stop listening so new sensors can be safely set
         androidSensorManager.stopListening();
         noSensorManager.stopListening();
+        List<Integer> sensorsToLog = new ArrayList<>();
         for(LogProfileItem item : profile.getLogItems()){
-            if(item.getSensorType()<100){
-                androidSensors.put(item.getSensorType(),item.getScanFrequency());
+            if(item.getSensorType()<90) {
+                androidSensors.put(item.getSensorType(), item.getScanFrequency());
+            }
+            else if(item.getSensorType()<100){
+                noSensors.put(item.getSensorType(),item.getScanFrequency());
             }else {
                 bluetoothSensorTypes.add(item.getSensorType());
                 bluetoothSensorFrequencies.add(item.getScanFrequency());
             }
+            // sensorsToLog.add(item.getSensorType());
         }
         androidSensorManager.setSensorsToListen(androidSensors);
         androidSensorManager.startListening();
+        noSensorManager.setSensorsToListen(noSensors);
+        noSensorManager.startListening();
         if(bluetoothSensorManager.isBluetoothDeviceOn()){
             bluetoothSensorManager.setSensorsToListen(bluetoothSensorTypes,bluetoothSensorFrequencies);
             bluetoothSensorManager.startListening();
         }
-        List<Integer> sensorsToLog = new ArrayList<>();
         androidSensorManager.getListenedSensorTypes(sensorsToLog);
+        noSensorManager.getListenedSensorTypes(sensorsToLog);
         sensorsToLog.addAll(bluetoothSensorTypes);
         sensorLogManager.startLog(profile.getProfileName(),sensorsToLog);
         // Create log stopper if set in settings
@@ -397,8 +406,14 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             sensorLogManager.endLog();
             positionManager.stopUpdates();
             androidSensorManager.stopListening();
+            noSensorManager.stopListening();
+
             androidSensorManager.resetManager();
+            noSensorManager.resetManager();
+
             androidSensorManager.startListening();
+            noSensorManager.startListening();
+
             if (bluetoothSensorManager.isBluetoothDeviceOn()) {
                 bluetoothSensorManager.defaultListeningMode();
             }
@@ -474,7 +489,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         List<Integer> sensorTypes = new ArrayList<>();
         if(ignoreMode || displayMode == ALL_SENSORS_MODE||isLogging()){
             androidSensorManager.getListenedSensorTypes(sensorTypes);
-            //noSensorManager.getMonitoredSensors(sensorTypes);
+            noSensorManager.getListenedSensorTypes(sensorTypes);
             if(bluetoothSensorManager.isBluetoothDeviceOn())
             bluetoothSensorManager.getListenedSensorTypes(sensorTypes);
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
@@ -487,7 +502,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             }
             else if(displayMode == MOBILE_SENSORS_MODE){
                 androidSensorManager.getListenedSensorTypes(sensorTypes);
-                noSensorManager.getMonitoredSensors(sensorTypes);
+                noSensorManager.getListenedSensorTypes(sensorTypes);
                 if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
                     sensorTypes.add(SensorsEnum.GPS.sensorType);
                 }
@@ -504,6 +519,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     public List<Integer> getSensorTypesForProfile(){
         List<Integer> sensorTypes = new ArrayList<>();
         androidSensorManager.getAllAvailableSensorTypes(sensorTypes);
+        noSensorManager.getAllAvailableSensorTypes(sensorTypes);
         if(bluetoothSensorManager.isBluetoothDeviceOn())bluetoothSensorManager.giveMeYourSensorTypesForProfile(sensorTypes);
         return sensorTypes;
     }

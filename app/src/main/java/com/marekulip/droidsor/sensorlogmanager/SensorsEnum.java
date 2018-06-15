@@ -64,8 +64,26 @@ public enum SensorsEnum {
             sensorDataList.add(new SensorData(sensorType,new Point3D(data[0],data[1],data[2]),SensorData.getTime()));
         }
     },
-
-    INTERNAL_BATTERY(96,true,R.string.battery,R.string.celsius_degree_unit,R.string.battery_xml,R.array.battery_desc,2){
+    /**
+     * Represents GPS as a sensors. Contains longitude, latitude and altitude.
+     */
+    GPS(97,true,R.string.gps,R.string.degrees,R.string.gps_xml, R.array.gps_data_desc,3){
+        @Override
+        protected String getSensorUnitName(Context context, int position) {
+            if(position == 3){
+                return "m";
+            }
+            return getSensorUnitName(context);
+        }
+    },
+    /**
+     * Represents microphone from smartphone. Units are in dB and returns only 1 value
+     */
+    INTERNAL_MICROPHONE(96,true,R.string.microphone,R.string.decibels,R.string.microphone_xml,1),
+    /**
+     * Represents battery from smartphone. Units are Celsius for temeprature and percentages for level
+     */
+    INTERNAL_BATTERY(95,true,R.string.battery,R.string.celsius_degree_unit,R.string.battery_xml,R.array.battery_desc,2){
         @Override
         protected String getSensorUnitName(Context context, int position) {
             if(position == 2){
@@ -74,11 +92,6 @@ public enum SensorsEnum {
             return getSensorUnitName(context);
         }
     },
-
-    /**
-     * Represents microphone from smartphone. Units are in dB and returns only 1 value
-     */
-    INTERNAL_MICROPHONE(96,true,R.string.microphone,R.string.decibels,R.string.microphone_xml,1),
     /**
      * Represents accelerometer from BLE device. Units are in m/s2. Can process 3 values x,y,z.
      */
@@ -112,17 +125,7 @@ public enum SensorsEnum {
      * for processing because in BLE device it contains another 3 sensors. It is enum so profiles are easier to make
      * and BLE device is easier to get going.
      */
-    EXT_MOVEMENT(107,false,R.string.movement,R.string.meter_per_sec_square_unit,R.string.movement_xml,1),
-
-    GPS(97,true,R.string.gps,R.string.degrees,R.string.gps_xml, R.array.gps_data_desc,3){
-        @Override
-        protected String getSensorUnitName(Context context, int position) {
-            if(position == 3){
-                return "m";
-            }
-            return getSensorUnitName(context);
-        }
-    };
+    EXT_MOVEMENT(107,false,R.string.movement,R.string.meter_per_sec_square_unit,R.string.movement_xml,1);
 
 
     /**
