@@ -1,12 +1,14 @@
 package com.marekulip.droidsor.nosensormanager;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.BatteryManager;
-import android.util.Log;
+import android.support.v4.content.ContextCompat;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
@@ -27,7 +29,6 @@ import java.util.List;
 public class NoSensorManager extends DroidsorSensorManager {
     private final DroidsorService droidsorService;
     private MediaRecorder mediaRecorder = null;
-    private Thread listeningThread;
     private SparseLongArray lastTimeSensorFrequencies = new SparseLongArray();
     /**
      * Each initialized listening thread has an item in this array which indicates whether the thread
@@ -94,59 +95,26 @@ public class NoSensorManager extends DroidsorSensorManager {
      */
     private void initListenedSensors(){
         listenedSensors.clear();
-        listenedSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        if(ContextCompat.checkSelfPermission(droidsorService.getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)listenedSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType, DroidsorSensorManager.defaultSensorFrequency);
         listenedSensors.put(SensorsEnum.INTERNAL_BATTERY.sensorType,DroidsorSensorManager.defaultSensorFrequency);
     }
 
-    /*private void initListeningThread(){
-        timer = new Timer();
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                //Log.d("dd", "run: ");
-                if(!isListening)return;
-                long time = System.currentTimeMillis();
-                List<SensorData> sensorDatas = null;
-                SensorData sensorData;
-                for(int i =0,key; i< listenedSensors.size();i++){
-                    key = listenedSensors.keyAt(i);
-                    if(time - lastTimeSensorFrequencies.get(key,0) > listenedSensors.valueAt(i)) {
-                        //Log.d("tst", "run: "+key);
-                        lastTimeSensorFrequencies.put(key,time);
-                        if(sensorDatas== null)sensorDatas = new ArrayList<>();
-                        if(key == SensorsEnum.INTERNAL_MICROPHONE.sensorType) {
-                            sensorData = new SensorData(SensorsEnum.INTERNAL_MICROPHONE.sensorType, new Point3D(getSoundIntensity(), 0.0, 0.0), SensorData.getTime());
-                            sensorDatas.add(sensorData);
-                        }
-                        else if(key == SensorsEnum.INTERNAL_BATTERY.sensorType){
-                            sensorData = new SensorData(SensorsEnum.INTERNAL_BATTERY.sensorType, new Point3D(batteryListener.getTemp(),batteryListener.getLevel(),0.0),SensorData.getTime());
-                            sensorDatas.add(sensorData);
-                        }
-                    }
-                }
-                if(sensorDatas != null) droidsorService.broadcastUpdate(DroidsorService.ACTION_DATA_AVAILABLE,sensorDatas);
-            }
-        };
-    }*/
-
     private void initListeningThread(final long frequency, final int id){
-        listeningThread = new Thread(new Runnable() {
+        Thread listeningThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(listeningThreadIndicators.get(id,false)) {
-                    Log.d("rnning", "run: running"+id+" at " +frequency);
+                while (listeningThreadIndicators.get(id, false)) {
                     long time = System.currentTimeMillis();
                     List<SensorData> sensorDatas = null;
                     SensorData sensorData;
                     for (int i = 0, key; i < listenedSensors.size(); i++) {
                         key = listenedSensors.keyAt(i);
                         if (time - lastTimeSensorFrequencies.get(key, 0) > listenedSensors.valueAt(i)) {
-                            //Log.d("tst", "run: "+key);
                             lastTimeSensorFrequencies.put(key, time);
                             if (sensorDatas == null) sensorDatas = new ArrayList<>();
                             if (key == SensorsEnum.INTERNAL_MICROPHONE.sensorType) {
                                 int intensity = getSoundIntensity();
-                                if(intensity>-100){
+                                if (intensity > -100) {
                                     sensorData = new SensorData(SensorsEnum.INTERNAL_MICROPHONE.sensorType, new Point3D(intensity, 0.0, 0.0), SensorData.getTime());
                                     sensorDatas.add(sensorData);
                                 }

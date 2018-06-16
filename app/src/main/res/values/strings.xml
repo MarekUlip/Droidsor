@@ -75,7 +75,7 @@
     <string name="logging_on">App is logging. Service will keep running</string>
     <string name="permission_explain_write">This permission is required to store GPX file on SD card</string>
     <string name="droidsor_service">Droidsor service</string>
-    <string name="service_is_running">Service is running</string>
+    <string name="service_is_running">Click to turn off the service</string>
     <string name="time">Time: </string>
     <string name="unknown_duration">Unknown duration</string>
     <string name="searching_data">Searching data&#8230;</string>
@@ -84,8 +84,16 @@
     <string name="showing_data">Showing data&#8230;</string>
     <string name="show_gps_data">Show GPS data</string>
     <string name="show_gps_data_sum">Shows GPS data as a sensor. May cause slightly higher battery consumption</string>
-
-
+    <string name="explain_permissions">Explain permissions</string>
+    <string name="allow_all">Allow all</string>
+    <string name="location_permission">Location</string>
+    <string name="record_audio">Record audio</string>
+    <string name="write_to_external_storage">Write to external storage</string>
+    <string name="permission_explanation"><b>Location:</b> Used to get location while logging, when displaying GPS data and for search of Bluetooth sensors.\n<b>Record audio:</b> Used to measure sound intensity.\n<b>Write to storage:</b> Used when the log is being exported to SD card.</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="all_permissions_allowed">All permissions are allowed</string>
+    <string name="permission_setting">Permission setting</string>
+    <string name="permissions_required">App requires permissions to run properly. Set permissions?</string>
 
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>
@@ -134,7 +142,7 @@
     <string name="gravity">Gravity</string>
     <string name="movement">Movement</string>
     <string name="orientation">Orientation</string>
-    <string name="gps">GPS</string>
+    <string name="gps" translatable="false">GPS</string>
     <string name="microphone">Microphone</string>
     <string name="battery">Battery</string>
     <string name="scheduled_log_end">Set log length</string>
@@ -184,8 +192,8 @@
     <string name="movement_xml" translatable="false">movement</string>
     <string name="orientation_xml" translatable="false">orientation</string>
     <string name="gps_xml" translatable="false">gps</string>
-    <string name="microphone_xml">microphone</string>
-    <string name="battery_xml">battery</string>
+    <string name="microphone_xml" translatable="false">microphone</string>
+    <string name="battery_xml" translatable="false">battery</string>
 
     <string name="meter_per_sec_square_unit" translatable="false">m/s²</string>
     <string name="celsius_degree_unit" translatable="false">°C</string>

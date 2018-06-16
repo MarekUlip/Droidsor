@@ -89,7 +89,7 @@
     <string name="logging_on">Probíhá záznam. Služba zůstane aktivní</string>
     <string name="permission_explain_write">Toto oprávnění je potřeba k uložení GPX souboru na SD kartu</string>
     <string name="droidsor_service">Služba Droidsor</string>
-    <string name="service_is_running">Služba běží</string>
+    <string name="service_is_running">Kliknutím vypnete tuto službu</string>
     <string name="gravity">Gravitace</string>
 
     <string-array name="log_but_beh_str_arr">
@@ -117,6 +117,17 @@
     <string-array name="pressure_data_desc">
         <item>Atmosférický tlak:&#160;&#032;</item>
     </string-array>
+
+    <string-array name="gps_data_desc">
+        <item>Délka:&#160;</item>
+        <item>Šířka:&#160;</item>
+        <item>Výška:&#160;</item>
+    </string-array>
+    <string-array name="battery_desc">
+        <item>Teplota:&#160;</item>
+        <item>Úroveň:&#160;</item>
+    </string-array>
+
     <string name="accelerometer_internal">Akcelerometr interní</string>
     <string name="accelerometer_external">Akcelerometr externí</string>
     <string name="gyroscope_internal">Gyroskop interní</string>
@@ -131,4 +142,18 @@
     <string name="fetching_data">Získávám data…</string>
     <string name="processing_data">Zpracovávám data…</string>
     <string name="showing_data">Zobrazuji data…</string>
+    <string name="show_gps_data">Zobrazovat GPS data</string>
+    <string name="show_gps_data_sum">Zobrazí GPS data ve formě senzoru. Může způsobit lehce vyšší spotřebu baterie</string>
+    <string name="explain_permissions">Vysvětlit oprávnění</string>
+    <string name="allow_all">Povolit vše</string>
+    <string name="location_permission">Lokace</string>
+    <string name="record_audio">Nahrávat zvuk</string>
+    <string name="write_to_external_storage">Zápis do externího úložiště</string>
+    <string name="all_permissions_allowed">Všechna nutná oprávnení jsou povolena</string>
+    <string name="permission_setting">Nastavení oprávnění</string>
+    <string name="permissions_required">Aplikace potřebuje určitá oprávnění. Nastavit?</string>
+    <string name="microphone">Mikrofon</string>
+    <string name="battery">Baterie</string>
+    <string name="permission_explanation"><b>Lokace:</b> Používá se k získání pozice při záznamu, když se zobrazují GPS data a pro vyhledávání Bluetooth senzorů.\n<b>Nahrávat audio:</b> Používá se pro meření intenzity zvuku.\n<b>Zápis do úložiště:</b> Používá se při exportování záznamu na SD kartu.</string>
+
 </resources>

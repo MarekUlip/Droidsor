@@ -34,7 +34,7 @@
 
         <activity
             android:name=".BLESensorLocateActivity"
-            android:theme="@style/AppTheme"/>
+            android:theme="@style/AppTheme" />
         <activity android:name=".logs.LogDetailActivity" />
         <activity android:name=".logs.LogsActivity" />
         <activity
@@ -65,8 +65,10 @@
 
         <activity android:name=".DroidsorSettingsActivity" />
         <activity android:name=".logs.LogDetailItemActivity" />
-        <activity android:name=".opengl.OpenGLActivity"
-            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".opengl.OpenGLActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".PermissionsActivity"></activity>
     </application>
 
 </manifest>
