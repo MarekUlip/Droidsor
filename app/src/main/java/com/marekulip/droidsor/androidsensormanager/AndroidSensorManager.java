@@ -298,7 +298,7 @@ public class AndroidSensorManager extends DroidsorSensorManager implements Senso
     }
 
     /**
-     * Determines wheter provided sensor id is available on the device
+     * Determines whether provided sensor id is available on the device
      * @param sensorType id to be determined
      * @return true if found otherwise false
      */

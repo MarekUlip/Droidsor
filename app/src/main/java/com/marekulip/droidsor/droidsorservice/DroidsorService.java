@@ -341,14 +341,14 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         noSensorManager.stopListening();
         List<Integer> sensorsToLog = new ArrayList<>();
         for(LogProfileItem item : profile.getLogItems()){
-            if(item.getSensorType()<90) {
+            if(item.getSensorType()<100) {
                 androidSensors.put(item.getSensorType(), item.getScanFrequency());
             }
-            else if(item.getSensorType()<100){
-                noSensors.put(item.getSensorType(),item.getScanFrequency());
-            }else {
+            else if(item.getSensorType()<200){
                 bluetoothSensorTypes.add(item.getSensorType());
                 bluetoothSensorFrequencies.add(item.getScanFrequency());
+            }else {
+                noSensors.put(item.getSensorType(),item.getScanFrequency());
             }
             // sensorsToLog.add(item.getSensorType());
         }

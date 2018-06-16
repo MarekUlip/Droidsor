@@ -79,11 +79,11 @@ public enum SensorsEnum {
     /**
      * Represents microphone from smartphone. Units are in dB and returns only 1 value
      */
-    INTERNAL_MICROPHONE(96,true,R.string.microphone,R.string.decibels,R.string.microphone_xml,1),
+    INTERNAL_MICROPHONE(201,true,R.string.microphone,R.string.decibels,R.string.microphone_xml,1),
     /**
      * Represents battery from smartphone. Units are Celsius for temeprature and percentages for level
      */
-    INTERNAL_BATTERY(95,true,R.string.battery,R.string.celsius_degree_unit,R.string.battery_xml,R.array.battery_desc,2){
+    INTERNAL_BATTERY(202,true,R.string.battery,R.string.celsius_degree_unit,R.string.battery_xml,R.array.battery_desc,2){
         @Override
         protected String getSensorUnitName(Context context, int position) {
             if(position == 2){

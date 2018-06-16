@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaRecorder;
 import android.os.BatteryManager;
-import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
@@ -19,8 +19,6 @@ import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Class that monitors everything monitorable that is not sensor such as battery and sound intensity.
@@ -28,16 +26,25 @@ import java.util.TimerTask;
 public class NoSensorManager extends DroidsorSensorManager {
     private final DroidsorService droidsorService;
     private MediaRecorder mediaRecorder = null;
-    private Timer timer;
-    private TimerTask timerTask;
+    private Thread listeningThread;
     private SparseLongArray lastTimeSensorFrequencies = new SparseLongArray();
+    /**
+     * Each initialized listening thread has an item in this array which indicates whether the thread
+     * is allow to run or not. It is made this way so that new threads can be started immediately without
+     * waiting for the old thread to be stopped.
+     */
+    private SparseBooleanArray listeningThreadIndicators = new SparseBooleanArray();
     private BatteryListener batteryListener;
+    /**
+     * Id that will be assigned to a created thread so it can be added to {@link #listeningThreadIndicators}
+     * array.
+     */
+    private int listeningThreadId = 0;
 
     public NoSensorManager(DroidsorService droidsorService){
         this.droidsorService = droidsorService;
         batteryListener = new BatteryListener(droidsorService);
         initListenedSensors();
-        initTimer();
     }
 
     @Override
@@ -53,22 +60,19 @@ public class NoSensorManager extends DroidsorSensorManager {
     public void startListening(){
         if(listenedSensors.size() == 0)return;
         initSensors();
-        initTimer();
         int smallestFrequency = Integer.MAX_VALUE;
         for (int i = 0; i< listenedSensors.size(); i++){
             if(listenedSensors.keyAt(i)<smallestFrequency){
                 smallestFrequency = listenedSensors.keyAt(i);
             }
         }
-        timer.schedule(timerTask, smallestFrequency, smallestFrequency);
+        listeningThreadIndicators.put(listeningThreadId,true);
+        initListeningThread(smallestFrequency,listeningThreadId);
     }
     @Override
     public void stopListening(){
-        if(timer != null) {
-            timer.cancel();
-            timer.purge();
-            timerTask = null;
-        }
+        //Stops current running thread
+        listeningThreadIndicators.delete(listeningThreadId++);
         stopSensors();
     }
 
@@ -92,12 +96,13 @@ public class NoSensorManager extends DroidsorSensorManager {
         listenedSensors.put(SensorsEnum.INTERNAL_BATTERY.sensorType,DroidsorSensorManager.defaultSensorFrequency);
     }
 
-    private void initTimer(){
+    /*private void initListeningThread(){
         timer = new Timer();
         timerTask = new TimerTask() {
             @Override
             public void run() {
                 //Log.d("dd", "run: ");
+                if(!isListening)return;
                 long time = System.currentTimeMillis();
                 List<SensorData> sensorDatas = null;
                 SensorData sensorData;
@@ -120,6 +125,42 @@ public class NoSensorManager extends DroidsorSensorManager {
                 if(sensorDatas != null) droidsorService.broadcastUpdate(DroidsorService.ACTION_DATA_AVAILABLE,sensorDatas);
             }
         };
+    }*/
+
+    private void initListeningThread(final long frequency, final int id){
+        listeningThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(listeningThreadIndicators.get(id,false)) {
+                    long time = System.currentTimeMillis();
+                    List<SensorData> sensorDatas = null;
+                    SensorData sensorData;
+                    for (int i = 0, key; i < listenedSensors.size(); i++) {
+                        key = listenedSensors.keyAt(i);
+                        if (time - lastTimeSensorFrequencies.get(key, 0) > listenedSensors.valueAt(i)) {
+                            //Log.d("tst", "run: "+key);
+                            lastTimeSensorFrequencies.put(key, time);
+                            if (sensorDatas == null) sensorDatas = new ArrayList<>();
+                            if (key == SensorsEnum.INTERNAL_MICROPHONE.sensorType) {
+                                sensorData = new SensorData(SensorsEnum.INTERNAL_MICROPHONE.sensorType, new Point3D(getSoundIntensity(), 0.0, 0.0), SensorData.getTime());
+                                sensorDatas.add(sensorData);
+                            } else if (key == SensorsEnum.INTERNAL_BATTERY.sensorType) {
+                                sensorData = new SensorData(SensorsEnum.INTERNAL_BATTERY.sensorType, new Point3D(batteryListener.getTemp(), batteryListener.getLevel(), 0.0), SensorData.getTime());
+                                sensorDatas.add(sensorData);
+                            }
+                        }
+                    }
+                    if (sensorDatas != null)
+                        droidsorService.broadcastUpdate(DroidsorService.ACTION_DATA_AVAILABLE, sensorDatas);
+                    try {
+                        Thread.sleep(frequency);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        listeningThread.start();
     }
 
     private void initSensors(){
