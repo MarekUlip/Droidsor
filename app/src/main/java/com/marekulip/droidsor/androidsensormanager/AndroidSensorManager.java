@@ -129,18 +129,14 @@ public class AndroidSensorManager extends DroidsorSensorManager implements Senso
     }
 
 
-    /**
-     * Starts listening to sensors set via {@link #setSensorsToListen(SparseIntArray)} or {@link #setSensorsToListenSafe(SparseIntArray)} method.
-     */
+    @Override
     public void startListening(){
-        registerListeners();
+        if(listenedSensors.size() != 0) registerListeners();
     }
 
-    /**
-     * Stops listening to all sensors. Set sensors are kept. For reseting set sensors call {@link #resetManager()} method.
-     */
+    @Override
     public void stopListening(){
-        endListeners();
+        if(listenedSensors.size() != 0) endListeners();
     }
 
     /**
@@ -152,7 +148,7 @@ public class AndroidSensorManager extends DroidsorSensorManager implements Senso
     }
 
     /**
-     * Resets sensors by setting all available sensors to listen.
+     * Resets manager by setting all available sensors to listen.
      */
     public void resetManager(){
         filterToListenIds();

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaRecorder;
 import android.os.BatteryManager;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
@@ -62,8 +63,8 @@ public class NoSensorManager extends DroidsorSensorManager {
         initSensors();
         int smallestFrequency = Integer.MAX_VALUE;
         for (int i = 0; i< listenedSensors.size(); i++){
-            if(listenedSensors.keyAt(i)<smallestFrequency){
-                smallestFrequency = listenedSensors.keyAt(i);
+            if(listenedSensors.valueAt(i)<smallestFrequency){
+                smallestFrequency = listenedSensors.valueAt(i);
             }
         }
         listeningThreadIndicators.put(listeningThreadId,true);
@@ -71,6 +72,7 @@ public class NoSensorManager extends DroidsorSensorManager {
     }
     @Override
     public void stopListening(){
+        if(listenedSensors.size()==0)return;
         //Stops current running thread
         listeningThreadIndicators.delete(listeningThreadId++);
         stopSensors();
@@ -132,6 +134,7 @@ public class NoSensorManager extends DroidsorSensorManager {
             @Override
             public void run() {
                 while(listeningThreadIndicators.get(id,false)) {
+                    Log.d("rnning", "run: running"+id+" at " +frequency);
                     long time = System.currentTimeMillis();
                     List<SensorData> sensorDatas = null;
                     SensorData sensorData;
@@ -142,8 +145,11 @@ public class NoSensorManager extends DroidsorSensorManager {
                             lastTimeSensorFrequencies.put(key, time);
                             if (sensorDatas == null) sensorDatas = new ArrayList<>();
                             if (key == SensorsEnum.INTERNAL_MICROPHONE.sensorType) {
-                                sensorData = new SensorData(SensorsEnum.INTERNAL_MICROPHONE.sensorType, new Point3D(getSoundIntensity(), 0.0, 0.0), SensorData.getTime());
-                                sensorDatas.add(sensorData);
+                                int intensity = getSoundIntensity();
+                                if(intensity>-100){
+                                    sensorData = new SensorData(SensorsEnum.INTERNAL_MICROPHONE.sensorType, new Point3D(intensity, 0.0, 0.0), SensorData.getTime());
+                                    sensorDatas.add(sensorData);
+                                }
                             } else if (key == SensorsEnum.INTERNAL_BATTERY.sensorType) {
                                 sensorData = new SensorData(SensorsEnum.INTERNAL_BATTERY.sensorType, new Point3D(batteryListener.getTemp(), batteryListener.getLevel(), 0.0), SensorData.getTime());
                                 sensorDatas.add(sensorData);
@@ -163,14 +169,20 @@ public class NoSensorManager extends DroidsorSensorManager {
         listeningThread.start();
     }
 
+    /**
+     * Initializes sensors contained in {@link #listenedSensors} array
+     */
     private void initSensors(){
         if(containsSensor(SensorsEnum.INTERNAL_MICROPHONE.sensorType,listenedSensors))initMediaRecorder();
         if(containsSensor(SensorsEnum.INTERNAL_BATTERY.sensorType,listenedSensors))batteryListener.startListening();
     }
 
+    /**
+     * Stops sensors contained in {@link #listenedSensors} array
+     */
     private void stopSensors(){
         if(containsSensor(SensorsEnum.INTERNAL_MICROPHONE.sensorType,listenedSensors))stopMediaRecorder();
-        if(containsSensor(SensorsEnum.INTERNAL_BATTERY.sensorType,listenedSensors))batteryListener.stopListening();//TODO dont stop unregistered
+        if(containsSensor(SensorsEnum.INTERNAL_BATTERY.sensorType,listenedSensors))batteryListener.stopListening();
     }
 
     /**

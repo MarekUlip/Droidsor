@@ -420,7 +420,6 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
                 positionManager.startDefaultUpdates();
             }
-            noSensorManager.startListening();
         }
     }
 
