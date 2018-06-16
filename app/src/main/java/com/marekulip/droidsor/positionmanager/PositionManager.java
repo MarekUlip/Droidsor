@@ -26,6 +26,9 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
+
+import java.util.List;
 
 /**
  * Class used to get GPS position with Fused Location Provider. Make sure you get first location from
@@ -319,6 +322,12 @@ public class PositionManager {
             return mLastLocation;
         }
         return null;
+    }
+
+    public void getMonitoredSensorTypes(List<Integer> sensorTypes){
+        if(isPositionObtainable){
+            sensorTypes.add(SensorsEnum.GPS.sensorType);
+        }
     }
 
 

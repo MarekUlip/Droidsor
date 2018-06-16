@@ -493,7 +493,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             if(bluetoothSensorManager.isBluetoothDeviceOn())
             bluetoothSensorManager.getListenedSensorTypes(sensorTypes);
             if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
-                sensorTypes.add(SensorsEnum.GPS.sensorType);
+                positionManager.getMonitoredSensorTypes(sensorTypes);
             }
         }
         else {
