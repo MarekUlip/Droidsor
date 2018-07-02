@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -248,6 +249,7 @@ public class LogsDetailFragment extends ListFragment {
         String[] axisLabels;
         SensorsEnum sensorsEnum;
         int[] colors = {Color.RED,Color.BLUE,Color.GREEN};
+        items.clear();
         for(int i = 0;i< lst.size();i++){
             dataSets = new ArrayList<>();
             sensorsEnum = SensorsEnum.resolveEnum(lst.get(i).sensorType);

@@ -294,7 +294,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
 
     /**
      * Returns actual display mode
-     * @return actula display mode
+     * @return actual display mode
      */
     public int getMode(){
         return displayMode;
@@ -503,7 +503,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
                 androidSensorManager.getListenedSensorTypes(sensorTypes);
                 noSensorManager.getListenedSensorTypes(sensorTypes);
                 if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.SHOW_GPS_DATA,true)) {
-                    sensorTypes.add(SensorsEnum.GPS.sensorType);
+                    positionManager.getMonitoredSensorTypes(sensorTypes);
                 }
             }
         }
