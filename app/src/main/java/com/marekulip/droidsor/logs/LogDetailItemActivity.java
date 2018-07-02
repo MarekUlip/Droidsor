@@ -1,5 +1,6 @@
 package com.marekulip.droidsor.logs;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -25,6 +26,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.marekulip.droidsor.viewmodels.LogDetailViewModel;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -56,20 +58,43 @@ public class LogDetailItemActivity extends AppCompatActivity {
      */
     private LoadChartTask chartTask;
 
+    /**
+     * View model for this activity. It is the same model as with {@link LogsDetailFragment} class
+     * which uses list and thus this class works with this view models list thought it will always
+     * have only one item at this activity.
+     */
+    private LogDetailViewModel logDetailViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_detail_item);
         logId = getIntent().getLongExtra(LOG_ID,0);
         sensorId = getIntent().getIntExtra(SENSOR_ID,0);
-        chartTask = new LoadChartTask();
-        chartTask.execute();
+        logDetailViewModel = ViewModelProviders.of(this).get(LogDetailViewModel.class);
+        if(logDetailViewModel.getItems().isEmpty()){
+            chartTask = new LoadChartTask();
+            chartTask.execute();
+        }
+        else {
+            item = logDetailViewModel.getItems().get(0);
+            prepForCachedItems();
+        }
     }
+    private void prepForCachedItems(){
+        setUpGraph();
+        findViewById(R.id.progress_bar).setVisibility(View.GONE);
+        findViewById(R.id.textview_progress_bar_text).setVisibility(View.GONE);
+        findViewById(R.id.log_chart).setVisibility(View.VISIBLE);
+        ((TextView)findViewById(R.id.text_sensor_units)).setText(SensorsEnum.resolveEnum(sensorId).getSensorUnitName(LogDetailItemActivity.this));
+        ((TextView)findViewById(R.id.text_sensor_name)).setText(SensorsEnum.resolveEnum(sensorId).getSensorName(LogDetailItemActivity.this));
+    }
+
 
     @Override
     protected void onStop() {
         super.onStop();
-        chartTask.cancel(true);
+        if(chartTask!=null)chartTask.cancel(true);
     }
 
     @Override
@@ -107,7 +132,8 @@ public class LogDetailItemActivity extends AppCompatActivity {
             dataSets.add(dataSet);
         }
         item = new LogDetailItem(SensorsEnum.resolveEnum(entryHolder.sensorType).getSensorName(this),SensorsEnum.resolveEnum(entryHolder.sensorType).getSensorUnitName(this),new LineData(dataSets),entryHolder.sensorType,entryHolder.labels);
-
+        logDetailViewModel.getItems().clear();
+        logDetailViewModel.getItems().add(item);
     }
 
     /**
