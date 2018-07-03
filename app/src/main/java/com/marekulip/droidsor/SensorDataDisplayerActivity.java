@@ -447,12 +447,10 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         c = getContentResolver().query(DroidsorProvider.LOG_PROFILE_ITEMS_URI,new String[]{LogProfileItemsTable.SCAN_PERIOD,LogProfileItemsTable.SENSOR_TYPE},LogProfileItemsTable.PROFILE_ID+" = ?",new String[]{String.valueOf(id)},null);
         if(c!=null&&c.moveToFirst()){
             LogProfileItem item;
-            item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
-            profile.getLogItems().add(item);
-            while (c.moveToNext()){
+            do{
                 item = new LogProfileItem(true,c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SENSOR_TYPE)),c.getInt(c.getColumnIndexOrThrow(LogProfileItemsTable.SCAN_PERIOD)));
                 profile.getLogItems().add(item);
-            }
+            }while (c.moveToNext());
             c.close();
         }
         return profile;

@@ -258,28 +258,20 @@ public class LogDetailItemActivity extends AppCompatActivity {
                 itemCount = SensorsEnum.resolveEnum(type).itemCount;
                 //Determines how many chart lines should be drawn and
                 switch (itemCount){
-
                     case 1: item.entries.add(new ArrayList<Entry>());
-                        item.entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
                         break;
                     case 2:
                         item.entries.add(new ArrayList<Entry>());
-                        item.entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
                         item.entries.add(new ArrayList<Entry>());
-                        item.entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
                         break;
                     case 3:
                         item.entries.add(new ArrayList<Entry>());
-                        item.entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
                         item.entries.add(new ArrayList<Entry>());
-                        item.entries.get(1).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Y))));
                         item.entries.add(new ArrayList<Entry>());
-                        item.entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
                 }
                 item.labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
                 int size = item.entries.get(0).size();
-                while (c.moveToNext()){
-                    size++;
+                do{
                     if(size%progress == 0)publishProgress(size/progress);
                     switch (itemCount){//Add lines point
                         case 1: item.entries.get(0).add(new Entry(size,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
@@ -293,7 +285,8 @@ public class LogDetailItemActivity extends AppCompatActivity {
                             break;
                     }
                     item.labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
-                }
+                    size++;
+                }while (c.moveToNext());
                 c.close();
             }
             prepItemsForGraph(item);

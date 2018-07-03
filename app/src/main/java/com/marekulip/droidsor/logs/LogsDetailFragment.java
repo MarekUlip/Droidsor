@@ -215,10 +215,9 @@ public class LogsDetailFragment extends ListFragment {
         // First load weights. Based on weights sensor types are found.
         Cursor c = appContext.getContentResolver().query(DroidsorProvider.SENSOR_DATA_COUNT_URI,null, SenorDataItemsCountTable.LOG_ID+" = ?",new String[]{String.valueOf(id)},null);
         if(c!=null && c.moveToFirst()){
-            weights.put(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.SENSOR_TYPE)),resolveWeight(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.COUNT_OF_ITEMS))));
-            while (c.moveToNext()){
+            do{
                 weights.put(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.SENSOR_TYPE)),resolveWeight(c.getInt(c.getColumnIndexOrThrow(SenorDataItemsCountTable.COUNT_OF_ITEMS))));
-            }
+            }while (c.moveToNext());
             c.close();
         }
         else {
@@ -403,12 +402,12 @@ public class LogsDetailFragment extends ListFragment {
             if(c!= null&& c.moveToFirst()){
                 int progress = c.getCount()/100;
                 if(progress<1)progress = 1;
-                int type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
-                lst.add(new EntryHolder(type));
-                itemCount = SensorsEnum.resolveEnum(type).itemCount;
+                int type;// = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
+                //lst.add(new EntryHolder(type));
+                //itemCount = SensorsEnum.resolveEnum(type).itemCount;
 
                 // item count determines how many lines will be in the chart
-                switch (itemCount){
+                /*switch (itemCount){
 
                     case 1: lst.get(0).entries.add(new ArrayList<Entry>());
                         lst.get(0).entries.get(0).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_X))));
@@ -427,11 +426,11 @@ public class LogsDetailFragment extends ListFragment {
                         lst.get(0).entries.add(new ArrayList<Entry>());
                         lst.get(0).entries.get(2).add(new Entry(0,c.getFloat(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_VALUE_Z))));
                 }
-                lst.get(0).labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
+                lst.get(0).labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));*/
                 int position;
                 int size;
                 int count = 1;
-                while (c.moveToNext()){
+                do{
                     type = c.getInt(c.getColumnIndexOrThrow(SensorDataTable.SENSOR_TYPE));
                     itemCount = SensorsEnum.resolveEnum(type).itemCount;
                     for(position = 0; position<lst.size();position++){
@@ -462,7 +461,7 @@ public class LogsDetailFragment extends ListFragment {
                             break;
                     }
                     lst.get(position).labels.add(DateFormat.getTimeInstance().format(new Date(c.getLong(c.getColumnIndexOrThrow(SensorDataTable.TIME_OF_LOG)))));
-                }
+                }while (c.moveToNext());
                 c.close();
             }
             prepItemsForGraph(lst);
