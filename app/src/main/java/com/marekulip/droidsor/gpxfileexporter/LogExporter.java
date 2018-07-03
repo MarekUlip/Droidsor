@@ -53,10 +53,9 @@ public class LogExporter {
                     c = appContext.getContentResolver().query(DroidsorProvider.SENSOR_DATA_URI,null, SensorDataTable.LOG_ID+ " = ?",new String[]{String.valueOf(id)},null);
                 }
                 if(c!=null && c.moveToFirst()){
-                    addItemToListFromCursor(c,data);
-                    while (c.moveToNext()){
+                    do{
                         addItemToListFromCursor(c,data);
-                    }
+                    }while(c.moveToNext());
                     c.close();
                     TimeZone tz = TimeZone.getTimeZone("UTC");
                     DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss"); // Quoted "Z" to indicate UTC, no timezone offset

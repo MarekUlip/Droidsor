@@ -23,6 +23,11 @@ public class SensorData {
      * Time when this sensor data were captured
      */
     public final long time;
+
+    /**
+     * Indicates whether this data belongs to internal sensor
+     */
+    public final boolean isInternal;
     /**
      * GPS longitude
      */
@@ -54,8 +59,9 @@ public class SensorData {
      * @param altitude altitude
      * @param speed speed
      * @param accuracy accuracy
+     * @param isInternal indicates whether this data belongs to internal or external sensor. Default is false.
      */
-    public SensorData(int sensorType,Point3D v, long t, double longt, double lat, double altitude,float speed, float accuracy){
+    public SensorData(int sensorType,Point3D v, long t, double longt, double lat, double altitude,float speed, float accuracy, boolean isInternal){
         this.sensorType = sensorType;
         values = v;
         time = t;
@@ -64,6 +70,24 @@ public class SensorData {
         this.altitude = altitude;
         this.speed = speed;
         this.accuracy = accuracy;
+        //Default false because external sensors were untestable due to no BLE sensor to test the app with
+        //while internal sensors could be tested an could use this constructor
+        this.isInternal = isInternal;
+    }
+
+    /**
+     * Constructor
+     * @param sensorType
+     * @param v values
+     * @param t time
+     * @param longt longitude
+     * @param lat latitude
+     * @param altitude altitude
+     * @param speed speed
+     * @param accuracy accuracy
+     */
+    public SensorData(int sensorType,Point3D v, long t, double longt, double lat, double altitude,float speed, float accuracy){
+        this(sensorType,v,t,longt,lat,altitude,speed,accuracy,false);
     }
 
     /**
@@ -75,7 +99,18 @@ public class SensorData {
      * @param lat latitude
      */
     public SensorData(int sensorType,Point3D v, long t, double longt, double lat){
-        this(sensorType,v,t,longt,lat,-1,-1,-1);
+        this(sensorType,v,t,longt,lat,-1,-1,-1,false);
+    }
+
+    /**
+     * Creates object of SensorData with longitude, latitude, altitude, speed and accuracy set to -1 and -1.0 respectively
+     * @param sensorType
+     * @param v values
+     * @param t time
+     * @param isInternal indicates whether this data belongs to internal or external sensor. Default is false.
+     */
+    public SensorData(int sensorType, Point3D v, long t, boolean isInternal){
+        this(sensorType,v,t,-1.0,-1.0,-1.0,-1,-1,isInternal);
     }
 
     /**
@@ -85,7 +120,7 @@ public class SensorData {
      * @param t time
      */
     public SensorData(int sensorType, Point3D v, long t){
-        this(sensorType,v,t,-1.0,-1.0,-1.0,-1,-1);
+        this(sensorType,v,t,-1.0,-1.0,-1.0,-1,-1,false);
     }
 
     /**
@@ -112,6 +147,8 @@ public class SensorData {
     public void setLocationData(double longt, double lat){
         this.setLocationData(longt,lat,-1,-1,-1);
     }
+
+
 
     /**
      * Creates base of ContentValues object which contains all data from this object so it can be

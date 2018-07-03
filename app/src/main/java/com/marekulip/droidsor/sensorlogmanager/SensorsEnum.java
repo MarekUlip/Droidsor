@@ -61,7 +61,7 @@ public enum SensorsEnum {
         //98 is used because Sensor.TYPE_ORIENTATION is deprecated so i wanted to avoid wrong type
         @Override
         public void resolveSensor(List<SensorData> sensorDataList, float[] data){
-            sensorDataList.add(new SensorData(sensorType,new Point3D(data[0],data[1],data[2]),SensorData.getTime()));
+            sensorDataList.add(new SensorData(sensorType,new Point3D(data[0],data[1],data[2]),SensorData.getTime(),true));
         }
     },
     /**
@@ -429,7 +429,7 @@ public enum SensorsEnum {
      * @param sensorDataList List to which the result should be added
      */
     public static void resolveSensor(SensorEvent event, List<SensorData> sensorDataList){
-        sensorDataList.add(new SensorData(event.sensor.getType(),resolveSensor(event),SensorData.getTime()));
+        sensorDataList.add(new SensorData(event.sensor.getType(),resolveSensor(event),SensorData.getTime(),true));
     }
 
     /**

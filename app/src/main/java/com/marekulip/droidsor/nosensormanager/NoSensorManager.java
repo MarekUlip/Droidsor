@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.BatteryManager;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
@@ -27,6 +28,7 @@ import java.util.List;
  * Class that monitors everything monitorable that is not sensor such as battery and sound intensity.
  */
 public class NoSensorManager extends DroidsorSensorManager {
+    private final static String TAG = "NoSensors";
     private final DroidsorService droidsorService;
     private MediaRecorder mediaRecorder = null;
     private SparseLongArray lastTimeSensorFrequencies = new SparseLongArray();
@@ -115,11 +117,11 @@ public class NoSensorManager extends DroidsorSensorManager {
                             if (key == SensorsEnum.INTERNAL_MICROPHONE.sensorType) {
                                 int intensity = getSoundIntensity();
                                 if (intensity > -100) {
-                                    sensorData = new SensorData(SensorsEnum.INTERNAL_MICROPHONE.sensorType, new Point3D(intensity, 0.0, 0.0), SensorData.getTime());
+                                    sensorData = new SensorData(SensorsEnum.INTERNAL_MICROPHONE.sensorType, new Point3D(intensity, 0.0, 0.0), SensorData.getTime(),true);
                                     sensorDatas.add(sensorData);
                                 }
                             } else if (key == SensorsEnum.INTERNAL_BATTERY.sensorType) {
-                                sensorData = new SensorData(SensorsEnum.INTERNAL_BATTERY.sensorType, new Point3D(batteryListener.getTemp(), batteryListener.getLevel(), 0.0), SensorData.getTime());
+                                sensorData = new SensorData(SensorsEnum.INTERNAL_BATTERY.sensorType, new Point3D(batteryListener.getTemp(), batteryListener.getLevel(), 0.0), SensorData.getTime(),true);
                                 sensorDatas.add(sensorData);
                             }
                         }

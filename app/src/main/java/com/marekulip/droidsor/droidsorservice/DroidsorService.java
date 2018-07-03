@@ -531,7 +531,8 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     private boolean isSendable(List<SensorData> sensorDataList) {
         if(sensorDataList.isEmpty())return false;
         //It is enough to check only first sensor from list because ussualy only one value is present at list. When there are multiple values in the list they are from the same source
-        return !(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType < 100) && !(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType > 100);
+        return (displayMode==MOBILE_SENSORS_MODE && sensorDataList.get(0).isInternal) || (displayMode==BLUETOOTH_SENSORS_MODE && !sensorDataList.get(0).isInternal);
+        //return !(displayMode == BLUETOOTH_SENSORS_MODE && sensorDataList.get(0).sensorType < 100) && !(displayMode == MOBILE_SENSORS_MODE && sensorDataList.get(0).sensorType > 100);
     }
 
     /**
@@ -631,7 +632,8 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
                 new Point3D(positionManager.getLocation().getLatitude(),
                         positionManager.getLocation().getLongitude(),
                         positionManager.getLocation().getAltitude()
-                ),SensorData.getTime());
+                ),SensorData.getTime(),
+                true);
         List<SensorData> data = new ArrayList<>();
         data.add(sensorData);
         broadcastUpdate(ACTION_DATA_AVAILABLE,data);
