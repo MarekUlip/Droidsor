@@ -160,13 +160,11 @@ public class LogProfileSettingFragment extends ListFragment implements SetExtMov
 
     private void createLogProfileItemList(){
         for(Integer i: mDroidsorService.getSensorTypesForProfile()){
-            if(!isNew){
-                int pos;
-                for(pos = 0; pos<items.size();pos++){
-                    if(items.get(pos).getSensorType() == i)break;
-                }
-                if(pos == items.size())items.add(new LogProfileItem(i));
-            }else items.add(new LogProfileItem(i));
+            int pos;
+            for(pos = 0; pos<items.size();pos++){
+                if(items.get(pos).getSensorType() == i)break;
+            }
+            if(pos == items.size())items.add(new LogProfileItem(i));
         }
     }
 
