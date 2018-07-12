@@ -38,6 +38,10 @@ public class NoSensorManager extends DroidsorSensorManager {
      * waiting for the old thread to be stopped.
      */
     private SparseBooleanArray listeningThreadIndicators = new SparseBooleanArray();
+    /**
+     * SparseArray of all hardware available sensors
+     */
+    private SparseBooleanArray presentSensors = new SparseBooleanArray();
     private BatteryListener batteryListener;
     /**
      * Id that will be assigned to a created thread so it can be added to {@link #listeningThreadIndicators}
@@ -58,7 +62,9 @@ public class NoSensorManager extends DroidsorSensorManager {
 
     @Override
     public void getListenedSensorTypes(List<Integer> sensors) {
-        getAllAvailableSensorTypes(sensors);
+        for(int i = 0; i<listenedSensors.size();i++){
+            sensors.add(listenedSensors.keyAt(i));
+        }
     }
     @Override
     public void startListening(){
@@ -83,8 +89,8 @@ public class NoSensorManager extends DroidsorSensorManager {
 
     @Override
     public void getAllAvailableSensorTypes(List<Integer> sensors) {
-        for(int i = 0; i<listenedSensors.size();i++){
-            sensors.add(listenedSensors.keyAt(i));
+        for(int i = 0; i<presentSensors.size();i++){
+            sensors.add(presentSensors.keyAt(i));
         }
     }
 
@@ -97,8 +103,13 @@ public class NoSensorManager extends DroidsorSensorManager {
      */
     private void initListenedSensors(){
         listenedSensors.clear();
-        if(ContextCompat.checkSelfPermission(droidsorService.getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)listenedSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+        presentSensors.clear();
+        if(ContextCompat.checkSelfPermission(droidsorService.getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED){
+            listenedSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType, DroidsorSensorManager.defaultSensorFrequency);
+            presentSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType,true);
+        }
         listenedSensors.put(SensorsEnum.INTERNAL_BATTERY.sensorType,DroidsorSensorManager.defaultSensorFrequency);
+        presentSensors.put(SensorsEnum.INTERNAL_BATTERY.sensorType,true);
     }
 
     private void initListeningThread(final long frequency, final int id){
