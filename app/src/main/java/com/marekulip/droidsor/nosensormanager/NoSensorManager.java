@@ -104,10 +104,10 @@ public class NoSensorManager extends DroidsorSensorManager {
     private void initListenedSensors(){
         listenedSensors.clear();
         presentSensors.clear();
-        if(ContextCompat.checkSelfPermission(droidsorService.getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED){
+        /*if(ContextCompat.checkSelfPermission(droidsorService.getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED){
             listenedSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType, DroidsorSensorManager.defaultSensorFrequency);
             presentSensors.put(SensorsEnum.INTERNAL_MICROPHONE.sensorType,true);
-        }
+        }*/
         listenedSensors.put(SensorsEnum.INTERNAL_BATTERY.sensorType,DroidsorSensorManager.defaultSensorFrequency);
         presentSensors.put(SensorsEnum.INTERNAL_BATTERY.sensorType,true);
     }

@@ -18,7 +18,7 @@ import android.widget.TextView;
 public class PermissionsActivity extends AppCompatActivity {
 
     private LinearLayout layout;
-    public static final String[] requiredPermissions = new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    public static final String[] requiredPermissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +26,7 @@ public class PermissionsActivity extends AppCompatActivity {
         initGUI();
     }
 
-    public static final boolean hasAllPermissions(Context context){
+    public static boolean hasAllPermissions(Context context){
         for(String s : requiredPermissions){
             if(ContextCompat.checkSelfPermission(context,s) != PackageManager.PERMISSION_GRANTED){
                 return false;
