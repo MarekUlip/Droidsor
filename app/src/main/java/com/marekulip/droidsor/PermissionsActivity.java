@@ -26,6 +26,11 @@ public class PermissionsActivity extends AppCompatActivity {
         initGUI();
     }
 
+    /**
+     * Checks if all required permissions are allowed. It is not necessary to have allowed all permission to run app. They are only needed for some features for example acquiring gps position.
+     * @param context Context that will be used to check the permission.
+     * @return true if all permissions are set. False if some is still missing.
+     */
     public static boolean hasAllPermissions(Context context){
         for(String s : requiredPermissions){
             if(ContextCompat.checkSelfPermission(context,s) != PackageManager.PERMISSION_GRANTED){
@@ -43,17 +48,24 @@ public class PermissionsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Inits or restarts gui with buttons for each not yet allowed permission.
+     */
     private void initGUI(){
         setContentView(R.layout.activity_permissions);
         layout = findViewById(R.id.permission_layout);
         boolean isEveryPresent = true;
+        // iterate required permissions
         for(String s : requiredPermissions){
             if(checkSelfPermission(s) != PackageManager.PERMISSION_GRANTED){
+                // if permission is not allowed create button for it
                 isEveryPresent = false;
                 layout.addView(createButtonForPermission(s));
             }
         }
         if(!isEveryPresent){
+            // if some permission is not allowed also create button to allow all.
+            // button is created even for one permission
             Button but = new Button(this);
             but.setText(R.string.allow_all);
             but.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -65,6 +77,7 @@ public class PermissionsActivity extends AppCompatActivity {
             });
             layout.addView(but);
         }else {
+            // Else just tell user that everything is fine
             TextView tv = findViewById(R.id.explainer);
             tv.setText(R.string.all_permissions_allowed);
             tv.setVisibility(View.VISIBLE);
@@ -72,6 +85,11 @@ public class PermissionsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Creates {@link Button} for specified permission
+     * @param permission String representation of permission for which the button should be created. String should be provided from {@link Manifest.permission} class.
+     * @return usable button.
+     */
     private Button createButtonForPermission(final String permission){
         Button but = new Button(this);
         switch (permission){
@@ -92,10 +110,19 @@ public class PermissionsActivity extends AppCompatActivity {
         return but;
     }
 
+    /**
+     * Action for button to display or hide permission explanations
+     * @param view button to which this action is attached
+     */
     public void explainPermissions(View view){
         handleExplanation(false,view);
     }
 
+    /**
+     * Explains or hides permission explanations
+     * @param stop True to hide, false to show
+     * @param view button that called this method
+     */
     private void handleExplanation(boolean stop, final View view){
         TextView tv = findViewById(R.id.explainer);
 
