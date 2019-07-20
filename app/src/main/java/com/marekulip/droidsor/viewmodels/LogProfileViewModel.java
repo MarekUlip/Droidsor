@@ -1,6 +1,6 @@
 package com.marekulip.droidsor.viewmodels;
 
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModel;
 
 import com.marekulip.droidsor.sensorlogmanager.LogProfileItem;
 

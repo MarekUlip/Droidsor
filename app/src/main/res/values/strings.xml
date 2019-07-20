@@ -149,6 +149,14 @@
     <string name="scheduled_log_end_summary">Allows you to end logging after specified while. Default time is one hour.</string>
     <string name="scheduled_log_time">Max log length</string>
     <string name="scheduled_log_time_summary">After the specified amount of minutes the log will stop.</string>
+    <string name="use_bt_legacy">Use legacy Bluetooth</string>
+    <string name="use_bt_legacy_sum">Allows to connect to Bluetoohh device. This feature is not supported anymore and might cause unexpected behaviour.</string>
+    <string name="notif_displ">Display senor data in notification</string>
+    <string name="notif_displ_sum">Shows selected sensor data in a notification. Only works with screen on or while logging.</string>
+    <string name="temp_notify">Temperature notify</string>
+    <string name="temp_notify_sum">Notifies if temperature rises above specified value</string>
+    <string name="temp_notify_value">Temperature notify value</string>
+    <string name="temp_notify_value_sum">Temperature at which you want to be notified.</string>
 
     <string-array name="tmp007_data_desc">
         <item>Ambient temperature:&#160;</item>
@@ -220,4 +228,5 @@
     <string name="accelerometer_external">Accelerometer external</string>
     <string name="gyroscope_internal">Gyroscope internal</string>
     <string name="gyroscope_external">Gyroscope external</string>
+
 </resources>

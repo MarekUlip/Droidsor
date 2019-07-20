@@ -1,8 +1,6 @@
 package com.marekulip.droidsor;
 
-import android.Manifest;
-import android.app.ActivityManager;
-import android.arch.lifecycle.Lifecycle;
+import androidx.lifecycle.Lifecycle;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -16,16 +14,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.fragment.app.DialogFragment;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -177,12 +175,15 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_bluetooth_conn,menu);
         if(mDroidsorService !=null){
-            if(mDroidsorService.isBluetoothDeviceOn()){
-                menu.findItem(R.id.action_bluetooth_connect).setVisible(false);
-                menu.findItem(R.id.action_bluetooth_disconnect).setVisible(true);
-            }else {
-                menu.findItem(R.id.action_bluetooth_connect).setVisible(true);
-                menu.findItem(R.id.action_bluetooth_disconnect).setVisible(false);
+            boolean legacyBT = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.BT_LEGACY,false); //TODO add to DS fragment
+            if(legacyBT) {
+                if (mDroidsorService.isBluetoothDeviceOn()) {
+                    menu.findItem(R.id.action_bluetooth_connect).setVisible(false);
+                    menu.findItem(R.id.action_bluetooth_disconnect).setVisible(true);
+                } else {
+                    menu.findItem(R.id.action_bluetooth_connect).setVisible(true);
+                    menu.findItem(R.id.action_bluetooth_disconnect).setVisible(false);
+                }
             }
         }
         return true;

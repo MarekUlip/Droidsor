@@ -3,7 +3,7 @@ package com.marekulip.droidsor;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Fragment used for setting settings.
@@ -42,6 +42,12 @@ public class DroidsorSettingsFramgent extends PreferenceFragment{
      * battery consumption
      */
     public static final String SHOW_GPS_DATA = "show_gps_data";
+
+    public static final String NOTIFICATION_DISPLAY = "notification_display";
+    public static final String THRESHOLD_NOTIFY = "threshold_notify";
+    public static final String THRESHOLD_NOTIFY_VALUE = "threshold_notify_value";
+    public static final String BT_LEGACY = "bt_legacy";
+
 
     public DroidsorSettingsFramgent() {
         // Required empty public constructor

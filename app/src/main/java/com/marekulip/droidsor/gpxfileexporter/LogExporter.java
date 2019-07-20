@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.widget.Toast;
 
 import com.marekulip.droidsor.R;

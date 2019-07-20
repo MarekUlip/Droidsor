@@ -1,6 +1,6 @@
 package com.marekulip.droidsor.logs;
 
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -8,9 +8,9 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ListFragment;
-import android.util.Log;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.ListFragment;
+
 import android.util.SparseIntArray;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;

@@ -5,17 +5,24 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.util.Log;
+import androidx.core.app.NotificationCompat;
+
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.SpannedString;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.widget.Toast;
@@ -33,8 +40,11 @@ import com.marekulip.droidsor.sensorlogmanager.SensorData;
 import com.marekulip.droidsor.sensorlogmanager.SensorLogManager;
 import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -136,6 +146,10 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
      */
     private boolean isListening = false;
 
+    private boolean isSetToShowInNotification = false;
+    private boolean isSetToWarnOnTemperature = false;
+    private int tempTreshold = 42;
+
     /**
      * SparseArray containing data from sensors
      */
@@ -189,7 +203,21 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
     }
+    private class SensorNotificationProfile{
+        boolean isShowable;
+        boolean isTresholdSet;
+        boolean vibrated = false;
+        double threshold;
+        double lastValue = -100;
+        String sensorName = null;
+        String sensorUnit = null;
 
+    }
+    private SparseArray<SensorNotificationProfile> sensorNotificationProfiles = new SparseArray<>();
+    ArrayList<SensorNotificationProfile> seenProfiles = new ArrayList<>();
+    private boolean vibrated = false;
+    private double lastTemp = 42;
+    private double lastSound = 0.0f;
     /**
      * Sends broadcast with specified action and data.
      * @param action action to be broadcasted
@@ -231,16 +259,62 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
                     sendBroadcast(intent);
                 }
             }
+            if(isSetToShowInNotification) {
+                boolean shouldUpdate = false;
+                for (SensorData data : sensorData) {
+                    SensorNotificationProfile profile =sensorNotificationProfiles.get(data.sensorType);
+                    if(profile==null)profile = loadSensorNotificationProfile(data.sensorType);
+                    if(profile.isShowable) {
+                        profile.lastValue = data.values.x;
+                        shouldUpdate = true;
+                        seenProfiles.add(profile);
+                    }
+                }
+                if(shouldUpdate) {
+                    updateNotificationText(createNotificationText());
+                    for (SensorNotificationProfile profile: seenProfiles) {
+                        if (profile.isTresholdSet) {
+                            if (profile.lastValue > profile.threshold&& !profile.vibrated) {
+                                Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                                vibrator.vibrate(500);
+                                profile.vibrated = true;
+                            }
+                            if (profile.lastValue < profile.threshold && profile.vibrated) {
+                                profile.vibrated = false;
+                            }
+                        }
+                    }
+                }
+                seenProfiles.clear();
+            }
         } else if(action.equals(BluetoothSensorManager.ACTION_GATT_CONNECTED)){
             Intent intent = new Intent(action);
             sendBroadcast(intent);
         }
     }
 
+    private SensorNotificationProfile loadSensorNotificationProfile(int sensorId){
+        SensorNotificationProfile profile = new SensorNotificationProfile();
+        SensorsEnum sensorEnum = SensorsEnum.resolveEnum(sensorId);
+        profile.sensorName = sensorEnum.getSensorName(this);
+        profile.sensorUnit = sensorEnum.getSensorUnitName(this);
+        profile.isShowable = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.NOTIFICATION_DISPLAY+sensorId,false);
+        profile.isTresholdSet = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.THRESHOLD_NOTIFY+sensorId,false);
+        if(profile.isTresholdSet){
+            profile.threshold = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.THRESHOLD_NOTIFY_VALUE+sensorId,"-100"));
+        }
+        return profile;
+    }
+
     /**
      * Starts listening to all specified sensors provided that its not already listening.
      */
     public void startListeningSensors(){
+        isSetToShowInNotification = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.NOTIFICATION_DISPLAY,false);
+        if(isSetToShowInNotification&& mScreenStateReceiver==null){
+            registerScreenStateReceiver();
+        }
+
         if(!isListening){
             androidSensorManager.startListening();
             noSensorManager.startListening();
@@ -264,6 +338,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
      * @param fullStop If set to true it will also disconnect from BT device if connected.
      */
     private void stopListeningSensors(boolean fullStop){
+        if(isSetToShowInNotification && !fullStop)return;
         if(isListening) {
             androidSensorManager.stopListening();
             noSensorManager.stopListening();
@@ -544,6 +619,9 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         return androidSensorManager.isSensorPresent(type);
     }
 
+
+    NotificationCompat.Builder mNotifyBuilder;
+
     /**
      * Creates notification for this service capable of closing it on click or double click based on settings
      * @return displayable notification
@@ -565,7 +643,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             mNotificationManager.createNotificationChannel(mChannel);
         }
 
-        NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        mNotifyBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(getString(R.string.droidsor_service))
                 .setContentText(getString(R.string.service_is_running))
                 .setSmallIcon(R.drawable.notification_icon)
@@ -575,6 +653,31 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         PendingIntent stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
         mNotifyBuilder.setContentIntent(stopServicePendingIntent);
         return mNotifyBuilder.build();
+    }
+
+
+    private DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
+    private DecimalFormat decimalFormat =  new DecimalFormat("###.##",symbols);
+    private Spanned createNotificationText(){
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < sensorNotificationProfiles.size(); i++){
+            SensorNotificationProfile profile = sensorNotificationProfiles.valueAt(i);
+            if(profile.isShowable){
+                builder.append(profile.sensorName).append(": ").append(decimalFormat.format(profile.lastValue)).append(profile.sensorUnit).append("<br>");
+            }
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N){
+            return Html.fromHtml(builder.toString());
+        }else {
+            return Html.fromHtml(builder.toString(), Html.FROM_HTML_MODE_LEGACY);//"Temperature: " + (int)temp + "\nSound intensity: " + (int)sound;
+        }
+    }
+
+    private void updateNotificationText(Spanned text){
+        mNotifyBuilder.setContentText(text);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(NOTIFICATION_ID, mNotifyBuilder.build());
     }
 
     /**
@@ -620,6 +723,10 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         if (isLogging()) sensorLogManager.endLog();
         sendBroadcast(new Intent(SERVICE_IS_TURNING_OFF));
         stopListeningSensors(true);
+        if(mScreenStateReceiver!=null){
+            unregisterReceiver(mScreenStateReceiver);
+            mScreenStateReceiver = null;
+        }
         stopForeground(true);
         //destroyServiceNotification();
         isServiceOff = true;
@@ -637,6 +744,30 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         List<SensorData> data = new ArrayList<>();
         data.add(sensorData);
         broadcastUpdate(ACTION_DATA_AVAILABLE,data);
+    }
+
+    private BroadcastReceiver mScreenStateReceiver = null;
+
+    /**
+     * Creates and registers broadcast receiver for screen on and off intents. Also creates intent filter in the process.
+     */
+    private void registerScreenStateReceiver(){
+        IntentFilter screenIntentFilter = new IntentFilter();
+        screenIntentFilter.addAction(Intent.ACTION_SCREEN_ON);
+        screenIntentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        mScreenStateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+                if(Intent.ACTION_SCREEN_OFF.equals(action)){
+                    stop(true);
+                }
+                if(Intent.ACTION_SCREEN_ON.equals(action)){
+                    startListeningSensors();
+                }
+            }
+        };
+        registerReceiver(mScreenStateReceiver,screenIntentFilter);
     }
 
 

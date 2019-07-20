@@ -5,11 +5,13 @@
         android:id="@+id/action_bluetooth_connect"
         android:title="@string/connect_to_bluetooth_device"
         android:icon="@drawable/ic_ble_sensorss"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
     <item
         android:id="@+id/action_bluetooth_disconnect"
         android:title="@string/disconnect_from_bluetooth_device"
         android:icon="@drawable/ic_bt_disconnect"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
 
 </menu>
