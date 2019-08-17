@@ -47,7 +47,9 @@ public class ServiceConnectionHelper {
             }
         }
         context.bindService(intent,mServiceConnection,BIND_AUTO_CREATE);
-        context.registerReceiver(mSensorServiceUpdateReceiver,intentFilter);
+        if(mSensorServiceUpdateReceiver!= null) {
+            context.registerReceiver(mSensorServiceUpdateReceiver, intentFilter);
+        }
     }
 
     /**
@@ -60,7 +62,9 @@ public class ServiceConnectionHelper {
     public static void disconnectFromService(Context context, DroidsorService mDroidsorService, BroadcastReceiver mSensorServiceUpdateReceiver,ServiceConnection mServiceConnection){
         if(mDroidsorService ==null)return;
         if(!mDroidsorService.isLogging()) mDroidsorService.stopListeningSensors();
-        context.unregisterReceiver(mSensorServiceUpdateReceiver);
+        if (mSensorServiceUpdateReceiver != null) {
+            context.unregisterReceiver(mSensorServiceUpdateReceiver);
+        }
         context.unbindService(mServiceConnection);
     }
 }

@@ -552,6 +552,8 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
             startActivity(new Intent(this,LogProfileActivity.class));
         } else if (id == R.id.nav_settings){
             startActivity(new Intent(this,DroidsorSettingsActivity.class));
+        } else if (id == R.id.nav_notif_settings){
+            startActivity(new Intent(this, SettingsNotificationsActivity.class));
         } else if(id == R.id.nav_permissions){
             startActivity(new Intent(this,PermissionsActivity.class));
         }

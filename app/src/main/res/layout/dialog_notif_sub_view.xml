@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textview_sensor_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="20sp"
+        android:textColor="#000000"
+        tools:text="@string/accelerometer_internal" />
+
+    <CheckBox
+        android:id="@+id/check_disp_val"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/display_val"
+        app:layout_constraintTop_toBottomOf="@id/textview_sensor_name"
+        app:layout_constraintStart_toStartOf="parent"/>
+    <CheckBox
+        android:id="@+id/check_tresh_set"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/thresh_set"
+        app:layout_constraintTop_toBottomOf="@id/check_disp_val"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <EditText
+        android:id="@+id/edit_tresh_val"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:hint="@string/thresh_val_hint"
+        android:inputType="numberDecimal"
+        app:layout_constraintBottom_toBottomOf="@+id/check_tresh_set"
+        app:layout_constraintStart_toEndOf="@id/check_disp_val"
+        app:layout_constraintTop_toBottomOf="@id/textview_sensor_name" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

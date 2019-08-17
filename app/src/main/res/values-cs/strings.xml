@@ -155,5 +155,13 @@
     <string name="microphone">Mikrofon</string>
     <string name="battery">Baterie</string>
     <string name="permission_explanation"><b>Lokace:</b> Používá se k získání pozice při záznamu, když se zobrazují GPS data a pro vyhledávání Bluetooth senzorů.\n<b>Nahrávat audio:</b> Používá se pro meření intenzity zvuku.\n<b>Zápis do úložiště:</b> Používá se při exportování záznamu na SD kartu.</string>
+    <string name="display_val">Zobrazit hodnotu</string>
+    <string name="notif_displ">Senzorová data v notifikaci</string>
+    <string name="notif_displ_sum">Ukáže data z vybraných senzorů v notifikaci. Funguje pouze, když je zapnutá obrazovka a nebo během záznamu.</string>
+    <string name="notif_settings">Nastavení notifikace</string>
+    <string name="thresh_set">Nastavit hranici</string>
+    <string name="thresh_val_hint">Hodnota hranice</string>
+    <string name="use_bt_legacy">Použít zastaralé Bluetooth</string>
+    <string name="use_bt_legacy_sum">Umožní připojit se k Bluetooth zařízení. Tato funkce už není podporována a může způsobit nečekané chování.</string>
 
 </resources>

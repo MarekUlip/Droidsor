@@ -198,4 +198,16 @@ public class SensorData {
         sb.append("x: ").append(+values.x).append("y: ").append(values.y).append("z: ").append(values.z);
         return sb.toString();
     }
+
+    public double[] getValuesAsArray(int numOfValues){
+        double[] vals = new double[numOfValues];
+        vals[0] = values.x;
+        if(numOfValues>1){
+            vals[1] = values.y;
+        }
+        if (numOfValues>2){
+            vals[2] = values.z;
+        }
+        return vals;
+    }
 }

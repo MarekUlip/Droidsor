@@ -58,22 +58,6 @@
         android:title="@string/notif_displ"
         android:summary="@string/notif_displ_sum"
         />
-    <CheckBoxPreference
-        android:key="threshold_notify"
-        android:defaultValue="false"
-        android:title="@string/temp_notify"
-        android:summary="@string/temp_notify_sum"
-        />
-
-    <EditTextPreference
-        android:key="threshold_notify_value"
-        android:defaultValue="42"
-        android:inputType="number"
-        android:dependency="threshold_notify"
-        android:title="@string/temp_notify_value"
-        android:summary="@string/temp_notify_value_sum"
-        android:maxLength="3"
-        />
 
     <CheckBoxPreference
         android:key="bt_legacy"

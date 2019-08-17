@@ -69,7 +69,7 @@ public enum SensorsEnum {
      */
     GPS(97,true,R.string.gps,R.string.degrees,R.string.gps_xml, R.array.gps_data_desc,3){
         @Override
-        protected String getSensorUnitName(Context context, int position) {
+        public String getSensorUnitName(Context context, int position) {
             if(position == 3){
                 return "m";
             }
@@ -85,7 +85,7 @@ public enum SensorsEnum {
      */
     INTERNAL_BATTERY(202,true,R.string.battery,R.string.celsius_degree_unit,R.string.battery_xml,R.array.battery_desc,2){
         @Override
-        protected String getSensorUnitName(Context context, int position) {
+        public String getSensorUnitName(Context context, int position) {
             if(position == 2){
                 return "%";
             }
@@ -295,7 +295,7 @@ public enum SensorsEnum {
      * @param position position of this data segment
      * @return returns correct sensor physical unit name
      */
-    protected String getSensorUnitName(Context context,int position){
+    public String getSensorUnitName(Context context,int position){
         return getSensorUnitName(context);
     }
 

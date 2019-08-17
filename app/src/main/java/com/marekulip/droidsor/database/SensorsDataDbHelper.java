@@ -24,15 +24,14 @@ public class SensorsDataDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(LogProfilesTable.CREATE_TABLE);
         sqLiteDatabase.execSQL(LogProfileItemsTable.CREATE_TABLE);
         sqLiteDatabase.execSQL(SenorDataItemsCountTable.CREATE_TABLE);
+        sqLiteDatabase.execSQL(NotificationsSettingsTable.CREATE_TABLE);
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        sqLiteDatabase.execSQL(SensorLogsTable.DELETE_TABLE);
-        sqLiteDatabase.execSQL(SensorDataTable.DELETE_TABLE);
-        sqLiteDatabase.execSQL(LogProfilesTable.DELETE_TABLE);
-        sqLiteDatabase.execSQL(LogProfileItemsTable.DELETE_TABLE);
-        sqLiteDatabase.execSQL(SenorDataItemsCountTable.DELETE_TABLE);
-        onCreate(sqLiteDatabase);
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
+        if( oldVersion < 7 && newVersion == 7 ){
+            sqLiteDatabase.execSQL(NotificationsSettingsTable.CREATE_TABLE);
+        }
+        //onCreate(sqLiteDatabase);
     }
 }

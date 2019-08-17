@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Binder;
@@ -31,6 +32,8 @@ import com.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.marekulip.droidsor.R;
 import com.marekulip.droidsor.androidsensormanager.AndroidSensorManager;
 import com.marekulip.droidsor.bluetoothsensormanager.BluetoothSensorManager;
+import com.marekulip.droidsor.contentprovider.DroidsorProvider;
+import com.marekulip.droidsor.database.NotificationsSettingsTable;
 import com.marekulip.droidsor.nosensormanager.NoSensorManager;
 import com.marekulip.droidsor.positionmanager.PositionManager;
 import com.marekulip.droidsor.sensorlogmanager.LogProfile;
@@ -147,8 +150,6 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     private boolean isListening = false;
 
     private boolean isSetToShowInNotification = false;
-    private boolean isSetToWarnOnTemperature = false;
-    private int tempTreshold = 42;
 
     /**
      * SparseArray containing data from sensors
@@ -204,20 +205,35 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         sendBroadcast(intent);
     }
     private class SensorNotificationProfile{
+        int sensorId;
+        int numOfItems;
         boolean isShowable;
-        boolean isTresholdSet;
-        boolean vibrated = false;
-        double threshold;
-        double lastValue = -100;
         String sensorName = null;
-        String sensorUnit = null;
+        SparseArray<Item> items = new SparseArray<>();
+    }
+    private class Item{
+        String axisName = null;
+        String unitName = null;
+        boolean isAxisShowable= false;
+        boolean isAxisThreshSet = false;
+        float threshold = -100;
+        float lastThreshVal = -100;
+        boolean vibrated = false;
 
+        Item(String axisName, String unitName, boolean isAxisShowable, boolean isAxisThreshSet, float threshold, float lastThreshVal, boolean vibrated){
+            this.axisName = axisName;
+            this.unitName = unitName;
+            this.isAxisShowable = isAxisShowable;
+            this.isAxisThreshSet = isAxisThreshSet;
+            this.threshold = threshold;
+            this.lastThreshVal = lastThreshVal;
+            this.vibrated = vibrated;
+        }
+        Item(){}
     }
     private SparseArray<SensorNotificationProfile> sensorNotificationProfiles = new SparseArray<>();
-    ArrayList<SensorNotificationProfile> seenProfiles = new ArrayList<>();
-    private boolean vibrated = false;
-    private double lastTemp = 42;
-    private double lastSound = 0.0f;
+    //private ArrayList<SensorNotificationProfile> seenProfiles = new ArrayList<>();
+    private boolean isInvalidated = false;
     /**
      * Sends broadcast with specified action and data.
      * @param action action to be broadcasted
@@ -260,32 +276,50 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
                 }
             }
             if(isSetToShowInNotification) {
+                if (isInvalidated){
+                    notificationsSettingsChanged();
+                }
+                List<SensorNotificationProfile> seenProfiles = new ArrayList<>();
                 boolean shouldUpdate = false;
                 for (SensorData data : sensorData) {
                     SensorNotificationProfile profile =sensorNotificationProfiles.get(data.sensorType);
-                    if(profile==null)profile = loadSensorNotificationProfile(data.sensorType);
+                    if(profile==null) {
+                        profile = loadSensorNotificationProfile(data.sensorType);
+                        sensorNotificationProfiles.put(data.sensorType,profile);
+                    }
                     if(profile.isShowable) {
-                        profile.lastValue = data.values.x;
+                        double[] vals = data.getValuesAsArray(profile.numOfItems);
+                        for (int i = 0; i< profile.numOfItems;i++) {
+                            profile.items.get(i).lastThreshVal = (float)vals[i];
+                        }
                         shouldUpdate = true;
                         seenProfiles.add(profile);
                     }
                 }
                 if(shouldUpdate) {
                     updateNotificationText(createNotificationText());
+                    boolean globalVibrated = false;
                     for (SensorNotificationProfile profile: seenProfiles) {
-                        if (profile.isTresholdSet) {
-                            if (profile.lastValue > profile.threshold&& !profile.vibrated) {
-                                Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                                vibrator.vibrate(500);
-                                profile.vibrated = true;
-                            }
-                            if (profile.lastValue < profile.threshold && profile.vibrated) {
-                                profile.vibrated = false;
+                        for (int i = 0; i<profile.numOfItems;i++) {
+                            Item item = profile.items.get(i);
+                            if (item.isAxisThreshSet) {
+                                if (item.lastThreshVal > item.threshold && !item.vibrated) {
+                                    if (!globalVibrated) {
+                                        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                                        vibrator.vibrate(500);
+                                        globalVibrated = true;
+                                    }
+                                    item.vibrated = true;
+                                }
+                                if (item.lastThreshVal < item.threshold && item.vibrated) {
+                                    item.vibrated = false;
+                                }
                             }
                         }
                     }
                 }
                 seenProfiles.clear();
+                seenProfiles = null;
             }
         } else if(action.equals(BluetoothSensorManager.ACTION_GATT_CONNECTED)){
             Intent intent = new Intent(action);
@@ -296,14 +330,41 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     private SensorNotificationProfile loadSensorNotificationProfile(int sensorId){
         SensorNotificationProfile profile = new SensorNotificationProfile();
         SensorsEnum sensorEnum = SensorsEnum.resolveEnum(sensorId);
+        profile.sensorId = sensorId;
+        profile.numOfItems = sensorEnum.itemCount;
         profile.sensorName = sensorEnum.getSensorName(this);
-        profile.sensorUnit = sensorEnum.getSensorUnitName(this);
         profile.isShowable = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.NOTIFICATION_DISPLAY+sensorId,false);
-        profile.isTresholdSet = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.THRESHOLD_NOTIFY+sensorId,false);
+        if(profile.isShowable){
+            fillProfileItems(profile,sensorEnum);
+        }
+        /*profile.isTresholdSet = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.THRESHOLD_NOTIFY+sensorId,false);
         if(profile.isTresholdSet){
             profile.threshold = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(this).getString(DroidsorSettingsFramgent.THRESHOLD_NOTIFY_VALUE+sensorId,"-100"));
-        }
+        }*/
         return profile;
+    }
+
+    private void fillProfileItems(SensorNotificationProfile profile, SensorsEnum sensorEnum){
+        String whereClause = NotificationsSettingsTable.SENSOR_ID +" = ?";
+        String[] whereArgs = {String.valueOf(profile.sensorId)};
+        Cursor cursor = getApplicationContext().getContentResolver().query(DroidsorProvider.NOTIFICATIONS_SETTINGS_URI,null,whereClause,whereArgs,null);
+        if(cursor!= null) {
+            if(cursor.getCount()!= 0) {
+                cursor.moveToFirst();
+                do {
+                    int valueNumber = cursor.getInt(cursor.getColumnIndexOrThrow(NotificationsSettingsTable.VALUE_NUMBER));
+                    profile.items.put(valueNumber, new Item(
+                            sensorEnum.getDataDescriptions(getApplicationContext())[valueNumber],
+                            sensorEnum.getSensorUnitName(getApplicationContext(),valueNumber),
+                            cursor.getInt(cursor.getColumnIndexOrThrow(NotificationsSettingsTable.IS_DISPLAY_VALUE))==1,
+                            cursor.getInt(cursor.getColumnIndexOrThrow(NotificationsSettingsTable.IS_THRESHOLD))==1,
+                            cursor.getFloat(cursor.getColumnIndexOrThrow(NotificationsSettingsTable.TRESHOLD_VAL)),-100,false));
+                } while (cursor.moveToNext());
+            } else {
+                profile.isShowable = false;
+            }
+            cursor.close();
+        }
     }
 
     /**
@@ -331,6 +392,16 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
      */
     public void stopListeningSensors(){
         stopListeningSensors(false);
+    }
+
+    public void invalidateNotificationsSettings(){
+        isInvalidated = true;
+    }
+
+    private void notificationsSettingsChanged(){
+        isSetToShowInNotification = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.NOTIFICATION_DISPLAY,false);
+        sensorNotificationProfiles.clear();
+        isInvalidated = false;
     }
 
     /**
@@ -663,7 +734,13 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         for(int i = 0; i < sensorNotificationProfiles.size(); i++){
             SensorNotificationProfile profile = sensorNotificationProfiles.valueAt(i);
             if(profile.isShowable){
-                builder.append(profile.sensorName).append(": ").append(decimalFormat.format(profile.lastValue)).append(profile.sensorUnit).append("<br>");
+                builder.append("<strong>").append(profile.sensorName).append(": </strong>").append("<br />");
+                for (int j = 0; j<profile.items.size();j++){
+                    Item item = profile.items.valueAt(j);
+                    if(item.isAxisShowable) {
+                        builder.append(item.axisName).append(decimalFormat.format(item.lastThreshVal)).append(item.unitName).append("<br />");
+                    }
+                }
             }
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N){
@@ -674,7 +751,8 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
     }
 
     private void updateNotificationText(Spanned text){
-        mNotifyBuilder.setContentText(text);
+        mNotifyBuilder.setStyle(new NotificationCompat.BigTextStyle()
+                .bigText(text));
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(NOTIFICATION_ID, mNotifyBuilder.build());
