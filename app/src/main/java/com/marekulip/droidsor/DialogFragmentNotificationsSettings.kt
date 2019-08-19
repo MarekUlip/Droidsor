@@ -1,19 +1,16 @@
 package com.marekulip.droidsor
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import com.marekulip.droidsor.adapters.SettingsNotificationListAdapter
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_ID = "arg_id"
 
 /**
@@ -26,7 +23,6 @@ private const val ARG_ID = "arg_id"
  *
  */
 class DialogFragmentNotificationsSettings : DialogFragment() {
-    // TODO: Rename and change types of parameters
     private var sensorListId: Int? = null
     private var listener: OnFragmentInteractionListener? = null
 
@@ -94,7 +90,6 @@ class DialogFragmentNotificationsSettings : DialogFragment() {
      * for more information.
      */
     interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         fun saveActiveSensorInfo()
         fun getActiveItem(id:Int):SettingsNotificationListAdapter.AdapterListItem
     }
@@ -105,10 +100,8 @@ class DialogFragmentNotificationsSettings : DialogFragment() {
          * this fragment using the provided parameters.
          *
          * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
          * @return A new instance of fragment DialogFragmentNotificationsSettings.
          */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: Int) =
                 DialogFragmentNotificationsSettings().apply {

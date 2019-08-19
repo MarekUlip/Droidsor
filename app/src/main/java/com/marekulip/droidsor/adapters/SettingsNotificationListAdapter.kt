@@ -43,7 +43,7 @@ class SettingsNotificationListAdapter(diffCallback:DiffUtil.ItemCallback<Adapter
         adapterCallbacks.showDialog()
     }
 
-    public class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var checkIsActive:CheckBox
         var buttonSettings:Button
         init {
@@ -97,7 +97,7 @@ class SettingsNotificationListAdapter(diffCallback:DiffUtil.ItemCallback<Adapter
 
 
         class ItemDetails(val sensorId:Int, val num:Int, var isShowable:Boolean, var isThreshSet:Boolean,var threshVal:Float, val name:String){
-            public fun getTag():String{
+            fun getTag():String{
                 return name+num
             }
 

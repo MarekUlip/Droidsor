@@ -97,7 +97,7 @@ public class SensorLog {
                 }
         }
         Log.d(TAG, "writeToDatabase: count of entries to write in bulk"+bulk.size());
-        sensorLogManager.getContext().getContentResolver().bulkInsert(DroidsorProvider.SENSOR_DATA_URI,bulk.toArray(new ContentValues[bulk.size()]));
+        sensorLogManager.getContext().getContentResolver().bulkInsert(DroidsorProvider.SENSOR_DATA_URI,bulk.toArray(new ContentValues[0]));
     }
 
     /**

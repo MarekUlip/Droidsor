@@ -230,6 +230,4 @@
     <string name="gyroscope_external">Gyroscope external</string>
     <string name="title_activity_settings_notifications" translatable="false">SettingsNotificationsActivity</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-
 </resources>

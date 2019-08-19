@@ -98,9 +98,10 @@ public class LogProfileSettingActivity extends AppCompatActivity implements Save
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == BT_DEVICE_REQUEST){
-            if(resultCode==RESULT_OK) {
-                if(mDroidsorService == null)storedAddress = data.getStringExtra(DEVICE_ADDRESS);
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == BT_DEVICE_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                if (mDroidsorService == null) storedAddress = data.getStringExtra(DEVICE_ADDRESS);
                 else {
                     mDroidsorService.connectToBluetoothDevice(data.getStringExtra(DEVICE_ADDRESS));
                     fragment.restartFragment();

@@ -56,7 +56,7 @@ public class OpenGLActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             if(mDroidsorService != null) {
-                mDroidsorService.stopOpenGLMode();//TODO careful
+                mDroidsorService.stopOpenGLMode();
                 mDroidsorService = null;
             }
         }

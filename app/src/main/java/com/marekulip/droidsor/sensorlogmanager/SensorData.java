@@ -194,7 +194,7 @@ public class SensorData {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("");
+        StringBuilder sb = new StringBuilder();
         sb.append("x: ").append(+values.x).append("y: ").append(values.y).append("z: ").append(values.z);
         return sb.toString();
     }

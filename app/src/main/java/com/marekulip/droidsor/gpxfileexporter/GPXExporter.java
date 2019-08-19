@@ -1,5 +1,6 @@
 package com.marekulip.droidsor.gpxfileexporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -86,7 +87,7 @@ public class GPXExporter {
      */
     private static String createGPXfromDatas(List<SensorData> datas,Context context){
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         int size = datas.size();
         StringBuilder sb = new StringBuilder(loadBaseHTMLFromFile(context));
@@ -157,9 +158,9 @@ public class GPXExporter {
      * @return GPX header
      */
     private static String loadBaseHTMLFromFile(Context context){
-        StringBuilder builder = new StringBuilder("");
+        StringBuilder builder = new StringBuilder();
         try {
-            builder = new StringBuilder("");
+            builder = new StringBuilder();
             BufferedReader br = new BufferedReader(new InputStreamReader(context.getResources().openRawResource(R.raw.gpxbase)));
             String line;
             while ((line = br.readLine()) != null) {

@@ -1,5 +1,6 @@
 package com.marekulip.droidsor.gpxfileexporter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Environment;
@@ -58,7 +59,7 @@ public class LogExporter {
                     }while(c.moveToNext());
                     c.close();
                     TimeZone tz = TimeZone.getTimeZone("UTC");
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss"); // Quoted "Z" to indicate UTC, no timezone offset
+                    @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss"); // Quoted "Z" to indicate UTC, no timezone offset
                     df.setTimeZone(tz);
                     String name = "Log";
                     c = appContext.getContentResolver().query(DroidsorProvider.SENSOR_LOGS_URI, new String[]{SensorLogsTable.LOG_NAME},SensorLogsTable._ID + " = ?",new String[]{String.valueOf(id)},null);

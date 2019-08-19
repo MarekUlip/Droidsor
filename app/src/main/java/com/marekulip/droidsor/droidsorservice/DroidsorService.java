@@ -21,9 +21,7 @@ import android.preference.PreferenceManager;
 import androidx.core.app.NotificationCompat;
 
 import android.text.Html;
-import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.SpannedString;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.widget.Toast;
@@ -744,6 +742,7 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             }
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N){
+            //noinspection deprecation
             return Html.fromHtml(builder.toString());
         }else {
             return Html.fromHtml(builder.toString(), Html.FROM_HTML_MODE_LEGACY);//"Temperature: " + (int)temp + "\nSound intensity: " + (int)sound;
@@ -811,6 +810,20 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
         stopSelf();
     }
 
+    private void screenOffStop(){
+        if(!isLogging()){
+            stopListeningSensors(true);
+            stopForeground(false);
+        }
+    }
+
+    private void screenOnStart(){
+        if(!isLogging()){
+            startListeningSensors();
+            startForeground(NOTIFICATION_ID,createOrUpdateServiceNotification());
+        }
+    }
+
     @Override
     public void positionRecieved() {
         SensorData sensorData= new SensorData(SensorsEnum.GPS.sensorType,
@@ -838,10 +851,12 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
             public void onReceive(Context context, Intent intent) {
                 final String action = intent.getAction();
                 if(Intent.ACTION_SCREEN_OFF.equals(action)){
-                    stop(true);
+                    //stop(true);
+                    screenOffStop();
                 }
                 if(Intent.ACTION_SCREEN_ON.equals(action)){
-                    startListeningSensors();
+                    //startListeningSensors();
+                    screenOnStart();
                 }
             }
         };

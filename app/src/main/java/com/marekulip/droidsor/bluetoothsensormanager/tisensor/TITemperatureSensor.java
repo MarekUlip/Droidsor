@@ -9,8 +9,6 @@ import com.marekulip.droidsor.sensorlogmanager.SensorsEnum;
 
 import java.util.List;
 
-import static java.lang.Math.pow;
-
 /**
  * Class represents temperature sensor from SensorTag CC2650
  * Created by Marek Ulip on 21.10.2017.

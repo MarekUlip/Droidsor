@@ -1,5 +1,6 @@
 package com.marekulip.droidsor.sensorlogmanager;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.os.PowerManager;
@@ -74,11 +75,12 @@ public class SensorLogManager {
      * @param logName Name of this new log
      * @param sensorsToListen sensors this log should contain
      */
-    public void startLog(String logName,List<Integer> sensorsToListen){
+    @SuppressLint("InvalidWakeLockTag")
+    public void startLog(String logName, List<Integer> sensorsToListen){
         //if(!isLogCompletelyStopped) return;
         // First get wakelock to ensure CPU does not turn off and sensors are logged correctly
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"DroidsorWakelockTag");
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"droidsor:droidsorWakelockTag");
         wakeLock.acquire();
         // Insert empty log into database so id is known.
         ContentValues cv = new ContentValues();
