@@ -45,6 +45,7 @@ public class DroidsorSettingsFramgent extends PreferenceFragment{
 
     public static final String NOTIFICATION_DISPLAY = "notification_display";
     public static final String BT_LEGACY = "bt_legacy";
+    public static final String MAX_NUM_OF_DECIMALS = "max_num_of_decimals";
 
 
     @Override

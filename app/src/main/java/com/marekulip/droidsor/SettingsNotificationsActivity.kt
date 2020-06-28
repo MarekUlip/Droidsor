@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
@@ -52,8 +53,10 @@ class SettingsNotificationsActivity : AppCompatActivity(),SettingsNotificationLi
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager =LinearLayoutManager(this)
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+            val builder: AlertDialog.Builder? = this.let { AlertDialog.Builder(it) }
+            builder?.setMessage(R.string.notification_setting_fab_explanation)
+                    ?.setTitle(R.string.notification_setting_fab_explanation_title)
+            builder?.create()?.show()
         }
 
 

@@ -163,5 +163,9 @@
     <string name="thresh_val_hint">Hodnota hranice</string>
     <string name="use_bt_legacy">Použít zastaralé Bluetooth</string>
     <string name="use_bt_legacy_sum">Umožní připojit se k Bluetooth zařízení. Tato funkce už není podporována a může způsobit nečekané chování.</string>
+    <string name="notification_setting_fab_explanation"><b>Zobraz hodnotu: </b>Ukáže tuto hodnotu v notifikační liště. <b>Nastav hranici:</b> Když senzor dosáhne této hodnoty, mobil zavibruje.</string>
+    <string name="notification_setting_fab_explanation_title">Význam parametrů</string>
+    <string name="max_number_of_frac_decimals">Počet čísel za desetinnou čárou</string>
+    <string name="max_number_of_frac_decimals_summary">Nastaví počet čísel za desetinnou čárkou, které se zobrazí pro každý senzor. Aplikace může vyžadovat restart, aby se změny projevily.</string>
 
 </resources>

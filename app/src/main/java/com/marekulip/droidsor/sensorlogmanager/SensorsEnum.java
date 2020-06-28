@@ -4,15 +4,21 @@ import android.content.Context;
 import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import android.preference.PreferenceManager;
 import android.util.SparseArray;
 
+import androidx.core.os.ConfigurationCompat;
+
+import com.marekulip.droidsor.DroidsorSettingsFramgent;
 import com.marekulip.droidsor.R;
 import com.marekulip.droidsor.bluetoothsensormanager.tisensor.SensorTagGatt;
 import com.marekulip.droidsor.database.SensorDataTable;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -176,7 +182,7 @@ public enum SensorsEnum {
     /**
      * Decimal format used so that data from sensor don't display unnecessary numbers behind decimal point.
      */
-    private DecimalFormat decimalFormat;
+    private NumberFormat decimalFormat;
 
     /**
      * Android resource id for string array containing data descriptions.
@@ -187,6 +193,11 @@ public enum SensorsEnum {
      * Sensor data descriptions i.e. X,Y,Z for senors that measure three axises.
      */
     private String[] dataDescriptions;
+
+    /**
+     * Maximum number of numbers behind decimal point.
+     */
+    private int maxFracDecimalCount = -1;
 
 
     /**
@@ -221,7 +232,8 @@ public enum SensorsEnum {
             sPositionStringRes = R.string.external;
             sPositionStringResXml = R.string.external_xml;
         }
-        decimalFormat =  new DecimalFormat("##.##");
+
+        decimalFormat = new DecimalFormat("00.00");
         decimalFormat.setRoundingMode(RoundingMode.DOWN);
         this.dataDescriptionsRes = dataDescriptionsRes;
     }
@@ -346,6 +358,12 @@ public enum SensorsEnum {
        return sb.append(getDataDescriptions(c)[0]).append(decimalFormat.format(data.x)).append(getSensorUnitName(c,1)).append(System.lineSeparator());
     }
 
+    private void initLocalNumberFormat(Context c){
+        decimalFormat = NumberFormat.getInstance(ConfigurationCompat.getLocales(c.getResources().getConfiguration()).get(0));
+        decimalFormat.setMaximumFractionDigits(maxFracDecimalCount);
+        decimalFormat.setRoundingMode(RoundingMode.DOWN);
+    }
+
     /**
      * Creates string with sensor data based on axis count of this sensor
      * @param c Context with which missing resources will be loaded
@@ -353,6 +371,10 @@ public enum SensorsEnum {
      * @return Returns string with sensor data based on axis count of this sensor
      */
     public String getStringData(Context c, Point3D data){
+        if(maxFracDecimalCount == -1) {
+            maxFracDecimalCount = Integer.parseInt(Objects.requireNonNull(PreferenceManager.getDefaultSharedPreferences(c).getString(DroidsorSettingsFramgent.MAX_NUM_OF_DECIMALS, "2")));
+            initLocalNumberFormat(c);
+        }
         switch (itemCount){
             case 1:
                 return oneValueString(data,c,new StringBuilder()).toString();

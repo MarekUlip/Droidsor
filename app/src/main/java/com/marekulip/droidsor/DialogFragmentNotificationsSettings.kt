@@ -38,7 +38,7 @@ class DialogFragmentNotificationsSettings : DialogFragment() {
         val parentLayout = inflater.inflate(R.layout.dialog_settings_notification_layout, container, false)
         val layout = parentLayout.findViewById<TableLayout>(R.id.table_sensors)
         val item = listener?.getActiveItem(sensorListId!!)
-        for (info in item?.getInformations(context!!)!!){
+        for (info in item?.getInformations(requireContext())!!){
             val row = TableRow(context)
             row.layoutParams = TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT)
             row.tag = info.getTag()
@@ -51,7 +51,7 @@ class DialogFragmentNotificationsSettings : DialogFragment() {
             layout.addView(row)
         }
         parentLayout.findViewById<Button>(R.id.button_confirm).setOnClickListener {
-            for(info in item.getInformations(context!!)){
+            for(info in item.getInformations(requireContext())){
                 val row = layout.findViewWithTag<TableRow>(info.getTag()).getChildAt(0)
                 info.isShowable = row.findViewById<CheckBox>(R.id.check_disp_val).isChecked
                 info.isThreshSet = row.findViewById<CheckBox>(R.id.check_tresh_set).isChecked

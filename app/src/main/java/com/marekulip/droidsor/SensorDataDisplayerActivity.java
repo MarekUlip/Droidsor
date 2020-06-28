@@ -102,7 +102,14 @@ public class SensorDataDisplayerActivity extends AppCompatActivity
         drawerNavigationView= findViewById(R.id.nav_view);
         drawerNavigationView.setNavigationItemSelectedListener(this);
         drawerNavigationView.setCheckedItem(R.id.all_sensors);
-
+        boolean legacyBT = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DroidsorSettingsFramgent.BT_LEGACY,false);
+        if (!legacyBT){
+            Menu navigationViewMenu = drawerNavigationView.getMenu();
+            navigationViewMenu.findItem(R.id.ble_sensors).setVisible(false);
+            navigationViewMenu.findItem(R.id.all_sensors).setVisible(false);
+            drawerNavigationView.setCheckedItem(R.id.mobile_sensors);
+            //drawerNavigationView.getHeaderView(0).findViewById(R.id.ble_sensors).setVisibility(View.GONE);
+        }
         fab = findViewById(R.id.sens_disp_fab);
 
         fragment = new SensorDataDispListFragment();

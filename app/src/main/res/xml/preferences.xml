@@ -46,6 +46,15 @@
         android:maxLength="3"
         />
 
+    <EditTextPreference
+        android:key="max_num_of_decimals"
+        android:defaultValue="2"
+        android:inputType="number"
+        android:title="@string/max_number_of_frac_decimals"
+        android:summary="@string/max_number_of_frac_decimals_summary"
+        android:maxLength="1"
+        />
+
     <CheckBoxPreference
         android:key="show_gps_data"
         android:defaultValue="true"

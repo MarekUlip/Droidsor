@@ -94,7 +94,10 @@
     <string name="all_permissions_allowed">All permissions are allowed</string>
     <string name="permission_setting">Permission setting</string>
     <string name="permissions_required">App requires permissions to run properly. Set permissions?</string>
-
+    <string name="notification_setting_fab_explanation"><b>Display value: </b>Shows this value in a notification panel. <b>Set threshold:</b> When sensor reaches this value mobile will vibrate.</string>
+    <string name="notification_setting_fab_explanation_title">Parameter meanings</string>
+    <string name="max_number_of_frac_decimals">Number of fraction decimals</string>
+    <string name="max_number_of_frac_decimals_summary">Sets the count of numbers to be displayed for each sensor value behind decimal point. App restart may be required for changes to take effect.</string>
     <string-array name="log_but_beh_str_arr">
         <item>Start favorite log profile</item>
         <item>Show list with profiles</item>
