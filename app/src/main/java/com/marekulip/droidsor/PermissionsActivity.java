@@ -42,6 +42,7 @@ public class PermissionsActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             initGUI();
@@ -57,7 +58,11 @@ public class PermissionsActivity extends AppCompatActivity {
         boolean isEveryPresent = true;
         // iterate required permissions
         for(String s : requiredPermissions){
-            if(checkSelfPermission(s) != PackageManager.PERMISSION_GRANTED){
+            if(checkSelfPermission(s) != PackageManager.PERMISSION_GRANTED ){
+                if(Manifest.permission.WRITE_EXTERNAL_STORAGE.equals(s) && Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q){
+                    // WRITE_EXTERNAL_STORAGE is not usable since 29.
+                    continue;
+                }
                 // if permission is not allowed create button for it
                 isEveryPresent = false;
                 layout.addView(createButtonForPermission(s));

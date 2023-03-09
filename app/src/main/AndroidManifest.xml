@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.marekulip.droidsor">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
@@ -32,7 +31,7 @@
         <activity
             android:name=".SettingsNotificationsActivity"
             android:label="@string/title_activity_settings_notifications"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name=".droidsorservice.DroidsorService"
@@ -46,7 +45,8 @@
         <activity android:name=".logs.LogsActivity" />
         <activity
             android:name=".SensorDataDisplayerActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

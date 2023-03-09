@@ -719,7 +719,12 @@ public class DroidsorService extends Service implements PositionManager.OnReciev
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher))
                 .setOngoing(true);
         Intent stopServiceIntent = new Intent(this, ServiceStopperService.class);
-        PendingIntent stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent stopServicePendingIntent;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_IMMUTABLE);
+        } else {
+            stopServicePendingIntent = PendingIntent.getService(this,0,stopServiceIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+        }
         mNotifyBuilder.setContentIntent(stopServicePendingIntent);
         return mNotifyBuilder.build();
     }

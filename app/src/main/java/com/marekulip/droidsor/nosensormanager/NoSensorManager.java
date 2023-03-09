@@ -176,7 +176,7 @@ public class NoSensorManager extends DroidsorSensorManager {
                 mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
                 mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
                 mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-                mediaRecorder.setOutputFile("/dev/null");
+                mediaRecorder.setOutputFile(droidsorService.getApplicationContext().getFilesDir().getPath()+"/null");
                 mediaRecorder.prepare();
                 mediaRecorder.start();
             }

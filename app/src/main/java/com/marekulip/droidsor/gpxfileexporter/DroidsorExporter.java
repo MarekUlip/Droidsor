@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.MediaScannerConnection;
+import android.os.Build;
 import android.os.Environment;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -27,20 +28,22 @@ public class DroidsorExporter {
     public static final int WRITE_EXTERNAL_STORAGE_ID = 1;
     public static final int READ_EXTERNAL_STORAGE_ID = 2;
     private final static File path = Environment.getExternalStorageDirectory();//Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-
+    private  static File pathApi29 = null;
     /**
      * Checks whether the app has permission to write to an external storage. If not it tries to obtain required permission.
      * @param context Context of an activity which will be used to ask for permission
      * @return true if permission is already granted
      */
     public static boolean checkForWritePermission(Context context){
-        if(ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+        if(Build.VERSION.SDK_INT<Build.VERSION_CODES.Q && ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             if (ActivityCompat.shouldShowRequestPermissionRationale((AppCompatActivity)context,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 Toast.makeText(context,R.string.permission_explain_write, Toast.LENGTH_LONG).show();
             }
             ActivityCompat.requestPermissions((AppCompatActivity)context,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, DroidsorExporter.WRITE_EXTERNAL_STORAGE_ID);
             return false;
+        } else {
+            pathApi29 =context.getExternalFilesDir(null);
         }
         return true;
     }
@@ -56,7 +59,12 @@ public class DroidsorExporter {
         if(isExternalStorageWritable()) {
             try {
                 fileName = getAndroidFriendlyFileName(fileName);
-                File folder = new File(path, context.getString(R.string.app_name));
+                File folder;
+                if(Build.VERSION.SDK_INT<Build.VERSION_CODES.Q){
+                    folder = new File(path, context.getString(R.string.app_name));
+                } else {
+                    folder = new File(pathApi29, context.getString(R.string.app_name));
+                }
                 if(!folder.exists()){
                     boolean rv = folder.mkdir();
                 }
